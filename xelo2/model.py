@@ -1,6 +1,15 @@
 from datetime import datetime
 from pathlib import Path
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, connect
+
+
+def open_database(path_to_database):
+    sql = connect(str(path_to_database))
+
+    cur = sql.cursor()
+    cur.execute('PRAGMA foreign_keys = ON;')
+
+    return cur
 
 
 def list_subjects(cur):
@@ -87,9 +96,18 @@ class Run(Table_with_files):
     def __init__(self, cur, id):
         super().__init__(cur, id)
 
+    def __repr__(self):
+        return f'<{self.t} {self.type} (#{self.id})>'
+
     @property
     def task_name(self):
         self.cur.execute(f"SELECT task_name FROM runs WHERE id == {self.id}")
+        return self.cur.fetchone()[0]
+
+    @property
+    def type(self):
+        """TODO: force it to be one of the 8 BIDS-types (folder names)"""
+        self.cur.execute(f"SELECT type FROM runs WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
     @property
@@ -151,7 +169,10 @@ class Subject(Table_with_files):
     def date_of_birth(self):
         self.cur.execute(f"SELECT date_of_birth FROM subjects WHERE id == '{self.id}'")
         dob = self.cur.fetchone()[0]
-        return datetime.strptime(dob, '%Y-%m-%d').date()
+        if dob == '':
+            return dob
+        else:
+            return datetime.strptime(dob, '%Y-%m-%d').date()
 
     @property
     def sex(self):

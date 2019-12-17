@@ -65,6 +65,12 @@ class Main(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.l_runs)
         b_run.setLayout(layout)
+        layout_form = QFormLayout()
+        self.run_start = QLabel('')
+        layout_form.addRow('Start Time', self.run_start)
+        self.run_end = QLabel('')
+        layout_form.addRow('End Time', self.run_end)
+        layout.addLayout(layout_form)
         self.l_runs.itemClicked.connect(self.list_recordings)
 
         self.l_recs = QListWidget()
@@ -141,6 +147,8 @@ class Main(QWidget):
         self.l_recs.clear()
 
         run = item.data(Qt.UserRole)
+        self.run_start.setText(str(run.start_time))
+        self.run_end.setText(str(run.end_time))
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
