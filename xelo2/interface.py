@@ -3,9 +3,15 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QVBoxLayout,
     QHBoxLayout,
+    QFormLayout,
     QListWidgetItem,
     QMainWindow,
     QWidget,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QAbstractItemView
     )
 from PyQt5.QtCore import Qt
 
@@ -30,11 +36,22 @@ class Main(QWidget):
         b_sess = QGroupBox('Session')
         b_run = QGroupBox('Run')
         b_recording = QGroupBox('Recording')
+
         b_file = QGroupBox('File')
 
         self.l_subj = QListWidget()
         layout = QVBoxLayout()
         layout.addWidget(self.l_subj)
+        layout_form = QFormLayout()
+        self.subj_dob = QLabel('')
+        layout_form.addRow('Date Of Birth', self.subj_dob)
+        self.subj_sex = QLabel('')
+        layout_form.addRow('Sex', self.subj_sex)
+        layout.addLayout(layout_form)
+        p_newsubj = QPushButton('New Subject')
+        layout.addWidget(p_newsubj)
+        p_delsubj = QPushButton('Delete Subject')
+        layout.addWidget(p_delsubj)
         b_subj.setLayout(layout)
         self.l_subj.itemClicked.connect(self.list_sessions)
 
@@ -54,20 +71,27 @@ class Main(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.l_recs)
         b_recording.setLayout(layout)
-        self.l_recs.itemClicked.connect(self.list_files)
+        self.l_recs.itemClicked.connect(self.add_files)
 
-        self.l_files = QListWidget()
+        self.l_files = QTableWidget()
+        self.l_files.horizontalHeader().setStretchLastSection(True)
+        self.l_files.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.l_files.setColumnCount(3)
+        self.l_files.setHorizontalHeaderLabels(['Level', 'Type', 'File'])
+
         layout = QVBoxLayout()
         layout.addWidget(self.l_files)
         b_file.setLayout(layout)
 
-        layout = QHBoxLayout()
-        layout.addWidget(b_subj)
-        layout.addWidget(b_sess)
-        layout.addWidget(b_run)
-        layout.addWidget(b_recording)
-        layout.addWidget(b_file)
+        layout_g = QHBoxLayout()
+        layout_g.addWidget(b_subj)
+        layout_g.addWidget(b_sess)
+        layout_g.addWidget(b_run)
+        layout_g.addWidget(b_recording)
 
+        layout = QVBoxLayout()
+        layout.addLayout(layout_g)
+        layout.addWidget(b_file)
         self.setLayout(layout)
         self.show()
 
@@ -81,23 +105,28 @@ class Main(QWidget):
             item.setData(Qt.UserRole, subj)
             self.l_subj.addItem(item)
 
+        self.add_files()
+
     def list_sessions(self, item):
+
+        subj = item.data(Qt.UserRole)
+        self.subj_dob.setText(str(subj.date_of_birth))
+        self.subj_sex.setText(subj.sex)
+
         self.l_sess.clear()
         self.l_runs.clear()
         self.l_recs.clear()
-        self.l_files.clear()
-
-        subj = item.data(Qt.UserRole)
 
         for sess in subj.list_sessions():
             item = QListWidgetItem(sess.name)
             item.setData(Qt.UserRole, sess)
             self.l_sess.addItem(item)
 
+        self.add_files()
+
     def list_runs(self, item):
         self.l_runs.clear()
         self.l_recs.clear()
-        self.l_files.clear()
 
         sess = item.data(Qt.UserRole)
 
@@ -106,9 +135,10 @@ class Main(QWidget):
             item.setData(Qt.UserRole, run)
             self.l_runs.addItem(item)
 
+        self.add_files()
+
     def list_recordings(self, item):
         self.l_recs.clear()
-        self.l_files.clear()
 
         run = item.data(Qt.UserRole)
 
@@ -117,12 +147,50 @@ class Main(QWidget):
             item.setData(Qt.UserRole, recording)
             self.l_recs.addItem(item)
 
-    def list_files(self, item):
-        self.l_files.clear()
+        self.add_files()
 
-        recording = item.data(Qt.UserRole)
+    def add_files(self, item=None):
 
-        for file in recording.list_files():
-            item = QListWidgetItem(str(file.path))
-            item.setData(Qt.UserRole, file)
-            self.l_files.addItem(item)
+        self.l_files.blockSignals(True)
+        self.l_files.clearContents()
+        self.l_files.setRowCount(100)  # todo
+
+        i = 0
+        item = self.l_subj.currentItem()
+        if item is not None:
+            subj = item.data(Qt.UserRole)
+            for file in subj.list_files():
+                self.l_files.setItem(i, 0, QTableWidgetItem('subject'))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
+                i += 1
+
+        item = self.l_sess.currentItem()
+        if item is not None:
+            sess = item.data(Qt.UserRole)
+            for file in sess.list_files():
+                self.l_files.setItem(i, 0, QTableWidgetItem('session'))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
+                i += 1
+
+        item = self.l_runs.currentItem()
+        if item is not None:
+            run = item.data(Qt.UserRole)
+            for file in run.list_files():
+                self.l_files.setItem(i, 0, QTableWidgetItem('run'))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
+                i += 1
+
+        item = self.l_recs.currentItem()
+        if item is not None:
+            recording = item.data(Qt.UserRole)
+            for file in recording.list_files():
+                self.l_files.setItem(i, 0, QTableWidgetItem('recording'))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
+                i += 1
+
+        self.l_files.blockSignals(False)
+

@@ -34,6 +34,13 @@ class Table():
             return params
 
 
+class Table_with_files(Table):
+
+    def list_files(self):
+        self.cur.execute(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
+        return [File(self.cur, x[0]) for x in self.cur.fetchall()]
+
+
 class File(Table):
     t = 'file'
 
@@ -51,7 +58,7 @@ class File(Table):
         return self.cur.fetchone()[0]
 
 
-class Recording(Table):
+class Recording(Table_with_files):
     t = 'recording'
 
     def __init__(self, cur, id):
@@ -74,11 +81,7 @@ class Recording(Table):
         t = self.cur.fetchone()[0]
         return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
 
-    def list_files(self):
-        self.cur.execute(f"SELECT file_id FROM recordings_files WHERE recording_id == {self.id}")
-        return [File(self.cur, x[0]) for x in self.cur.fetchall()]
-
-class Run(Table):
+class Run(Table_with_files):
     t = 'run'
 
     def __init__(self, cur, id):
@@ -109,7 +112,7 @@ class Run(Table):
         return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
 
 
-class Session(Table):
+class Session(Table_with_files):
     t = 'session'
 
     def __init__(self, cur, id):
@@ -135,7 +138,7 @@ class Session(Table):
         return [Run(self.cur, x[0]) for x in self.cur.fetchall()]
 
 
-class Subject(Table):
+class Subject(Table_with_files):
     t = 'subject'
 
     def __init__(self, cur, code):
