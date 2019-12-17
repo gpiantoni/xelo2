@@ -90,6 +90,18 @@ class Recording(Table_with_files):
         t = self.cur.fetchone()[0]
         return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
 
+
+class Recording_ieeg(Recording):
+
+    @property
+    def channels(self):
+        pass
+
+    @property
+    def electrodes(self):
+        pass
+
+
 class Run(Table_with_files):
     t = 'run'
 
@@ -126,8 +138,17 @@ class Run(Table_with_files):
         self.cur.execute(f"""\
         SELECT recordings.id FROM recordings
         JOIN runs ON runs.id == recordings.run_id
-        WHERE runs.id == {self.id}""")
-        return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
+        WHERE runs.id == {self.id}
+        AND recordings.modality == 'ieeg'""")
+        out = [Recording_ieeg(self.cur, x[0]) for x in self.cur.fetchall()]
+
+        self.cur.execute(f"""\
+        SELECT recordings.id FROM recordings
+        JOIN runs ON runs.id == recordings.run_id
+        WHERE runs.id == {self.id}
+        AND recordings.modality <> 'ieeg'""")
+        out.extend([Recording(self.cur, x[0]) for x in self.cur.fetchall()])
+        return out
 
 
 class Session(Table_with_files):

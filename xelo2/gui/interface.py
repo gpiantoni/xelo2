@@ -17,6 +17,7 @@ from PyQt5.QtCore import Qt
 
 from .model import list_subjects
 
+
 class Interface(QMainWindow):
 
     def __init__(self, cur):
@@ -50,8 +51,6 @@ class Main(QWidget):
         layout.addLayout(layout_form)
         p_newsubj = QPushButton('New Subject')
         layout.addWidget(p_newsubj)
-        p_delsubj = QPushButton('Delete Subject')
-        layout.addWidget(p_delsubj)
         b_subj.setLayout(layout)
         self.l_subj.itemClicked.connect(self.list_sessions)
 
