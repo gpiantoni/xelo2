@@ -217,7 +217,7 @@ class Subject(Table_with_files):
         WHERE subjects.id == '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_run(self, task_name, acquisition, start_time, end_time,
+    def add_session(self, name, acquisition, start_time, end_time,
                 parameters=None):
 
         assert False, 'You need to convert start_time and end_time to SQL time'
