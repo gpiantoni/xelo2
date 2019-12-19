@@ -50,7 +50,8 @@ class Table_with_files(Table):
         return [File(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_file(self, format, path):
-        self.cur.execute("""\
+        path = Path(path)
+        self.cur.execute(f"""\
         INSERT INTO files ("format", "path")
         VALUES ("{format}", "{path.resolve()}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
