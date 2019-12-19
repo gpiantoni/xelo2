@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QTableWidget,
+    QTabWidget,
     QTableWidgetItem,
     QAbstractItemView
     )
@@ -38,17 +39,9 @@ class Main(QWidget):
         b_run = QGroupBox('Run')
         b_recording = QGroupBox('Recording')
 
-        b_file = QGroupBox('File')
-
         self.l_subj = QListWidget()
         layout = QVBoxLayout()
         layout.addWidget(self.l_subj)
-        layout_form = QFormLayout()
-        self.subj_dob = QLabel('')
-        layout_form.addRow('Date Of Birth', self.subj_dob)
-        self.subj_sex = QLabel('')
-        layout_form.addRow('Sex', self.subj_sex)
-        layout.addLayout(layout_form)
         p_newsubj = QPushButton('New Subject')
         layout.addWidget(p_newsubj)
         b_subj.setLayout(layout)
@@ -64,12 +57,6 @@ class Main(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.l_runs)
         b_run.setLayout(layout)
-        layout_form = QFormLayout()
-        self.run_start = QLabel('')
-        layout_form.addRow('Start Time', self.run_start)
-        self.run_end = QLabel('')
-        layout_form.addRow('End Time', self.run_end)
-        layout.addLayout(layout_form)
         self.l_runs.itemClicked.connect(self.list_recordings)
 
         self.l_recs = QListWidget()
@@ -78,25 +65,55 @@ class Main(QWidget):
         b_recording.setLayout(layout)
         self.l_recs.itemClicked.connect(self.add_files)
 
+        self.w_parameters = QTabWidget()
+        self.tab_subj = QTableWidget()
+        self.tab_subj.horizontalHeader().setStretchLastSection(True)
+        self.tab_subj.setColumnCount(2)
+        self.w_parameters.addTab(self.tab_subj, 'Subject')
+        self.tab_sess = QTableWidget()
+        self.tab_sess.setColumnCount(2)
+        self.tab_sess.horizontalHeader().setStretchLastSection(True)
+        self.w_parameters.addTab(self.tab_sess, 'Session')
+        self.tab_run = QTableWidget()
+        self.tab_run.setColumnCount(2)
+        self.tab_run.horizontalHeader().setStretchLastSection(True)
+        self.w_parameters.addTab(self.tab_run, 'Run')
+        self.tab_rec = QTableWidget()
+        self.tab_rec.horizontalHeader().setStretchLastSection(True)
+        self.tab_rec.setColumnCount(2)
+        self.w_parameters.addTab(self.tab_rec, 'Recording')
+
+        b_parameters = QGroupBox('Parameters')
+        layout = QVBoxLayout()
+        layout.addWidget(self.w_parameters)
+        b_parameters.setLayout(layout)
+
         self.l_files = QTableWidget()
         self.l_files.horizontalHeader().setStretchLastSection(True)
         self.l_files.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.l_files.setColumnCount(3)
         self.l_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
 
+        b_file = QGroupBox('File')
         layout = QVBoxLayout()
         layout.addWidget(self.l_files)
         b_file.setLayout(layout)
 
-        layout_g = QHBoxLayout()
-        layout_g.addWidget(b_subj)
-        layout_g.addWidget(b_sess)
-        layout_g.addWidget(b_run)
-        layout_g.addWidget(b_recording)
+        layout_t = QHBoxLayout()
+        layout_t.addWidget(b_subj)
+        layout_t.addWidget(b_sess)
+        layout_t.addWidget(b_run)
+        layout_t.addWidget(b_recording)
+
+        layout_d = QHBoxLayout()
+        layout_d.addWidget(b_parameters)
+        layout_d.addWidget(b_file)
+        layout_d.setStretch(0, 1)
+        layout_d.setStretch(1, 3)
 
         layout = QVBoxLayout()
-        layout.addLayout(layout_g)
-        layout.addWidget(b_file)
+        layout.addLayout(layout_t)
+        layout.addLayout(layout_d)
         self.setLayout(layout)
         self.show()
 
@@ -115,8 +132,19 @@ class Main(QWidget):
     def list_sessions(self, item):
 
         subj = item.data(Qt.UserRole)
-        self.subj_dob.setText(str(subj.date_of_birth))
-        self.subj_sex.setText(subj.sex)
+
+        self.tab_subj.clearContents()
+        self.tab_subj.setRowCount(10)  # todo
+        self.tab_subj.setItem(0, 0, QTableWidgetItem('Date Of Birth'))
+        self.tab_subj.setItem(0, 1, QTableWidgetItem(str(subj.date_of_birth)))
+        self.tab_subj.setItem(1, 0, QTableWidgetItem('Sex'))
+        self.tab_subj.setItem(1, 1, QTableWidgetItem(subj.sex))
+        i = 2
+        for k, v in subj.parameters.items():
+            self.tab_subj.setItem(i, 0, QTableWidgetItem(k))
+            self.tab_subj.setItem(i, 1, QTableWidgetItem(str(v)))
+            i += 1
+        self.w_parameters.setCurrentIndex(0)
 
         self.l_sess.clear()
         self.l_runs.clear()
@@ -130,13 +158,23 @@ class Main(QWidget):
         self.add_files()
 
     def list_runs(self, item):
-        self.l_runs.clear()
-        self.l_recs.clear()
 
         sess = item.data(Qt.UserRole)
 
+        self.tab_sess.clearContents()
+        self.tab_sess.setRowCount(10)  # todo
+        i = 0
+        for k, v in sess.parameters.items():
+            self.tab_sess.setItem(i, 0, QTableWidgetItem(k))
+            self.tab_sess.setItem(i, 1, QTableWidgetItem(str(v)))
+            i += 1
+        self.w_parameters.setCurrentIndex(1)
+
+        self.l_runs.clear()
+        self.l_recs.clear()
+
         for run in sess.list_runs():
-            item = QListWidgetItem(run.task_name)
+            item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
             item.setData(Qt.UserRole, run)
             self.l_runs.addItem(item)
 
@@ -146,8 +184,23 @@ class Main(QWidget):
         self.l_recs.clear()
 
         run = item.data(Qt.UserRole)
-        self.run_start.setText(str(run.start_time))
-        self.run_end.setText(str(run.end_time))
+        self.tab_run.clearContents()
+        self.tab_run.setRowCount(10)  # todo
+        self.tab_run.setItem(0, 0, QTableWidgetItem('Task Name'))
+        self.tab_run.setItem(0, 1, QTableWidgetItem(run.task_name))
+        self.tab_run.setItem(1, 0, QTableWidgetItem('Acquisition'))
+        self.tab_run.setItem(1, 1, QTableWidgetItem(run.acquisition))
+        self.tab_run.setItem(2, 0, QTableWidgetItem('Start Time'))
+        self.tab_run.setItem(2, 1, QTableWidgetItem(str(run.start_time)))
+        self.tab_run.setItem(3, 0, QTableWidgetItem('End Time'))
+        self.tab_run.setItem(3, 1, QTableWidgetItem(str(run.end_time)))
+
+        i = 4
+        for k, v in run.parameters.items():
+            self.tab_run.setItem(i, 0, QTableWidgetItem(k))
+            self.tab_run.setItem(i, 1, QTableWidgetItem(str(v)))
+            i += 1
+        self.w_parameters.setCurrentIndex(2)
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
