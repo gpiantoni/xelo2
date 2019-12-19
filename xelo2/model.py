@@ -87,18 +87,6 @@ class Recording(Table_with_files):
         self.cur.execute(f"SELECT modality FROM recordings WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
-    @property
-    def start_time(self):
-        self.cur.execute(f"SELECT start_time FROM recordings WHERE id == {self.id}")
-        t = self.cur.fetchone()[0]
-        return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
-
-    @property
-    def end_time(self):
-        self.cur.execute(f"SELECT end_time FROM recordings WHERE id == {self.id}")
-        t = self.cur.fetchone()[0]
-        return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
-
 
 class Recording_ieeg(Recording):
 
@@ -159,6 +147,21 @@ class Run(Table_with_files):
         out.extend([Recording(self.cur, x[0]) for x in self.cur.fetchall()])
         return out
 
+    def add_recording(self, modality, offset=0, parameters=None):
+
+        self.cur.execute(f"""\
+        INSERT INTO recordings ("run_id", "modality", "offset")
+        VALUES ("{self.id}", "{modality}", "{offset}")""")
+        self.cur.execute("""SELECT last_insert_rowid()""")
+        recording_id = self.cur.fetchone()[0]
+        if parameters is not None:
+            for k, v in parameters:
+                self.cur.execute(f"""\
+                    INSERT INTO recordings_params ("recording_id", "parameter", "value")
+                    VALUES ({recording_id}, {k}, {v})""")
+
+        return Recording(self.cur, recording_id)
+
 
 class Session(Table_with_files):
     t = 'session'
@@ -169,7 +172,7 @@ class Session(Table_with_files):
 
     @property
     def name(self):
-        self.cur.execute(f"SELECT session_name FROM sessions WHERE id == {self.id}")
+        self.cur.execute(f"SELECT name FROM sessions WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
     def start_date(self):
@@ -211,7 +214,7 @@ class Subject(Table_with_files):
 
     def list_sessions(self):
         self.cur.execute(f"""\
-        SELECT sessions.id, session_name FROM sessions
+        SELECT sessions.id, name FROM sessions
         JOIN subjects ON subjects.id == sessions.subject_id
         WHERE subjects.id == '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]

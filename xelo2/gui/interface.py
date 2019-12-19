@@ -200,4 +200,3 @@ class Main(QWidget):
                 i += 1
 
         self.l_files.blockSignals(False)
-
