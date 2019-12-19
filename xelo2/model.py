@@ -88,17 +88,6 @@ class Recording(Table_with_files):
         return self.cur.fetchone()[0]
 
 
-class Recording_ieeg(Recording):
-
-    @property
-    def channels(self):
-        pass
-
-    @property
-    def electrodes(self):
-        pass
-
-
 class Run(Table_with_files):
     t = 'run'
 
@@ -135,17 +124,8 @@ class Run(Table_with_files):
         self.cur.execute(f"""\
         SELECT recordings.id FROM recordings
         JOIN runs ON runs.id == recordings.run_id
-        WHERE runs.id == {self.id}
-        AND recordings.modality == 'ieeg'""")
-        out = [Recording_ieeg(self.cur, x[0]) for x in self.cur.fetchall()]
-
-        self.cur.execute(f"""\
-        SELECT recordings.id FROM recordings
-        JOIN runs ON runs.id == recordings.run_id
-        WHERE runs.id == {self.id}
-        AND recordings.modality <> 'ieeg'""")
-        out.extend([Recording(self.cur, x[0]) for x in self.cur.fetchall()])
-        return out
+        WHERE runs.id == {self.id}""")
+        return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_recording(self, modality, offset=0, parameters=None):
 
@@ -188,6 +168,24 @@ class Session(Table_with_files):
         WHERE sessions.id == {self.id}""")
         return [Run(self.cur, x[0]) for x in self.cur.fetchall()]
 
+    def add_run(self, task_name, acquisition, start_time, end_time,
+                parameters=None):
+
+        assert False, 'You need to convert start_time and end_time to SQL time'
+
+        self.cur.execute(f"""\
+        INSERT INTO runs ("session_id", "task_name", "acquisition", "start_time", "end_time")
+        VALUES ("{self.id}", "{task_name}", "{acquisition}", "{start_time}", "{end_time}")""")
+        self.cur.execute("""SELECT last_insert_rowid()""")
+        run_id = self.cur.fetchone()[0]
+        if parameters is not None:
+            for k, v in parameters:
+                self.cur.execute(f"""\
+                    INSERT INTO runs_params ("run_id", "parameter", "value")
+                    VALUES ({run_id}, {k}, {v})""")
+
+        return Run(self.cur, run_id)
+
 
 class Subject(Table_with_files):
     t = 'subject'
@@ -218,3 +216,21 @@ class Subject(Table_with_files):
         JOIN subjects ON subjects.id == sessions.subject_id
         WHERE subjects.id == '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
+
+    def add_run(self, task_name, acquisition, start_time, end_time,
+                parameters=None):
+
+        assert False, 'You need to convert start_time and end_time to SQL time'
+
+        self.cur.execute(f"""\
+        INSERT INTO runs ("session_id", "task_name", "acquisition", "start_time", "end_time")
+        VALUES ("{self.id}", "{task_name}", "{acquisition}", "{start_time}", "{end_time}")""")
+        self.cur.execute("""SELECT last_insert_rowid()""")
+        run_id = self.cur.fetchone()[0]
+        if parameters is not None:
+            for k, v in parameters:
+                self.cur.execute(f"""\
+                    INSERT INTO runs_params ("run_id", "parameter", "value")
+                    VALUES ({run_id}, {k}, {v})""")
+
+        return Run(self.cur, run_id)
