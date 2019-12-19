@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import Qt
 
-from .model import list_subjects
+from ..model import list_subjects
 
 
 class Interface(QMainWindow):
@@ -82,7 +82,7 @@ class Main(QWidget):
         self.l_files.horizontalHeader().setStretchLastSection(True)
         self.l_files.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.l_files.setColumnCount(3)
-        self.l_files.setHorizontalHeaderLabels(['Level', 'Type', 'File'])
+        self.l_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
 
         layout = QVBoxLayout()
         layout.addWidget(self.l_files)
@@ -168,7 +168,7 @@ class Main(QWidget):
             subj = item.data(Qt.UserRole)
             for file in subj.list_files():
                 self.l_files.setItem(i, 0, QTableWidgetItem('subject'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
                 self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
                 i += 1
 
@@ -177,7 +177,7 @@ class Main(QWidget):
             sess = item.data(Qt.UserRole)
             for file in sess.list_files():
                 self.l_files.setItem(i, 0, QTableWidgetItem('session'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
                 self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
                 i += 1
 
@@ -186,7 +186,7 @@ class Main(QWidget):
             run = item.data(Qt.UserRole)
             for file in run.list_files():
                 self.l_files.setItem(i, 0, QTableWidgetItem('run'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
                 self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
                 i += 1
 
@@ -195,7 +195,7 @@ class Main(QWidget):
             recording = item.data(Qt.UserRole)
             for file in recording.list_files():
                 self.l_files.setItem(i, 0, QTableWidgetItem('recording'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.type))
+                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
                 self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
                 i += 1
 

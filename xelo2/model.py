@@ -9,7 +9,7 @@ def open_database(path_to_database):
     cur = sql.cursor()
     cur.execute('PRAGMA foreign_keys = ON;')
 
-    return cur
+    return sql, cur
 
 
 def list_subjects(cur):
@@ -49,6 +49,14 @@ class Table_with_files(Table):
         self.cur.execute(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
         return [File(self.cur, x[0]) for x in self.cur.fetchall()]
 
+    def add_file(self, format, path):
+        self.cur.execute("""\
+        INSERT INTO files ("format", "path")
+        VALUES ("{format}", "{path.resolve()}")""")
+        self.cur.execute("""SELECT last_insert_rowid()""")
+        file_id = self.cur.fetchone()[0]
+        self.cur.execute(f"""INSERT INTO {self.t}s_files ("{self.t}_id", "file_id") VALUES ({self.id}, {file_id})""")
+
 
 class File(Table):
     t = 'file'
@@ -62,8 +70,8 @@ class File(Table):
         return Path(self.cur.fetchone()[0]).resolve()
 
     @property
-    def type(self):
-        self.cur.execute(f"SELECT type FROM files WHERE id == {self.id}")
+    def format(self):
+        self.cur.execute(f"SELECT format FROM files WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
 
@@ -109,7 +117,7 @@ class Run(Table_with_files):
         super().__init__(cur, id)
 
     def __repr__(self):
-        return f'<{self.t} {self.type} (#{self.id})>'
+        return f'<{self.t} {self.acquisition} (#{self.id})>'
 
     @property
     def task_name(self):
@@ -117,9 +125,9 @@ class Run(Table_with_files):
         return self.cur.fetchone()[0]
 
     @property
-    def type(self):
+    def acquisition(self):
         """TODO: force it to be one of the 8 BIDS-types (folder names)"""
-        self.cur.execute(f"SELECT type FROM runs WHERE id == {self.id}")
+        self.cur.execute(f"SELECT acquisition FROM runs WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
     @property
