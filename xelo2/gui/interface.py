@@ -6,12 +6,15 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
     QMainWindow,
     QWidget,
-    QLabel,
     QPushButton,
     QTableWidget,
     QTabWidget,
     QTableWidgetItem,
     QAbstractItemView
+    )
+from PyQt5.QtGui import (
+    QBrush,
+    QColor,
     )
 from PyQt5.QtCore import Qt, pyqtSlot
 
@@ -33,281 +36,251 @@ class Main(QWidget):
         self.cur = cur
         super().__init__()
 
-        b_subj = QGroupBox('Subject')
-        b_sess = QGroupBox('Session')
-        b_metc = QGroupBox('Protocol')
-        b_run = QGroupBox('Run')
-        b_recording = QGroupBox('Recording')
+        groups = {
+            'subj': QGroupBox('Subject'),
+            'sess': QGroupBox('Session'),
+            'metc': QGroupBox('Protocol'),
+            'run': QGroupBox('Run'),
+            'rec': QGroupBox('Recording'),
+            }
 
-        self.l_subj = QListWidget()
+        lists = {}
+        new = {}
+        for k, v in groups.items():
+            lists[k] = QListWidget()
+            lists[k].currentItemChanged.connect(self.proc_all)
+            layout = QVBoxLayout()
+            layout.addWidget(lists[k])
+            new[k] = QPushButton('New ' + v.title())
+            new[k].setDisabled(True)
+            layout.addWidget(new[k])
+            v.setLayout(layout)
+
+        # PARAMETERS: Widget
+        w_params = QTabWidget()
+
+        params = {}
+        for k, v in groups.items():
+            params[k] = QTableWidget()
+            params[k].horizontalHeader().setStretchLastSection(True)
+            params[k].setColumnCount(2)
+            params[k].setHorizontalHeaderLabels(['Parameter', 'Value'])
+            params[k].verticalHeader().setVisible(False)
+            w_params.addTab(params[k], v.title())
+
+        # PARAMETERS: Layout
+        groups['params'] = QGroupBox('Parameters')
         layout = QVBoxLayout()
-        layout.addWidget(self.l_subj)
-        p_newsubj = QPushButton('New Subject')
-        layout.addWidget(p_newsubj)
-        b_subj.setLayout(layout)
-        self.l_subj.currentItemChanged.connect(self.proc_subj)
+        layout.addWidget(w_params)
+        groups['params'].setLayout(layout)
 
-        self.l_sess = QListWidget()
-        self.l_sess.itemClicked.connect(self.list_runs)
+        # FILES: Widget
+        t_files = QTableWidget()
+        t_files.horizontalHeader().setStretchLastSection(True)
+        t_files.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_files.setColumnCount(3)
+        t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
+
+        # FILES: Layout
+        groups['files'] = QGroupBox('Files')
         layout = QVBoxLayout()
-        layout.addWidget(self.l_sess)
-        b_sess.setLayout(layout)
+        layout.addWidget(t_files)
+        groups['files'].setLayout(layout)
 
-        self.l_metc = QListWidget()
-        self.l_metc.itemClicked.connect(self.proc_metc)
+        # session and protocol in the same column
+        col_sessmetc = QVBoxLayout()
+        col_sessmetc.addWidget(groups['sess'])
+        col_sessmetc.addWidget(groups['metc'])
+
+        # TOP PANELS
+        layout_top = QHBoxLayout()
+        layout_top.addWidget(groups['subj'])
+        layout_top.addLayout(col_sessmetc)
+        layout_top.addWidget(groups['run'])
+        layout_top.addWidget(groups['rec'])
+
+        # BOTTOM PANELS
+        layout_bottom = QHBoxLayout()
+        layout_bottom.addWidget(groups['params'])
+        layout_bottom.addWidget(groups['files'])
+        layout_bottom.setStretch(0, 1)
+        layout_bottom.setStretch(1, 3)
+
+        # FULL LAYOUT
         layout = QVBoxLayout()
-        layout.addWidget(self.l_metc)
-        b_metc.setLayout(layout)
-
-        b_sessmetc = QVBoxLayout()
-        b_sessmetc.addWidget(b_sess)
-        b_sessmetc.addWidget(b_metc)
-
-        self.l_runs = QListWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(self.l_runs)
-        b_run.setLayout(layout)
-        self.l_runs.itemClicked.connect(self.list_recordings)
-
-        self.l_recs = QListWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(self.l_recs)
-        b_recording.setLayout(layout)
-        self.l_recs.itemClicked.connect(self.proc_rec)
-
-        self.w_parameters = QTabWidget()
-        self.tab_subj = QTableWidget()
-        self.tab_subj.horizontalHeader().setStretchLastSection(True)
-        self.tab_subj.setColumnCount(2)
-        self.w_parameters.addTab(self.tab_subj, 'Subject')
-        self.tab_sess = QTableWidget()
-        self.tab_sess.setColumnCount(2)
-        self.tab_sess.horizontalHeader().setStretchLastSection(True)
-        self.w_parameters.addTab(self.tab_sess, 'Session')
-        self.tab_metc = QTableWidget()
-        self.tab_metc.setColumnCount(2)
-        self.tab_metc.horizontalHeader().setStretchLastSection(True)
-        self.w_parameters.addTab(self.tab_metc, 'Protocol')
-        self.tab_run = QTableWidget()
-        self.tab_run.setColumnCount(2)
-        self.tab_run.horizontalHeader().setStretchLastSection(True)
-        self.w_parameters.addTab(self.tab_run, 'Run')
-        self.tab_rec = QTableWidget()
-        self.tab_rec.horizontalHeader().setStretchLastSection(True)
-        self.tab_rec.setColumnCount(2)
-        self.w_parameters.addTab(self.tab_rec, 'Recording')
-
-        b_parameters = QGroupBox('Parameters')
-        layout = QVBoxLayout()
-        layout.addWidget(self.w_parameters)
-        b_parameters.setLayout(layout)
-
-        self.l_files = QTableWidget()
-        self.l_files.horizontalHeader().setStretchLastSection(True)
-        self.l_files.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.l_files.setColumnCount(3)
-        self.l_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
-
-        b_file = QGroupBox('File')
-        layout = QVBoxLayout()
-        layout.addWidget(self.l_files)
-        b_file.setLayout(layout)
-
-        layout_t = QHBoxLayout()
-        layout_t.addWidget(b_subj)
-        layout_t.addLayout(b_sessmetc)
-        layout_t.addWidget(b_run)
-        layout_t.addWidget(b_recording)
-
-        layout_d = QHBoxLayout()
-        layout_d.addWidget(b_parameters)
-        layout_d.addWidget(b_file)
-        layout_d.setStretch(0, 1)
-        layout_d.setStretch(1, 3)
-
-        layout = QVBoxLayout()
-        layout.addLayout(layout_t)
-        layout.addLayout(layout_d)
+        layout.addLayout(layout_top)
+        layout.addLayout(layout_bottom)
         self.setLayout(layout)
         self.show()
 
+        # SAVE THESE ITEMS
+        self.groups = groups
+        self.lists = lists
+        self.params = params
+        self.w_params = w_params
+        self.t_files = t_files
+
+        self.access_db()
+
+    def access_db(self):
+        """This is where you access the database
+        """
         self.list_subjects()
 
     def list_subjects(self):
-        self.l_subj.clear()
+        for l in self.lists.values():
+            l.clear()
 
         for subj in list_subjects(self.cur):
             item = QListWidgetItem(subj.code)
             item.setData(Qt.UserRole, subj)
-            self.l_subj.addItem(item)
-
-        self.add_files()
+            self.lists['subj'].addItem(item)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
-    def proc_subj(self, current, previous):
-        self.list_sessions(current)
+    def proc_all(self, current, previous):
 
-    def list_sessions(self, item):
+        # when clicking on a previously selected list, it sends a signal where current is None, but I don't understand why
+        if current is None:
+            return
 
-        subj = item.data(Qt.UserRole)
+        item = current.data(Qt.UserRole)
+        if item.t == 'subject':
+            self.proc_subj(item)
 
-        self.tab_subj.clearContents()
-        self.tab_subj.setRowCount(10)  # todo
-        self.tab_subj.setItem(0, 0, QTableWidgetItem('Date Of Birth'))
-        self.tab_subj.setItem(0, 1, QTableWidgetItem(str(subj.date_of_birth)))
-        self.tab_subj.setItem(1, 0, QTableWidgetItem('Sex'))
-        self.tab_subj.setItem(1, 1, QTableWidgetItem(subj.sex))
-        i = 2
-        for k, v in subj.parameters.items():
-            self.tab_subj.setItem(i, 0, QTableWidgetItem(k))
-            self.tab_subj.setItem(i, 1, QTableWidgetItem(str(v)))
-            i += 1
-        self.w_parameters.setCurrentIndex(0)
+        elif item.t == 'session':
+            self.proc_sess(item)
 
-        self.l_sess.clear()
-        self.l_metc.clear()
-        self.l_runs.clear()
-        self.l_recs.clear()
+        elif item.t == 'protocol':
+            self.proc_metc(item)
+
+        elif item.t == 'run':
+            self.proc_run(item)
+
+        elif item.t == 'recording':
+            self.proc_rec(item)
+
+        self.list_files()
+
+    def proc_subj(self, subj):
+
+        self.list_sessions_and_protocols(subj)
+
+        parameters = {
+            'Date of Birth': subj.date_of_birth,
+            'Sex': subj.sex,
+            }
+        parameters.update(subj.parameters)
+
+        self.show_params('subj', parameters)
+
+    def list_sessions_and_protocols(self, subj):
+
+        for l in ('sess', 'metc', 'run', 'rec'):
+            self.lists[l].clear()
 
         protocols = []
         for sess in subj.list_sessions():
             item = QListWidgetItem(sess.name)
             item.setData(Qt.UserRole, sess)
-            self.l_sess.addItem(item)
+            self.lists['sess'].addItem(item)
             protocols.extend(sess.list_protocols())
 
         for protocol in set(protocols):
             item = QListWidgetItem(protocol.METC)
             item.setData(Qt.UserRole, protocol)
-            self.l_metc.addItem(item)
+            self.lists['metc'].addItem(item)
 
-        self.add_files()
+    def proc_sess(self, sess):
 
-    def proc_metc(self, item):
+        self.list_runs(sess)
 
-        metc = item.data(Qt.UserRole)
+        self.show_params('sess', sess.parameters)
 
-        self.tab_metc.clearContents()
-        self.tab_metc.setRowCount(10)  # todo
-        self.tab_metc.setItem(0, 0, QTableWidgetItem('Version'))
-        self.tab_metc.setItem(0, 1, QTableWidgetItem(metc.version))
-        self.tab_metc.setItem(1, 0, QTableWidgetItem('Date of Signature'))
-        self.tab_metc.setItem(1, 1, QTableWidgetItem(str(metc.date_of_signature)))
-        i = 2
-        for k, v in metc.parameters.items():
-            self.tab_metc.setItem(i, 0, QTableWidgetItem(k))
-            self.tab_metc.setItem(i, 1, QTableWidgetItem(str(v)))
-            i += 1
-        self.w_parameters.setCurrentIndex(2)
+    def list_runs(self, sess):
 
-    def list_runs(self, item):
-
-        sess = item.data(Qt.UserRole)
-
-        self.tab_sess.clearContents()
-        self.tab_sess.setRowCount(10)  # todo
-        i = 0
-        for k, v in sess.parameters.items():
-            self.tab_sess.setItem(i, 0, QTableWidgetItem(k))
-            self.tab_sess.setItem(i, 1, QTableWidgetItem(str(v)))
-            i += 1
-        self.w_parameters.setCurrentIndex(1)
-
-        self.l_runs.clear()
-        self.l_recs.clear()
+        for l in ('run', 'rec'):
+            self.lists[l].clear()
 
         for run in sess.list_runs():
             item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
             item.setData(Qt.UserRole, run)
-            self.l_runs.addItem(item)
+            self.lists['run'].addItem(item)
 
-        self.add_files()
+    def proc_metc(self, metc):
 
-    def list_recordings(self, item):
-        self.l_recs.clear()
+        parameters = {
+            'Version': metc.version,
+            'Date of Signature': metc.date_of_signature,
+            }
+        parameters.update(metc.parameters)
 
-        run = item.data(Qt.UserRole)
-        self.tab_run.clearContents()
-        self.tab_run.setRowCount(10)  # todo
-        self.tab_run.setItem(0, 0, QTableWidgetItem('Task Name'))
-        self.tab_run.setItem(0, 1, QTableWidgetItem(run.task_name))
-        self.tab_run.setItem(1, 0, QTableWidgetItem('Acquisition'))
-        self.tab_run.setItem(1, 1, QTableWidgetItem(run.acquisition))
-        self.tab_run.setItem(2, 0, QTableWidgetItem('Start Time'))
-        self.tab_run.setItem(2, 1, QTableWidgetItem(str(run.start_time)))
-        self.tab_run.setItem(3, 0, QTableWidgetItem('End Time'))
-        self.tab_run.setItem(3, 1, QTableWidgetItem(str(run.end_time)))
+        self.show_params('metc', parameters)
 
-        i = 4
-        for k, v in run.parameters.items():
-            self.tab_run.setItem(i, 0, QTableWidgetItem(k))
-            self.tab_run.setItem(i, 1, QTableWidgetItem(str(v)))
-            i += 1
-        self.w_parameters.setCurrentIndex(3)
+    def proc_run(self, run):
+
+        parameters = {
+            'Task Name': run.task_name,
+            'Acquisition': run.acquisition,
+            'Start Time': run.start_time,
+            'End Time': run.end_time,
+            }
+        parameters.update(run.parameters)
+
+        self.show_params('run', parameters)
+
+        self.list_recordings(run)
+
+    def list_recordings(self, run):
+
+        self.lists['rec'].clear()
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
-            self.l_recs.addItem(item)
+            self.lists['rec'].addItem(item)
 
-        self.add_files()
+    def proc_rec(self, rec):
 
-    def proc_rec(self, item):
+        self.show_params('rec', rec.parameters)
 
-        recording = item.data(Qt.UserRole)
+    def show_params(self, tabname, parameters):
 
-        self.tab_rec.clearContents()
-        self.tab_rec.setRowCount(10)  # todo
-        i = 0
-        for k, v in recording.parameters.items():
-            self.tab_rec.setItem(i, 0, QTableWidgetItem(k))
-            self.tab_rec.setItem(i, 1, QTableWidgetItem(str(v)))
-            i += 1
-        self.w_parameters.setCurrentIndex(4)
+        tab = self.params[tabname]
+        tab.clearContents()
+        tab.setRowCount(len(parameters))
 
-        self.add_files()
+        for i, (k, v) in enumerate(parameters.items()):
+            tab.setItem(i, 0, QTableWidgetItem(k))
+            tab.setItem(i, 1, QTableWidgetItem(str(v)))
 
-    def add_files(self, item=None):
+        self.w_params.setCurrentWidget(tab)
 
-        self.l_files.blockSignals(True)
-        self.l_files.clearContents()
-        self.l_files.setRowCount(100)  # todo
+    def list_files(self):
 
-        i = 0
-        item = self.l_subj.currentItem()
-        if item is not None:
-            subj = item.data(Qt.UserRole)
-            for file in subj.list_files():
-                self.l_files.setItem(i, 0, QTableWidgetItem('subject'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
-                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
-                i += 1
+        self.t_files.blockSignals(True)
+        self.t_files.clearContents()
 
-        item = self.l_sess.currentItem()
-        if item is not None:
-            sess = item.data(Qt.UserRole)
-            for file in sess.list_files():
-                self.l_files.setItem(i, 0, QTableWidgetItem('session'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
-                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
-                i += 1
+        all_files = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            for file in obj.list_files():
+                all_files.append({
+                    'level': self.groups[k].title(),
+                    'format': file.format,
+                    'path': file.path,
+                    })
 
-        item = self.l_runs.currentItem()
-        if item is not None:
-            run = item.data(Qt.UserRole)
-            for file in run.list_files():
-                self.l_files.setItem(i, 0, QTableWidgetItem('run'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
-                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
-                i += 1
+        self.t_files.setRowCount(len(all_files))
+        print(len(all_files))
+        for i, val in enumerate(all_files):
+            self.t_files.setItem(i, 0, QTableWidgetItem(val['level']))
+            self.t_files.setItem(i, 1, QTableWidgetItem(val['format']))
+            item = QTableWidgetItem(str(val['path']))
+            if not val['path'].exists():
+                item.setForeground(QBrush(QColor(255, 0, 0)))
+            self.t_files.setItem(i, 2, item)
 
-        item = self.l_recs.currentItem()
-        if item is not None:
-            recording = item.data(Qt.UserRole)
-            for file in recording.list_files():
-                self.l_files.setItem(i, 0, QTableWidgetItem('recording'))
-                self.l_files.setItem(i, 1, QTableWidgetItem(file.format))
-                self.l_files.setItem(i, 2, QTableWidgetItem(str(file.path)))
-                i += 1
-
-        self.l_files.blockSignals(False)
+        self.t_files.blockSignals(False)
