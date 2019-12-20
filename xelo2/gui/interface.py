@@ -247,6 +247,7 @@ class Main(QWidget):
         for i, val in enumerate(all_params):
             item = QTableWidgetItem(val['level'])
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor('lightGray')))
             self.t_params.setItem(i, 0, item)
             item = QTableWidgetItem(val['parameter'])
             if val['required']:
@@ -283,6 +284,7 @@ class Main(QWidget):
         for i, val in enumerate(all_files):
             item = QTableWidgetItem(val['level'])
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor('lightGray')))
             self.t_files.setItem(i, 0, item)
             self.t_files.setItem(i, 1, QTableWidgetItem(val['format']))
             item = QTableWidgetItem(str(val['path']))
