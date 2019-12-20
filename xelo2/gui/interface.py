@@ -60,21 +60,16 @@ class Main(QWidget):
             v.setLayout(layout)
 
         # PARAMETERS: Widget
-        w_params = QTabWidget()
-
-        params = {}
-        for k, v in groups.items():
-            params[k] = QTableWidget()
-            params[k].horizontalHeader().setStretchLastSection(True)
-            params[k].setColumnCount(2)
-            params[k].setHorizontalHeaderLabels(['Parameter', 'Value'])
-            params[k].verticalHeader().setVisible(False)
-            w_params.addTab(params[k], v.title())
+        t_params = QTableWidget()
+        t_params.horizontalHeader().setStretchLastSection(True)
+        t_params.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_params.setColumnCount(3)
+        t_params.setHorizontalHeaderLabels(['Level', 'Parameter', 'Value'])
 
         # PARAMETERS: Layout
         groups['params'] = QGroupBox('Parameters')
         layout = QVBoxLayout()
-        layout.addWidget(w_params)
+        layout.addWidget(t_params)
         groups['params'].setLayout(layout)
 
         # FILES: Widget
@@ -119,8 +114,7 @@ class Main(QWidget):
         # SAVE THESE ITEMS
         self.groups = groups
         self.lists = lists
-        self.params = params
-        self.w_params = w_params
+        self.t_params = t_params
         self.t_files = t_files
 
         self.access_db()
@@ -148,33 +142,22 @@ class Main(QWidget):
 
         item = current.data(Qt.UserRole)
         if item.t == 'subject':
-            self.proc_subj(item)
+            self.list_sessions_and_protocols(item)
 
         elif item.t == 'session':
-            self.proc_sess(item)
+            self.list_runs(item)
 
         elif item.t == 'protocol':
-            self.proc_metc(item)
+            pass
 
         elif item.t == 'run':
-            self.proc_run(item)
+            self.list_recordings(item)
 
         elif item.t == 'recording':
-            self.proc_rec(item)
+            pass
 
+        self.list_params()
         self.list_files()
-
-    def proc_subj(self, subj):
-
-        self.list_sessions_and_protocols(subj)
-
-        parameters = {
-            'Date of Birth': subj.date_of_birth,
-            'Sex': subj.sex,
-            }
-        parameters.update(subj.parameters)
-
-        self.show_params('subj', parameters)
 
     def list_sessions_and_protocols(self, subj):
 
@@ -193,12 +176,6 @@ class Main(QWidget):
             item.setData(Qt.UserRole, protocol)
             self.lists['metc'].addItem(item)
 
-    def proc_sess(self, sess):
-
-        self.list_runs(sess)
-
-        self.show_params('sess', sess.parameters)
-
     def list_runs(self, sess):
 
         for l in ('run', 'rec'):
@@ -208,28 +185,6 @@ class Main(QWidget):
             item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
             item.setData(Qt.UserRole, run)
             self.lists['run'].addItem(item)
-
-    def proc_metc(self, metc):
-
-        parameters = {
-            'Version': metc.version,
-            'Date of Signature': metc.date_of_signature,
-            }
-        parameters.update(metc.parameters)
-
-        self.show_params('metc', parameters)
-
-    def proc_run(self, run):
-
-        parameters = {
-            'Task Name': run.task_name,
-            'Acquisition': run.acquisition,
-            'Start Time': run.start_time,
-            'End Time': run.end_time,
-            }
-        parameters.update(run.parameters)
-
-        self.show_params('run', parameters)
 
         self.list_recordings(run)
 
@@ -242,21 +197,57 @@ class Main(QWidget):
             item.setData(Qt.UserRole, recording)
             self.lists['rec'].addItem(item)
 
-    def proc_rec(self, rec):
+    def list_params(self):
 
-        self.show_params('rec', rec.parameters)
+        self.t_params.blockSignals(True)
+        self.t_params.clearContents()
 
-    def show_params(self, tabname, parameters):
+        all_params = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
 
-        tab = self.params[tabname]
-        tab.clearContents()
-        tab.setRowCount(len(parameters))
+            if k == 'subj':
+                parameters = {
+                    'Date of Birth': obj.date_of_birth,
+                    'Sex': obj.sex,
+                    }
+            elif k == 'metc':
+                parameters = {
+                    'Version': obj.version,
+                    'Date of Signature': obj.date_of_signature,
+                    }
 
-        for i, (k, v) in enumerate(parameters.items()):
-            tab.setItem(i, 0, QTableWidgetItem(k))
-            tab.setItem(i, 1, QTableWidgetItem(str(v)))
+            elif k == 'run':
+                parameters = {
+                    'Task Name': obj.task_name,
+                    'Acquisition': obj.acquisition,
+                    'Start Time': obj.start_time,
+                    'End Time': obj.end_time,
+                    }
 
-        self.w_params.setCurrentWidget(tab)
+            else:
+                parameters = {}
+
+            parameters.update(obj.parameters)
+
+            for p_k, p_v in parameters.items():
+                all_params.append({
+                    'level': self.groups[k].title(),
+                    'parameter': p_k,
+                    'value': p_v,
+                    })
+
+        self.t_params.setRowCount(len(all_params))
+
+        for i, val in enumerate(all_params):
+            self.t_params.setItem(i, 0, QTableWidgetItem(val['level']))
+            self.t_params.setItem(i, 1, QTableWidgetItem(val['parameter']))
+            self.t_params.setItem(i, 2, QTableWidgetItem(str(val['value'])))
+
+        self.t_params.blockSignals(False)
 
     def list_files(self):
 
