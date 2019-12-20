@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QAbstractItemView
     )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot
 
 from ..model import list_subjects
 
@@ -45,7 +45,7 @@ class Main(QWidget):
         p_newsubj = QPushButton('New Subject')
         layout.addWidget(p_newsubj)
         b_subj.setLayout(layout)
-        self.l_subj.itemClicked.connect(self.list_sessions)
+        self.l_subj.currentItemChanged.connect(self.proc_subj)
 
         self.l_sess = QListWidget()
         self.l_sess.itemClicked.connect(self.list_runs)
@@ -143,6 +143,10 @@ class Main(QWidget):
 
         self.add_files()
 
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def proc_subj(self, current, previous):
+        self.list_sessions(current)
+
     def list_sessions(self, item):
 
         subj = item.data(Qt.UserRole)
@@ -195,7 +199,6 @@ class Main(QWidget):
             self.tab_metc.setItem(i, 1, QTableWidgetItem(str(v)))
             i += 1
         self.w_parameters.setCurrentIndex(2)
-
 
     def list_runs(self, item):
 
