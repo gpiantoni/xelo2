@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QFormLayout,
     QListWidgetItem,
     QMainWindow,
     QWidget,
@@ -63,7 +62,7 @@ class Main(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.l_recs)
         b_recording.setLayout(layout)
-        self.l_recs.itemClicked.connect(self.add_files)
+        self.l_recs.itemClicked.connect(self.proc_rec)
 
         self.w_parameters = QTabWidget()
         self.tab_subj = QTableWidget()
@@ -206,6 +205,21 @@ class Main(QWidget):
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
             self.l_recs.addItem(item)
+
+        self.add_files()
+
+    def proc_rec(self, item):
+
+        recording = item.data(Qt.UserRole)
+
+        self.tab_rec.clearContents()
+        self.tab_rec.setRowCount(10)  # todo
+        i = 0
+        for k, v in recording.parameters.items():
+            self.tab_rec.setItem(i, 0, QTableWidgetItem(k))
+            self.tab_rec.setItem(i, 1, QTableWidgetItem(str(v)))
+            i += 1
+        self.w_parameters.setCurrentIndex(3)
 
         self.add_files()
 
