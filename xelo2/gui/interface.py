@@ -35,6 +35,7 @@ class Main(QWidget):
 
         b_subj = QGroupBox('Subject')
         b_sess = QGroupBox('Session')
+        b_metc = QGroupBox('Protocol')
         b_run = QGroupBox('Run')
         b_recording = QGroupBox('Recording')
 
@@ -47,10 +48,20 @@ class Main(QWidget):
         self.l_subj.itemClicked.connect(self.list_sessions)
 
         self.l_sess = QListWidget()
+        self.l_sess.itemClicked.connect(self.list_runs)
         layout = QVBoxLayout()
         layout.addWidget(self.l_sess)
         b_sess.setLayout(layout)
-        self.l_sess.itemClicked.connect(self.list_runs)
+
+        self.l_metc = QListWidget()
+        self.l_metc.itemClicked.connect(self.proc_metc)
+        layout = QVBoxLayout()
+        layout.addWidget(self.l_metc)
+        b_metc.setLayout(layout)
+
+        b_sessmetc = QVBoxLayout()
+        b_sessmetc.addWidget(b_sess)
+        b_sessmetc.addWidget(b_metc)
 
         self.l_runs = QListWidget()
         layout = QVBoxLayout()
@@ -73,6 +84,10 @@ class Main(QWidget):
         self.tab_sess.setColumnCount(2)
         self.tab_sess.horizontalHeader().setStretchLastSection(True)
         self.w_parameters.addTab(self.tab_sess, 'Session')
+        self.tab_metc = QTableWidget()
+        self.tab_metc.setColumnCount(2)
+        self.tab_metc.horizontalHeader().setStretchLastSection(True)
+        self.w_parameters.addTab(self.tab_metc, 'Protocol')
         self.tab_run = QTableWidget()
         self.tab_run.setColumnCount(2)
         self.tab_run.horizontalHeader().setStretchLastSection(True)
@@ -100,7 +115,7 @@ class Main(QWidget):
 
         layout_t = QHBoxLayout()
         layout_t.addWidget(b_subj)
-        layout_t.addWidget(b_sess)
+        layout_t.addLayout(b_sessmetc)
         layout_t.addWidget(b_run)
         layout_t.addWidget(b_recording)
 
@@ -146,15 +161,41 @@ class Main(QWidget):
         self.w_parameters.setCurrentIndex(0)
 
         self.l_sess.clear()
+        self.l_metc.clear()
         self.l_runs.clear()
         self.l_recs.clear()
 
+        protocols = []
         for sess in subj.list_sessions():
             item = QListWidgetItem(sess.name)
             item.setData(Qt.UserRole, sess)
             self.l_sess.addItem(item)
+            protocols.extend(sess.list_protocols())
+
+        for protocol in set(protocols):
+            item = QListWidgetItem(protocol.METC)
+            item.setData(Qt.UserRole, protocol)
+            self.l_metc.addItem(item)
 
         self.add_files()
+
+    def proc_metc(self, item):
+
+        metc = item.data(Qt.UserRole)
+
+        self.tab_metc.clearContents()
+        self.tab_metc.setRowCount(10)  # todo
+        self.tab_metc.setItem(0, 0, QTableWidgetItem('Version'))
+        self.tab_metc.setItem(0, 1, QTableWidgetItem(metc.version))
+        self.tab_metc.setItem(1, 0, QTableWidgetItem('Date of Signature'))
+        self.tab_metc.setItem(1, 1, QTableWidgetItem(str(metc.date_of_signature)))
+        i = 2
+        for k, v in metc.parameters.items():
+            self.tab_metc.setItem(i, 0, QTableWidgetItem(k))
+            self.tab_metc.setItem(i, 1, QTableWidgetItem(str(v)))
+            i += 1
+        self.w_parameters.setCurrentIndex(2)
+
 
     def list_runs(self, item):
 
@@ -199,7 +240,7 @@ class Main(QWidget):
             self.tab_run.setItem(i, 0, QTableWidgetItem(k))
             self.tab_run.setItem(i, 1, QTableWidgetItem(str(v)))
             i += 1
-        self.w_parameters.setCurrentIndex(2)
+        self.w_parameters.setCurrentIndex(3)
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
@@ -219,7 +260,7 @@ class Main(QWidget):
             self.tab_rec.setItem(i, 0, QTableWidgetItem(k))
             self.tab_rec.setItem(i, 1, QTableWidgetItem(str(v)))
             i += 1
-        self.w_parameters.setCurrentIndex(3)
+        self.w_parameters.setCurrentIndex(4)
 
         self.add_files()
 

@@ -27,6 +27,14 @@ class Table():
     def __repr__(self):
         return f'<{self.t} (#{self.id})>'
 
+    def __eq__(self, other):
+        """So that we can compare instances very easily with set"""
+        return self.t == other.t and self.id == other.id
+
+    def __hash__(self):
+        """So that we can compare instances very easily with set"""
+        return hash(self.__repr__())
+
     @property
     def parameters(self):
         try:
@@ -123,8 +131,7 @@ class Run(Table_with_files):
     def list_recordings(self):
         self.cur.execute(f"""\
         SELECT recordings.id FROM recordings
-        JOIN runs ON runs.id == recordings.run_id
-        WHERE runs.id == {self.id}""")
+        WHERE recordings.run_id == {self.id}""")
         return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_recording(self, modality, offset=0, parameters=None):
@@ -141,6 +148,34 @@ class Run(Table_with_files):
                     VALUES ({recording_id}, {k}, {v})""")
 
         return Recording(self.cur, recording_id)
+
+
+class Protocol(Table_with_files):
+    t = 'protocol'
+
+    def __init__(self, cur, id):
+        self.id = id
+        self.cur = cur
+
+    @property
+    def METC(self):
+        self.cur.execute(f"SELECT METC FROM protocols WHERE id == {self.id}")
+        return self.cur.fetchone()[0]
+
+    @property
+    def version(self):
+        self.cur.execute(f"SELECT version FROM protocols WHERE id == {self.id}")
+        return self.cur.fetchone()[0]
+
+    @property
+    def date_of_signature(self):
+        self.cur.execute(f"SELECT date_of_signature FROM protocols WHERE id == {self.id}")
+        dos = self.cur.fetchone()[0]
+
+        if dos == '':
+            return dos
+        else:
+            return datetime.strptime(dos, '%Y-%m-%d').date()
 
 
 class Session(Table_with_files):
@@ -164,8 +199,7 @@ class Session(Table_with_files):
     def list_runs(self):
         self.cur.execute(f"""\
         SELECT runs.id FROM runs
-        JOIN sessions ON sessions.id == runs.session_id
-        WHERE sessions.id == {self.id}""")
+        WHERE runs.session_id == {self.id}""")
         return [Run(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_run(self, task_name, acquisition, start_time, end_time,
@@ -186,6 +220,11 @@ class Session(Table_with_files):
 
         return Run(self.cur, run_id)
 
+    def list_protocols(self):
+        self.cur.execute(f"""\
+        SELECT protocol_id FROM sessions_protocols
+        WHERE session_id == {self.id}""")
+        return [Protocol(self.cur, x[0]) for x in self.cur.fetchall()]
 
 class Subject(Table_with_files):
     t = 'subject'
@@ -213,8 +252,7 @@ class Subject(Table_with_files):
     def list_sessions(self):
         self.cur.execute(f"""\
         SELECT sessions.id, name FROM sessions
-        JOIN subjects ON subjects.id == sessions.subject_id
-        WHERE subjects.id == '{self.id}'""")
+        WHERE sessions.subject_id ==  '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_session(self, name, acquisition, start_time, end_time,
