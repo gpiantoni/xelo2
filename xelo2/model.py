@@ -45,12 +45,15 @@ class Table():
                 params[k] = datetime.strptime(v, '%Y-%m-%d').date()
         return params
 
-    def set(self, parameter, value):
-        self.cur.execute(f"""\
-        DELETE FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND parameter == '{parameter}'""")
-        self.cur.execute(f"""\
-        INSERT INTO {self.t}s_params ("{self.t}_id", "parameter", "value")
-        VALUES ("{self.id}", "{parameter}", "{value}")""")
+    @parameters.setter
+    def parameters(self, parameters):
+        # we are sure that it's unique
+        for parameter, value in parameters.items():
+            self.cur.execute(f"""\
+            DELETE FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND parameter == '{parameter}'""")
+            self.cur.execute(f"""\
+            INSERT INTO {self.t}s_params ("{self.t}_id", "parameter", "value")
+            VALUES ("{self.id}", "{parameter}", "{value}")""")
 
 
 class Table_with_files(Table):

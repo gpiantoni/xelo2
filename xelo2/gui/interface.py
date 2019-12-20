@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import (
     QBrush,
     QColor,
+    QFont,
     )
 from PyQt5.QtCore import Qt, pyqtSlot
 
@@ -210,18 +211,18 @@ class Main(QWidget):
             obj = item.data(Qt.UserRole)
 
             if k == 'subj':
-                parameters = {
+                PARAMETERS = {
                     'Date of Birth': obj.date_of_birth,
                     'Sex': obj.sex,
                     }
             elif k == 'metc':
-                parameters = {
+                PARAMETERS = {
                     'Version': obj.version,
                     'Date of Signature': obj.date_of_signature,
                     }
 
             elif k == 'run':
-                parameters = {
+                PARAMETERS = {
                     'Task Name': obj.task_name,
                     'Acquisition': obj.acquisition,
                     'Start Time': obj.start_time,
@@ -229,24 +230,32 @@ class Main(QWidget):
                     }
 
             else:
-                parameters = {}
+                PARAMETERS = {}
 
-            parameters.update(obj.parameters)
+            parameters = {**PARAMETERS, **obj.parameters}
 
             for p_k, p_v in parameters.items():
                 all_params.append({
                     'level': self.groups[k].title(),
                     'parameter': p_k,
                     'value': p_v,
+                    'required': p_k in PARAMETERS,
                     })
 
         self.t_params.setRowCount(len(all_params))
 
         for i, val in enumerate(all_params):
-            self.t_params.setItem(i, 0, QTableWidgetItem(val['level']))
-            self.t_params.setItem(i, 1, QTableWidgetItem(val['parameter']))
+            item = QTableWidgetItem(val['level'])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            self.t_params.setItem(i, 0, item)
+            item = QTableWidgetItem(val['parameter'])
+            if val['required']:
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                f = item.font()
+                f.setBold(True)
+                item.setFont(f)
+            self.t_params.setItem(i, 1, item)
             item = QTableWidgetItem(str(val['value']))
-            item.setToolTip(str(val['value']))
             self.t_params.setItem(i, 2, item)
 
         self.t_params.blockSignals(False)
@@ -272,7 +281,9 @@ class Main(QWidget):
         self.t_files.setRowCount(len(all_files))
 
         for i, val in enumerate(all_files):
-            self.t_files.setItem(i, 0, QTableWidgetItem(val['level']))
+            item = QTableWidgetItem(val['level'])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            self.t_files.setItem(i, 0, item)
             self.t_files.setItem(i, 1, QTableWidgetItem(val['format']))
             item = QTableWidgetItem(str(val['path']))
             try:
