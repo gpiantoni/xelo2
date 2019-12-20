@@ -245,7 +245,9 @@ class Main(QWidget):
         for i, val in enumerate(all_params):
             self.t_params.setItem(i, 0, QTableWidgetItem(val['level']))
             self.t_params.setItem(i, 1, QTableWidgetItem(val['parameter']))
-            self.t_params.setItem(i, 2, QTableWidgetItem(str(val['value'])))
+            item = QTableWidgetItem(str(val['value']))
+            item.setToolTip(str(val['value']))
+            self.t_params.setItem(i, 2, item)
 
         self.t_params.blockSignals(False)
 
