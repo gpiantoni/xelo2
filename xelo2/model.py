@@ -37,18 +37,20 @@ class Table():
 
     @property
     def parameters(self):
-        try:
-            self.cur.execute(f'SELECT parameter, value FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND value IS NOT ""')
+        self.cur.execute(f'SELECT parameter, value FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND value IS NOT ""')
 
-        except OperationalError:  # if table_parameters does not exist
-            return {}
+        params = {k: v for k, v in self.cur.fetchall()}
+        for k, v in params.items():
+            if k.startswith('date_of_'):
+                params[k] = datetime.strptime(v, '%Y-%m-%d').date()
+        return params
 
-        else:
-            params = {k: v for k, v in self.cur.fetchall()}
-            for k, v in params.items():
-                if k.startswith('date_of_'):
-                    params[k] = datetime.strptime(v, '%Y-%m-%d').date()
-            return params
+    def set(self, parameter, value):
+        self.cur.execute(f"""\
+        DELETE FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND parameter == '{parameter}'""")
+        self.cur.execute(f"""\
+        INSERT INTO {self.t}s_params ("{self.t}_id", "parameter", "value")
+        VALUES ("{self.id}", "{parameter}", "{value}")""")
 
 
 class Table_with_files(Table):
