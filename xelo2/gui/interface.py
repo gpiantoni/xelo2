@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from PyQt5.QtWidgets import (
     QGroupBox,
     QListWidget,
@@ -20,6 +22,7 @@ from PyQt5.QtCore import Qt, pyqtSlot
 
 from ..model import list_subjects
 
+lg = getLogger(__name__)
 
 class Interface(QMainWindow):
 
@@ -274,13 +277,22 @@ class Main(QWidget):
                     })
 
         self.t_files.setRowCount(len(all_files))
-        print(len(all_files))
+
         for i, val in enumerate(all_files):
             self.t_files.setItem(i, 0, QTableWidgetItem(val['level']))
             self.t_files.setItem(i, 1, QTableWidgetItem(val['format']))
             item = QTableWidgetItem(str(val['path']))
-            if not val['path'].exists():
-                item.setForeground(QBrush(QColor(255, 0, 0)))
+            try:
+                path_exists = val['path'].exists()
+
+            except PermissionError as err:
+                lg.warning(err)
+                item.setForeground(QBrush(QColor('orange')))
+
+            else:
+                if not path_exists:
+                    item.setForeground(QBrush(QColor('red')))
+
             self.t_files.setItem(i, 2, item)
 
         self.t_files.blockSignals(False)
