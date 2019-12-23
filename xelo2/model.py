@@ -231,6 +231,7 @@ class Session(Table_with_files):
         WHERE session_id == {self.id}""")
         return [Protocol(self.cur, x[0]) for x in self.cur.fetchall()]
 
+
 class Subject(Table_with_files):
     t = 'subject'
 
@@ -277,3 +278,10 @@ class Subject(Table_with_files):
                     VALUES ({run_id}, {k}, {v})""")
 
         return Run(self.cur, run_id)
+
+    @classmethod
+    def add(cls, cur, parameters):
+        cur.execute("""\
+            INSERT INTO subjects ("code", "date_of_birth", "sex")
+            VALUES ("{code}", "{date_of_birth}", "{sex}")""".format(**parameters))
+        return Subject(cur, parameters['code'])
