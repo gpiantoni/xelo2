@@ -13,7 +13,7 @@ def open_database(path_to_database):
 
 
 def list_subjects(cur):
-    cur.execute(f"SELECT code FROM subjects")
+    cur.execute(f"SELECT code FROM subjects ORDER BY id")
     return [Subject(cur, x[0]) for x in cur.fetchall()]
 
 
@@ -139,18 +139,13 @@ class Run(Table_with_files):
         WHERE recordings.run_id == {self.id}""")
         return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_recording(self, modality, offset=0, parameters=None):
+    def add_recording(self, modality, offset=0):
 
         self.cur.execute(f"""\
         INSERT INTO recordings ("run_id", "modality", "offset")
         VALUES ("{self.id}", "{modality}", "{offset}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
         recording_id = self.cur.fetchone()[0]
-        if parameters is not None:
-            for k, v in parameters:
-                self.cur.execute(f"""\
-                    INSERT INTO recordings_params ("recording_id", "parameter", "value")
-                    VALUES ({recording_id}, {k}, {v})""")
 
         return Recording(self.cur, recording_id)
 
@@ -190,16 +185,25 @@ class Session(Table_with_files):
         self.id = id
         self.cur = cur
 
+    def __repr__(self):
+        return f'<{self.t} {self.name} (#{self.id})>'
+
     @property
     def name(self):
         self.cur.execute(f"SELECT name FROM sessions WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
     def start_date(self):
-        pass
+        self.cur.execute(f"""\
+            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id == {self.id}
+            """)
+        return self.cur.fetchone()[0]
 
     def end_date(self):
-        pass
+        self.cur.execute(f"""\
+            SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
+            """)
+        return self.cur.fetchone()[0]
 
     def list_runs(self):
         self.cur.execute(f"""\
@@ -207,21 +211,13 @@ class Session(Table_with_files):
         WHERE runs.session_id == {self.id}""")
         return [Run(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_run(self, task_name, acquisition, start_time, end_time,
-                parameters=None):
-
-        assert False, 'You need to convert start_time and end_time to SQL time'
+    def add_run(self, task_name, acquisition, start_time, end_time):
 
         self.cur.execute(f"""\
         INSERT INTO runs ("session_id", "task_name", "acquisition", "start_time", "end_time")
         VALUES ("{self.id}", "{task_name}", "{acquisition}", "{start_time}", "{end_time}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
         run_id = self.cur.fetchone()[0]
-        if parameters is not None:
-            for k, v in parameters:
-                self.cur.execute(f"""\
-                    INSERT INTO runs_params ("run_id", "parameter", "value")
-                    VALUES ({run_id}, {k}, {v})""")
 
         return Run(self.cur, run_id)
 
@@ -236,16 +232,21 @@ class Subject(Table_with_files):
     t = 'subject'
 
     def __init__(self, cur, code):
+        self.cur = cur
         self.code = code
         cur.execute(f"SELECT id FROM subjects WHERE code == '{code}'")
-        self.id = cur.fetchone()[0]
-        self.cur = cur
+        output = cur.fetchone()
+        if output is None:
+            raise ValueError(f'There is no "{code}" in "subjects" table')
+
+        else:
+            self.id = output[0]
 
     @property
     def date_of_birth(self):
         self.cur.execute(f"SELECT date_of_birth FROM subjects WHERE id == '{self.id}'")
         dob = self.cur.fetchone()[0]
-        if dob == '':
+        if dob is None:
             return dob
         else:
             return datetime.strptime(dob, '%Y-%m-%d').date()
@@ -274,8 +275,19 @@ class Subject(Table_with_files):
         return Session(self.cur, session_id)
 
     @classmethod
-    def add(cls, cur, parameters):
-        cur.execute("""\
+    def add(cls, cur, code, date_of_birth=None, sex=None):
+
+        if date_of_birth is None:
+            dob = 'null'
+        else:
+            dob = f'"{date_of_birth:%Y-%m-%d}"'
+
+        if sex is None:
+            sex = 'null'
+        else:
+            sex = f'"{sex}"'
+
+        cur.execute(f"""\
             INSERT INTO subjects ("code", "date_of_birth", "sex")
-            VALUES ("{code}", "{date_of_birth}", "{sex}")""".format(**parameters))
-        return Subject(cur, parameters['code'])
+            VALUES ("{code}", {dob}, {sex})""")
+        return Subject(cur, code)

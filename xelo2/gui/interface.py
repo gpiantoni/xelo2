@@ -211,18 +211,18 @@ class Main(QWidget):
             obj = item.data(Qt.UserRole)
 
             if k == 'subj':
-                PARAMETERS = {
+                parameters = {
                     'Date of Birth': obj.date_of_birth,
                     'Sex': obj.sex,
                     }
             elif k == 'metc':
-                PARAMETERS = {
+                parameters = {
                     'Version': obj.version,
                     'Date of Signature': obj.date_of_signature,
                     }
 
             elif k == 'run':
-                PARAMETERS = {
+                parameters = {
                     'Task Name': obj.task_name,
                     'Acquisition': obj.acquisition,
                     'Start Time': obj.start_time,
@@ -230,16 +230,13 @@ class Main(QWidget):
                     }
 
             else:
-                PARAMETERS = {}
-
-            parameters = {**PARAMETERS, **obj.parameters}
+                parameters = {}
 
             for p_k, p_v in parameters.items():
                 all_params.append({
                     'level': self.groups[k].title(),
                     'parameter': p_k,
                     'value': p_v,
-                    'required': p_k in PARAMETERS,
                     })
 
         self.t_params.setRowCount(len(all_params))
@@ -250,11 +247,7 @@ class Main(QWidget):
             item.setBackground(QBrush(QColor('lightGray')))
             self.t_params.setItem(i, 0, item)
             item = QTableWidgetItem(val['parameter'])
-            if val['required']:
-                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-                f = item.font()
-                f.setBold(True)
-                item.setFont(f)
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             self.t_params.setItem(i, 1, item)
             item = QTableWidgetItem(str(val['value']))
             self.t_params.setItem(i, 2, item)
