@@ -261,23 +261,17 @@ class Subject(Table_with_files):
         WHERE sessions.subject_id ==  '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_session(self, name, acquisition, start_time, end_time,
-                parameters=None):
-
-        assert False, 'You need to convert start_time and end_time to SQL time'
+    def add_session(self, name):
 
         self.cur.execute(f"""\
-        INSERT INTO runs ("session_id", "task_name", "acquisition", "start_time", "end_time")
-        VALUES ("{self.id}", "{task_name}", "{acquisition}", "{start_time}", "{end_time}")""")
+        INSERT INTO sessions ("subject_id", "name")
+        VALUES ("{self.id}", "{name}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
-        run_id = self.cur.fetchone()[0]
-        if parameters is not None:
-            for k, v in parameters:
-                self.cur.execute(f"""\
-                    INSERT INTO runs_params ("run_id", "parameter", "value")
-                    VALUES ({run_id}, {k}, {v})""")
+        session_id = self.cur.fetchone()[0]
 
-        return Run(self.cur, run_id)
+        # if IEMU: sessions_iemu
+
+        return Session(self.cur, session_id)
 
     @classmethod
     def add(cls, cur, parameters):
