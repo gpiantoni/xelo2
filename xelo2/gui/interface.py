@@ -66,6 +66,7 @@ class Main(QWidget):
         t_params.setSelectionBehavior(QAbstractItemView.SelectRows)
         t_params.setColumnCount(3)
         t_params.setHorizontalHeaderLabels(['Level', 'Parameter', 'Value'])
+        t_params.verticalHeader().setVisible(False)
 
         # PARAMETERS: Layout
         groups['params'] = QGroupBox('Parameters')
@@ -79,6 +80,7 @@ class Main(QWidget):
         t_files.setSelectionBehavior(QAbstractItemView.SelectRows)
         t_files.setColumnCount(3)
         t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
+        t_files.verticalHeader().setVisible(False)
 
         # FILES: Layout
         groups['files'] = QGroupBox('Files')
