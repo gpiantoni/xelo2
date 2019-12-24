@@ -219,11 +219,19 @@ class Main(QWidget):
                     'Date of Birth': obj.date_of_birth,
                     'Sex': obj.sex,
                     }
+
             elif k == 'metc':
                 parameters = {
                     'Version': obj.version,
                     'Date of Signature': obj.date_of_signature,
                     }
+
+            elif k == 'session':
+                parameters = {}
+
+                if obj.name == 'IEMU':
+                    parameters['date_of_acquisition'] = obj.date_of_acquisition
+                    parameters['date_of_exquisition'] = obj.date_of_exquisition
 
             elif k == 'run':
                 parameters = {

@@ -178,6 +178,13 @@ class Session(Table_with_files):
             """)
         return self.cur.fetchone()[0]
 
+    def date_of_implantation(self):
+        if self.name == 'IEMU':
+            self.cur.execute(f"""\
+                SELECT date_of_implantation FROM sessions_iemu
+                WHERE session_id == {self.id}""")
+            return _date_out(self.cur.fetchone()[0])
+
     def list_runs(self):
         self.cur.execute(f"""\
         SELECT runs.id FROM runs
