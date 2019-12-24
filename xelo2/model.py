@@ -166,22 +166,41 @@ class Session(Table_with_files):
         self.cur.execute(f"SELECT name FROM sessions WHERE id == {self.id}")
         return self.cur.fetchone()[0]
 
+    @property
     def start_date(self):
         self.cur.execute(f"""\
             SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id == {self.id}
             """)
         return self.cur.fetchone()[0]
 
+    @property
     def end_date(self):
         self.cur.execute(f"""\
             SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
             """)
         return self.cur.fetchone()[0]
 
+    @property
+    def date_of_surgery(self):
+        if self.name == 'OR':
+            self.cur.execute(f"""\
+                SELECT date_of_surgery FROM sessions_or
+                WHERE session_id == {self.id}""")
+            return _date_out(self.cur.fetchone()[0])
+
+    @property
     def date_of_implantation(self):
         if self.name == 'IEMU':
             self.cur.execute(f"""\
                 SELECT date_of_implantation FROM sessions_iemu
+                WHERE session_id == {self.id}""")
+            return _date_out(self.cur.fetchone()[0])
+
+    @property
+    def date_of_explantation(self):
+        if self.name == 'IEMU':
+            self.cur.execute(f"""\
+                SELECT date_of_explantation FROM sessions_iemu
                 WHERE session_id == {self.id}""")
             return _date_out(self.cur.fetchone()[0])
 
@@ -269,9 +288,19 @@ class Subject(Table_with_files):
                 "date_of_implantation",
                 "date_of_explantation")
             VALUES (
-                "{self.id}",
+                "{session_id}",
                 {_date(kwargs['date_of_implantation'])},
                 {_date(kwargs['date_of_explantation'])}
+                )""")
+
+        elif name == 'OR':
+            self.cur.execute(f"""\
+            INSERT INTO sessions_or (
+                "session_id",
+                "date_of_surgery")
+            VALUES (
+                "{session_id}",
+                {_date(kwargs['date_of_surgery'])}
                 )""")
 
         return Session(self.cur, session_id)

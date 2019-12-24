@@ -226,12 +226,15 @@ class Main(QWidget):
                     'Date of Signature': obj.date_of_signature,
                     }
 
-            elif k == 'session':
+            elif k == 'sess':
                 parameters = {}
 
                 if obj.name == 'IEMU':
-                    parameters['date_of_acquisition'] = obj.date_of_acquisition
-                    parameters['date_of_exquisition'] = obj.date_of_exquisition
+                    parameters['date_of_implantation'] = obj.date_of_implantation
+                    parameters['date_of_explantation'] = obj.date_of_explantation
+
+                elif obj.name == 'OR':
+                    parameters['date_of_surgery'] = obj.date_of_surgery
 
             elif k == 'run':
                 parameters = {
