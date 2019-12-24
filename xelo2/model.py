@@ -35,26 +35,6 @@ class Table():
         """So that we can compare instances very easily with set"""
         return hash(self.__repr__())
 
-    @property
-    def parameters(self):
-        self.cur.execute(f'SELECT parameter, value FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND value IS NOT ""')
-
-        params = {k: v for k, v in self.cur.fetchall()}
-        for k, v in params.items():
-            if k.startswith('date_of_'):
-                params[k] = datetime.strptime(v, '%Y-%m-%d').date()
-        return params
-
-    @parameters.setter
-    def parameters(self, parameters):
-        # we are sure that it's unique
-        for parameter, value in parameters.items():
-            self.cur.execute(f"""\
-            DELETE FROM {self.t}s_params WHERE {self.t}_id == {self.id} AND parameter == '{parameter}'""")
-            self.cur.execute(f"""\
-            INSERT INTO {self.t}s_params ("{self.t}_id", "parameter", "value")
-            VALUES ("{self.id}", "{parameter}", "{value}")""")
-
 
 class Table_with_files(Table):
 
@@ -124,14 +104,12 @@ class Run(Table_with_files):
     @property
     def start_time(self):
         self.cur.execute(f"SELECT start_time FROM runs WHERE id == {self.id}")
-        t = self.cur.fetchone()[0]
-        return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
+        return _datetime_out(self.cur.fetchone()[0])
 
     @property
     def end_time(self):
         self.cur.execute(f"SELECT end_time FROM runs WHERE id == {self.id}")
-        t = self.cur.fetchone()[0]
-        return datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
+        return _datetime_out(self.cur.fetchone()[0])
 
     def list_recordings(self):
         self.cur.execute(f"""\
@@ -170,12 +148,7 @@ class Protocol(Table_with_files):
     @property
     def date_of_signature(self):
         self.cur.execute(f"SELECT date_of_signature FROM protocols WHERE id == {self.id}")
-        dos = self.cur.fetchone()[0]
-
-        if dos == '':
-            return dos
-        else:
-            return datetime.strptime(dos, '%Y-%m-%d').date()
+        return _date_out(self.cur.fetchone()[0])
 
 
 class Session(Table_with_files):
@@ -221,6 +194,22 @@ class Session(Table_with_files):
 
         return Run(self.cur, run_id)
 
+    def add_protocol(self, METC, version=None, date_of_signature=None):
+
+        if isinstance(METC, str):
+            self.cur.execute(f"""\
+            INSERT INTO protocols ("METC", "version", "date_of_signature")
+            VALUES ("{METC}", {_null(version)}, {_date(date_of_signature)})""")
+            self.cur.execute("""SELECT last_insert_rowid()""")
+            protocol_id = self.cur.fetchone()[0]
+
+        else:
+            protocol_id = METC.id
+
+        self.cur.execute(f"""\
+            INSERT INTO sessions_protocols ("session_id", "protocol_id") VALUES ({self.id}, {protocol_id})""")
+        return Protocol(self.cur, protocol_id)
+
     def list_protocols(self):
         self.cur.execute(f"""\
         SELECT protocol_id FROM sessions_protocols
@@ -245,11 +234,7 @@ class Subject(Table_with_files):
     @property
     def date_of_birth(self):
         self.cur.execute(f"SELECT date_of_birth FROM subjects WHERE id == '{self.id}'")
-        dob = self.cur.fetchone()[0]
-        if dob is None:
-            return dob
-        else:
-            return datetime.strptime(dob, '%Y-%m-%d').date()
+        return _date_out(self.cur.fetchone()[0])
 
     @property
     def sex(self):
@@ -277,17 +262,35 @@ class Subject(Table_with_files):
     @classmethod
     def add(cls, cur, code, date_of_birth=None, sex=None):
 
-        if date_of_birth is None:
-            dob = 'null'
-        else:
-            dob = f'"{date_of_birth:%Y-%m-%d}"'
-
-        if sex is None:
-            sex = 'null'
-        else:
-            sex = f'"{sex}"'
-
         cur.execute(f"""\
             INSERT INTO subjects ("code", "date_of_birth", "sex")
-            VALUES ("{code}", {dob}, {sex})""")
+            VALUES ("{code}", {_date(date_of_birth)}, {_null(sex)})""")
         return Subject(cur, code)
+
+
+def _null(s):
+    if s is None:
+        return 'null'
+    else:
+        return f'"{s}"'
+
+
+def _date(s):
+    if s is None:
+        return 'null'
+    else:
+        return f'"{s:%Y-%m-%d}"'
+
+
+def _date_out(s):
+    if s is None:
+        return None
+    else:
+        return datetime.strptime(s, '%Y-%m-%d').date()
+
+
+def _datetime_out(s):
+    if s is None:
+        return None
+    else:
+        return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
