@@ -247,7 +247,7 @@ class Subject(Table_with_files):
         WHERE sessions.subject_id ==  '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_session(self, name):
+    def add_session(self, name, **kwargs):
 
         self.cur.execute(f"""\
         INSERT INTO sessions ("subject_id", "name")
@@ -255,7 +255,17 @@ class Subject(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         session_id = self.cur.fetchone()[0]
 
-        # if IEMU: sessions_iemu
+        if name == 'IEMU':
+            self.cur.execute(f"""\
+            INSERT INTO sessions_iemu (
+                "session_id",
+                "date_of_implantation",
+                "date_of_explantation")
+            VALUES (
+                "{self.id}",
+                {_date(kwargs['date_of_implantation'])},
+                {_date(kwargs['date_of_explantation'])}
+                )""")
 
         return Session(self.cur, session_id)
 

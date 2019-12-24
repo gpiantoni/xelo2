@@ -171,11 +171,13 @@ class Main(QWidget):
             item.setData(Qt.UserRole, sess)
             self.lists['sess'].addItem(item)
             protocols.extend(sess.list_protocols())
+        self.lists['sess'].setCurrentRow(0)
 
         for protocol in set(protocols):
             item = QListWidgetItem(protocol.METC)
             item.setData(Qt.UserRole, protocol)
             self.lists['metc'].addItem(item)
+        self.lists['metc'].setCurrentRow(0)
 
     def list_runs(self, sess):
 
@@ -186,6 +188,7 @@ class Main(QWidget):
             item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
             item.setData(Qt.UserRole, run)
             self.lists['run'].addItem(item)
+        self.lists['run'].setCurrentRow(0)
 
         self.list_recordings(run)
 
@@ -197,6 +200,7 @@ class Main(QWidget):
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
             self.lists['rec'].addItem(item)
+        self.lists['rec'].setCurrentRow(0)
 
     def list_params(self):
 
