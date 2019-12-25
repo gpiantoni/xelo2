@@ -64,11 +64,18 @@ class Table():
         else:
             return out
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key, value, table_name=None):
 
         if key in ('cur', 'id', 't', 'code'):
             super().__setattr__(key, value)
             return
+
+        if table_name is None:
+            table_name = f'{self.t}s'
+            id_name = 'id'
+
+        else:
+            id_name = f'{self.t}_id'
 
         if key.startswith('date_of_'):
             value = _date(value)
@@ -78,7 +85,7 @@ class Table():
             value = _null(value)
 
         try:
-            self.cur.execute(f"UPDATE {self.t}s SET {key} = {value} WHERE id == {self.id}")
+            self.cur.execute(f"UPDATE {table_name} SET {key} = {value} WHERE {id_name} == {self.id}")
 
         except OperationalError as err:
             lg.warning(err)
@@ -188,10 +195,17 @@ class Session(Table_with_files):
         else:
             return super().__getattr__(key)
 
-    def __setattrx__(self, key, value):
+    def __setattr__(self, key, value):
         """When changing name, then you need to delete the unused table
         """
-        pass
+        if key in ('date_of_surgery', ):
+            return super().__setattr__(key, value, 'sessions_or')
+
+        elif key in ('date_of_implantation', 'date_of_explantation'):
+            return super().__setattr__(key, value, 'sessions_iemu')
+
+        else:
+            return super().__setattr__(key, value)
 
     def list_runs(self):
         self.cur.execute(f"""\
