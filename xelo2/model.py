@@ -35,6 +35,33 @@ class Table():
         """So that we can compare instances very easily with set"""
         return hash(self.__repr__())
 
+    def __getattr__(self, key, table_name=None):
+
+        if table_name is None:
+            table_name = f'{self.t}s'
+            id_name = 'id'
+
+        else:
+            id_name = f'{self.t}_id'
+
+        self.cur.execute(f"SELECT {key} FROM {table_name} WHERE {id_name} == {self.id}")
+        out = self.cur.fetchone()
+
+        if out is None:
+            return None
+
+        else:
+            out = out[0]
+
+        if key.startswith('date_of_'):
+            return _date_out(out)
+
+        elif key.endswith('_time'):
+            return _datetime_out(out)
+
+        else:
+            return out
+
 
 class Table_with_files(Table):
 
@@ -63,22 +90,12 @@ class File(Table):
         self.cur.execute(f"SELECT path FROM files WHERE id == {self.id}")
         return Path(self.cur.fetchone()[0]).resolve()
 
-    @property
-    def format(self):
-        self.cur.execute(f"SELECT format FROM files WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
-
 
 class Recording(Table_with_files):
     t = 'recording'
 
     def __init__(self, cur, id):
         super().__init__(cur, id)
-
-    @property
-    def modality(self):
-        self.cur.execute(f"SELECT modality FROM recordings WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
 
 
 class Run(Table_with_files):
@@ -89,27 +106,6 @@ class Run(Table_with_files):
 
     def __repr__(self):
         return f'<{self.t} {self.acquisition} (#{self.id})>'
-
-    @property
-    def task_name(self):
-        self.cur.execute(f"SELECT task_name FROM runs WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
-
-    @property
-    def acquisition(self):
-        """TODO: force it to be one of the 8 BIDS-types (folder names)"""
-        self.cur.execute(f"SELECT acquisition FROM runs WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
-
-    @property
-    def start_time(self):
-        self.cur.execute(f"SELECT start_time FROM runs WHERE id == {self.id}")
-        return _datetime_out(self.cur.fetchone()[0])
-
-    @property
-    def end_time(self):
-        self.cur.execute(f"SELECT end_time FROM runs WHERE id == {self.id}")
-        return _datetime_out(self.cur.fetchone()[0])
 
     def list_recordings(self):
         self.cur.execute(f"""\
@@ -135,21 +131,6 @@ class Protocol(Table_with_files):
         self.id = id
         self.cur = cur
 
-    @property
-    def METC(self):
-        self.cur.execute(f"SELECT METC FROM protocols WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
-
-    @property
-    def version(self):
-        self.cur.execute(f"SELECT version FROM protocols WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
-
-    @property
-    def date_of_signature(self):
-        self.cur.execute(f"SELECT date_of_signature FROM protocols WHERE id == {self.id}")
-        return _date_out(self.cur.fetchone()[0])
-
 
 class Session(Table_with_files):
     t = 'session'
@@ -160,11 +141,6 @@ class Session(Table_with_files):
 
     def __repr__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
-
-    @property
-    def name(self):
-        self.cur.execute(f"SELECT name FROM sessions WHERE id == {self.id}")
-        return self.cur.fetchone()[0]
 
     @property
     def start_date(self):
@@ -180,29 +156,16 @@ class Session(Table_with_files):
             """)
         return self.cur.fetchone()[0]
 
-    @property
-    def date_of_surgery(self):
-        if self.name == 'OR':
-            self.cur.execute(f"""\
-                SELECT date_of_surgery FROM sessions_or
-                WHERE session_id == {self.id}""")
-            return _date_out(self.cur.fetchone()[0])
+    def __getattr__(self, key):
 
-    @property
-    def date_of_implantation(self):
-        if self.name == 'IEMU':
-            self.cur.execute(f"""\
-                SELECT date_of_implantation FROM sessions_iemu
-                WHERE session_id == {self.id}""")
-            return _date_out(self.cur.fetchone()[0])
+        if key in ('date_of_surgery', ):
+            return super().__getattr__(key, 'sessions_or')
 
-    @property
-    def date_of_explantation(self):
-        if self.name == 'IEMU':
-            self.cur.execute(f"""\
-                SELECT date_of_explantation FROM sessions_iemu
-                WHERE session_id == {self.id}""")
-            return _date_out(self.cur.fetchone()[0])
+        elif key in ('date_of_implantation', 'date_of_explantation'):
+            return super().__getattr__(key, 'sessions_iemu')
+
+        else:
+            return super().__getattr__(key)
 
     def list_runs(self):
         self.cur.execute(f"""\
@@ -256,16 +219,6 @@ class Subject(Table_with_files):
 
         else:
             self.id = output[0]
-
-    @property
-    def date_of_birth(self):
-        self.cur.execute(f"SELECT date_of_birth FROM subjects WHERE id == '{self.id}'")
-        return _date_out(self.cur.fetchone()[0])
-
-    @property
-    def sex(self):
-        self.cur.execute(f"SELECT sex FROM subjects WHERE id == '{self.id}'")
-        return self.cur.fetchone()[0]
 
     def list_sessions(self):
         self.cur.execute(f"""\
