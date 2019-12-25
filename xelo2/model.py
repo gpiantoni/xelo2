@@ -1,7 +1,9 @@
+from logging import getLogger
 from datetime import datetime
 from pathlib import Path
 from sqlite3 import OperationalError, connect
 
+lg = getLogger(__name__)
 
 def open_database(path_to_database):
     sql = connect(str(path_to_database))
@@ -75,7 +77,11 @@ class Table():
         else:
             value = _null(value)
 
-        self.cur.execute(f"UPDATE {self.t}s SET {key} = {value} WHERE id == {self.id}")
+        try:
+            self.cur.execute(f"UPDATE {self.t}s SET {key} = {value} WHERE id == {self.id}")
+
+        except OperationalError as err:
+            lg.warning(err)
 
 
 class Table_with_files(Table):
