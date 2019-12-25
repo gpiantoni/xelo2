@@ -232,11 +232,11 @@ class Main(QWidget):
                 parameters = {}
 
                 if obj.name == 'IEMU':
-                    parameters['date_of_implantation'] = obj.date_of_implantation
-                    parameters['date_of_explantation'] = obj.date_of_explantation
+                    parameters['Date of implantation'] = obj.date_of_implantation
+                    parameters['Date of explantation'] = obj.date_of_explantation
 
                 elif obj.name == 'OR':
-                    parameters['date_of_surgery'] = obj.date_of_surgery
+                    parameters['Date of surgery'] = obj.date_of_surgery
 
             elif k == 'run':
                 parameters = {
