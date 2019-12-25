@@ -62,6 +62,21 @@ class Table():
         else:
             return out
 
+    def __setattr__(self, key, value):
+
+        if key in ('cur', 'id', 't', 'code'):
+            super().__setattr__(key, value)
+            return
+
+        if key.startswith('date_of_'):
+            value = _date(value)
+        elif key.endswith('time'):
+            value = _datetime(value)
+        else:
+            value = _null(value)
+
+        self.cur.execute(f"UPDATE {self.t}s SET {key} = {value} WHERE id == {self.id}")
+
 
 class Table_with_files(Table):
 
@@ -166,6 +181,11 @@ class Session(Table_with_files):
 
         else:
             return super().__getattr__(key)
+
+    def __setattrx__(self, key, value):
+        """When changing name, then you need to delete the unused table
+        """
+        pass
 
     def list_runs(self):
         self.cur.execute(f"""\
@@ -279,6 +299,13 @@ def _date(s):
         return 'null'
     else:
         return f'"{s:%Y-%m-%d}"'
+
+
+def _datetime(s):
+    if s is None:
+        return 'null'
+    else:
+        return f'"{s:%Y-%m-%d %H:%M:%S}"'
 
 
 def _date_out(s):
