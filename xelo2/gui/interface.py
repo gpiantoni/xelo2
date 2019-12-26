@@ -11,20 +11,19 @@ from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
     QTableWidget,
-    QTabWidget,
     QTableWidgetItem,
     QAbstractItemView
     )
 from PyQt5.QtGui import (
     QBrush,
     QColor,
-    QFont,
     )
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from ..model import list_subjects
 
 lg = getLogger(__name__)
+
 
 class Interface(QMainWindow):
 
@@ -48,7 +47,7 @@ class Interface(QMainWindow):
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
             new[k] = QPushButton('New ' + v.title())
-            new[k].setDisabled(True)
+            # new[k].setDisabled(True)
             layout.addWidget(new[k])
             v.setLayout(layout)
 
@@ -233,6 +232,9 @@ class Interface(QMainWindow):
 
                 elif obj.name == 'OR':
                     parameters['Date of surgery'] = obj.date_of_surgery
+
+                elif obj.name == 'MRI':
+                    parameters['Magnetic Field Strength'] = obj.MagneticFieldStrength
 
             elif k == 'run':
                 parameters = {

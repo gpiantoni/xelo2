@@ -192,6 +192,9 @@ class Session(Table_with_files):
         elif key in ('date_of_implantation', 'date_of_explantation'):
             return super().__getattr__(key, 'sessions_iemu')
 
+        elif key in ('MagneticFieldStrength', ):
+            return super().__getattr__(key, 'sessions_mri')
+
         else:
             return super().__getattr__(key)
 
@@ -203,6 +206,9 @@ class Session(Table_with_files):
 
         elif key in ('date_of_implantation', 'date_of_explantation'):
             return super().__setattr__(key, value, 'sessions_iemu')
+
+        elif key in ('MagneticFieldStrength', ):
+            return super().__setattr__(key, value, 'sessions_mri')
 
         else:
             return super().__setattr__(key, value)
@@ -294,6 +300,16 @@ class Subject(Table_with_files):
             VALUES (
                 "{session_id}",
                 {_date(kwargs['date_of_surgery'])}
+                )""")
+
+        elif name == 'MRI':
+            self.cur.execute(f"""\
+            INSERT INTO sessions_mri (
+                "session_id",
+                "MagneticFieldStrength")
+            VALUES (
+                "{session_id}",
+                {_null(kwargs['MagneticFieldStrength'])}
                 )""")
 
         return Session(self.cur, session_id)

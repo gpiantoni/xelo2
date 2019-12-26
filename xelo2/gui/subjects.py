@@ -20,7 +20,7 @@ class Add_Subject(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle('New Participant')
+        self.setWindowTitle('New Subject')
 
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.idx_ok = bbox.button(QDialogButtonBox.Ok)
