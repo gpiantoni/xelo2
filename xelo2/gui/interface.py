@@ -18,10 +18,16 @@ from PyQt5.QtGui import (
     QBrush,
     QColor,
     )
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import (
+    Qt,
+    pyqtSlot,
+    QSettings,
+    )
 
 from ..model import list_subjects
 
+
+settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
 
@@ -107,6 +113,14 @@ class Interface(QMainWindow):
         dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         dockwidget.setObjectName('dock_files')  # savestate
         self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
+
+        # restore geometry
+        window_geometry = settings.value('window/geometry')
+        if window_geometry is not None:
+            self.restoreGeometry(window_geometry)
+        window_state = settings.value('window/state')
+        if window_state is not None:
+            self.restoreState(window_state)
 
         # SAVE THESE ITEMS
         self.groups = groups
@@ -313,3 +327,9 @@ class Interface(QMainWindow):
             self.t_files.setItem(i, 2, item)
 
         self.t_files.blockSignals(False)
+
+    def closeEvent(self, event):
+        settings.setValue('window/geometry', self.saveGeometry())
+        settings.setValue('window/state', self.saveState())
+
+        event.accept()
