@@ -186,7 +186,10 @@ class Session(Table_with_files):
 
     def __getattr__(self, key):
 
-        if key in ('date_of_surgery', ):
+        if key in ('Manufacturer', ):
+            return super().__getattr__(key, 'sessions_ieeg')
+
+        elif key in ('date_of_surgery', ):
             return super().__getattr__(key, 'sessions_or')
 
         elif key in ('date_of_implantation', 'date_of_explantation'):
@@ -201,7 +204,10 @@ class Session(Table_with_files):
     def __setattr__(self, key, value):
         """When changing name, then you need to delete the unused table
         """
-        if key in ('date_of_surgery', ):
+        if key in ('Manufacturer', ):
+            return super().__setattr__(key, value, 'sessions_ieeg')
+
+        elif key in ('date_of_surgery', ):
             return super().__setattr__(key, value, 'sessions_or')
 
         elif key in ('date_of_implantation', 'date_of_explantation'):
@@ -280,6 +286,16 @@ class Subject(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         session_id = self.cur.fetchone()[0]
 
+        if name in ('IEMU', 'OR'):
+            self.cur.execute(f"""\
+            INSERT INTO sessions_ieeg (
+                "session_id",
+                "Manufacturer")
+            VALUES (
+                "{session_id}",
+                {_null(kwargs.get('Manufacturer'))}
+                )""")
+
         if name == 'IEMU':
             self.cur.execute(f"""\
             INSERT INTO sessions_iemu (
@@ -288,8 +304,8 @@ class Subject(Table_with_files):
                 "date_of_explantation")
             VALUES (
                 "{session_id}",
-                {_date(kwargs['date_of_implantation'])},
-                {_date(kwargs['date_of_explantation'])}
+                {_date(kwargs.get('date_of_implantation'))},
+                {_date(kwargs.get('date_of_explantation'))}
                 )""")
 
         elif name == 'OR':
@@ -299,7 +315,7 @@ class Subject(Table_with_files):
                 "date_of_surgery")
             VALUES (
                 "{session_id}",
-                {_date(kwargs['date_of_surgery'])}
+                {_date(kwargs.get('date_of_surgery'))}
                 )""")
 
         elif name == 'MRI':
@@ -309,7 +325,7 @@ class Subject(Table_with_files):
                 "MagneticFieldStrength")
             VALUES (
                 "{session_id}",
-                {_null(kwargs['MagneticFieldStrength'])}
+                {_null(kwargs.get('MagneticFieldStrength'))}
                 )""")
 
         return Session(self.cur, session_id)

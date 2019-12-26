@@ -226,6 +226,9 @@ class Interface(QMainWindow):
             elif k == 'sess':
                 parameters = {}
 
+                if obj.name in ('IEMU', 'OR'):
+                    parameters['Manufacturer'] = obj.Manufacturer
+
                 if obj.name == 'IEMU':
                     parameters['Date of implantation'] = obj.date_of_implantation
                     parameters['Date of explantation'] = obj.date_of_explantation
