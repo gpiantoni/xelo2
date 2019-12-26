@@ -2,6 +2,7 @@ from logging import getLogger
 
 from PyQt5.QtWidgets import (
     QGroupBox,
+    QDockWidget,
     QListWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -26,15 +27,6 @@ from ..model import list_subjects
 lg = getLogger(__name__)
 
 class Interface(QMainWindow):
-
-    def __init__(self, cur):
-        super().__init__()
-
-        self.setCentralWidget(Main(cur))
-        self.show()
-
-
-class Main(QWidget):
 
     def __init__(self, cur):
         self.cur = cur
@@ -68,12 +60,6 @@ class Main(QWidget):
         t_params.setHorizontalHeaderLabels(['Level', 'Parameter', 'Value'])
         t_params.verticalHeader().setVisible(False)
 
-        # PARAMETERS: Layout
-        groups['params'] = QGroupBox('Parameters')
-        layout = QVBoxLayout()
-        layout.addWidget(t_params)
-        groups['params'].setLayout(layout)
-
         # FILES: Widget
         t_files = QTableWidget()
         t_files.horizontalHeader().setStretchLastSection(True)
@@ -81,12 +67,6 @@ class Main(QWidget):
         t_files.setColumnCount(3)
         t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
         t_files.verticalHeader().setVisible(False)
-
-        # FILES: Layout
-        groups['files'] = QGroupBox('Files')
-        layout = QVBoxLayout()
-        layout.addWidget(t_files)
-        groups['files'].setLayout(layout)
 
         # session and protocol in the same column
         col_sessmetc = QVBoxLayout()
@@ -100,19 +80,34 @@ class Main(QWidget):
         layout_top.addWidget(groups['run'])
         layout_top.addWidget(groups['rec'])
 
-        # BOTTOM PANELS
-        layout_bottom = QHBoxLayout()
-        layout_bottom.addWidget(groups['params'])
-        layout_bottom.addWidget(groups['files'])
-        layout_bottom.setStretch(0, 1)
-        layout_bottom.setStretch(1, 3)
-
         # FULL LAYOUT
+        # central widget
+        central_widget = QWidget()
         layout = QVBoxLayout()
         layout.addLayout(layout_top)
-        layout.addLayout(layout_bottom)
-        self.setLayout(layout)
-        self.show()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
+        # parameters
+        dockwidget = QDockWidget('Parameters', self)
+        dockwidget.setWidget(t_params)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_parameters')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # files
+        dockwidget = QDockWidget('Files', self)
+        dockwidget.setWidget(t_files)
+        dockwidget.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_files')  # savestate
+        self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
 
         # SAVE THESE ITEMS
         self.groups = groups
@@ -121,6 +116,7 @@ class Main(QWidget):
         self.t_files = t_files
 
         self.access_db()
+        self.show()
 
     def access_db(self):
         """This is where you access the database
