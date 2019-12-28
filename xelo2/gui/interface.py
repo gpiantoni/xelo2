@@ -1,4 +1,5 @@
 from logging import getLogger
+from pathlib import Path
 
 from PyQt5.QtWidgets import (
     QGroupBox,
@@ -25,7 +26,7 @@ from PyQt5.QtCore import (
     )
 
 from ..model import list_subjects
-
+from ..bids.root import create_bids
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
@@ -91,8 +92,12 @@ class Interface(QMainWindow):
         p_clearexport = QPushButton('Clear list')
         p_clearexport.clicked.connect(self.clear_export)
 
+        p_doexport = QPushButton('Export ...')
+        p_doexport.clicked.connect(self.do_export)
+
         col_export.addWidget(t_export)
         col_export.addWidget(p_clearexport)
+        col_export.addWidget(p_doexport)
         w_export.setLayout(col_export)
 
         # session and protocol in the same column
@@ -371,6 +376,7 @@ class Interface(QMainWindow):
         d['run'] = f'{run.task_name} ({run.acquisition})'
         rec = self.lists['rec'].currentItem().data(Qt.UserRole)
         d['rec'] = rec.modality
+        d['recording'] = rec.id
         self.exports.append(d)
 
         self.list_exports()
@@ -395,6 +401,21 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 2, item)
             item = QTableWidgetItem(l['rec'])
             self.t_export.setItem(i, 3, item)
+
+    def do_export(self):
+        recording_ids = tuple([x['recording'] for x in self.exports])
+        print(recording_ids)
+        self.cur.execute(f"""\
+            SELECT subjects.id, sessions.id, runs.id, recordings.id FROM recordings
+            JOIN runs ON runs.id == recordings.run_id
+            JOIN sessions ON sessions.id == runs.session_id
+            JOIN subjects ON subjects.id == sessions.subject_id
+            WHERE recordings.id IN {recording_ids}
+            """)
+        subset = self.cur.fetchall()
+
+        data_path = Path('/home/gio/tools/xelo2/data/bids')
+        create_bids(data_path, cur=self.cur, deface=False, subset=subset)
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())

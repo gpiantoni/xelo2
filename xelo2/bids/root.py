@@ -8,9 +8,16 @@ from .func import convert_func
 lg = getLogger(__name__)
 
 
-def create_bids(data_path, db, deface=True):
+def create_bids(data_path, db=None, cur=None, deface=True, subset=None):
 
-    cur = open_database(db)
+    if subset is not None:
+        subset_subj = set([i[0] for i in subset])
+        subset_sess = set([i[1] for i in subset])
+        subset_run = set([i[2] for i in subset])
+        subset_rec = set([i[3] for i in subset])
+
+    if db is not None:
+        sql, cur = open_database(db)
 
     data_path = Path(data_path)
     data_path.mkdir(parents=True, exist_ok=True)
@@ -19,25 +26,36 @@ def create_bids(data_path, db, deface=True):
     _make_dataset_description(data_path)
 
     for subj in list_subjects(cur):
+        if subset is not None and subj.id not in subset_subj:
+            continue
+
         bids_subj = 'sub-' + subj.code
         subj_path = data_path / bids_subj
         subj_path.mkdir(parents=True, exist_ok=True)
 
         for sess in subj.list_sessions():
+            if subset is not None and sess.id not in subset_sess:
+                continue
+
             bids_sess = 'ses-umcu' + sess.name.lower() + '01'  # TODO: fix when there are multiple sessions
             sess_path = subj_path / bids_sess
             sess_path.mkdir(parents=True, exist_ok=True)
 
             for run in sess.list_runs():
-                if run.type in ('ieeg', 'func'):
+                if subset is not None and run.id not in subset_run:
+                    continue
+
+                if run.acquisition in ('ieeg', 'func'):
                     task = _rename_task(run.task_name)
                     bids_run = f'{bids_subj}_{bids_sess}_task-{task}'
                 else:
                     bids_run = f'{bids_subj}_{bids_sess}'
-                mod_path = sess_path / run.type
+                mod_path = sess_path / run.acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
 
                 for rec in run.list_recordings():
+                    if subset is not None and rec.id not in subset_rec:
+                        continue
 
                     files = rec.list_files()
                     if len(files) == 0:
@@ -48,7 +66,7 @@ def create_bids(data_path, db, deface=True):
                         continue
 
                     file = files[0]
-                    if file.type == 'par':
+                    if file.format == 'par':
                         convert_func(run, rec, file, mod_path, bids_run)
 
                     else:
