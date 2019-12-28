@@ -53,8 +53,12 @@ class Interface(QMainWindow):
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
             new[k] = QPushButton('New ' + v.title())
-            # new[k].setDisabled(True)
+            new[k].setDisabled(True)
             layout.addWidget(new[k])
+            if k == 'rec':
+                to_export = QPushButton('Export')
+                to_export.clicked.connect(self.exporting)
+                layout.addWidget(to_export)
             v.setLayout(layout)
 
         # PARAMETERS: Widget
@@ -72,6 +76,24 @@ class Interface(QMainWindow):
         t_files.setColumnCount(3)
         t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
         t_files.verticalHeader().setVisible(False)
+
+        # EXPORT: Widget
+        w_export = QWidget()
+        col_export = QVBoxLayout()
+
+        t_export = QTableWidget()
+        t_export.horizontalHeader().setStretchLastSection(True)
+        t_export.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_export.setColumnCount(4)
+        t_export.setHorizontalHeaderLabels(['Subject', 'Session', 'Run', 'Recording'])
+        t_export.verticalHeader().setVisible(False)
+
+        p_clearexport = QPushButton('Clear list')
+        p_clearexport.clicked.connect(self.clear_export)
+
+        col_export.addWidget(t_export)
+        col_export.addWidget(p_clearexport)
+        w_export.setLayout(col_export)
 
         # session and protocol in the same column
         col_sessmetc = QVBoxLayout()
@@ -114,6 +136,14 @@ class Interface(QMainWindow):
         dockwidget.setObjectName('dock_files')  # savestate
         self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
 
+        # export
+        dockwidget = QDockWidget('Export', self)
+        dockwidget.setWidget(w_export)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_export')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
         # restore geometry
         window_geometry = settings.value('window/geometry')
         if window_geometry is not None:
@@ -127,6 +157,8 @@ class Interface(QMainWindow):
         self.lists = lists
         self.t_params = t_params
         self.t_files = t_files
+        self.t_export = t_export
+        self.exports = []
 
         self.access_db()
         self.show()
@@ -327,6 +359,42 @@ class Interface(QMainWindow):
             self.t_files.setItem(i, 2, item)
 
         self.t_files.blockSignals(False)
+
+    def exporting(self):
+
+        d = {}
+        subj = self.lists['subj'].currentItem().data(Qt.UserRole)
+        d['subj'] = subj.code
+        sess = self.lists['sess'].currentItem().data(Qt.UserRole)
+        d['sess'] = sess.name
+        run = self.lists['run'].currentItem().data(Qt.UserRole)
+        d['run'] = f'{run.task_name} ({run.acquisition})'
+        rec = self.lists['rec'].currentItem().data(Qt.UserRole)
+        d['rec'] = rec.modality
+        self.exports.append(d)
+
+        self.list_exports()
+
+    def clear_export(self):
+        self.exports = []
+        self.list_exports()
+
+    def list_exports(self):
+
+        self.t_export.clearContents()
+        n_exports = len(self.exports)
+
+        self.t_export.setRowCount(n_exports)
+
+        for i, l in enumerate(self.exports):
+            item = QTableWidgetItem(l['subj'])
+            self.t_export.setItem(i, 0, item)
+            item = QTableWidgetItem(l['sess'])
+            self.t_export.setItem(i, 1, item)
+            item = QTableWidgetItem(l['run'])
+            self.t_export.setItem(i, 2, item)
+            item = QTableWidgetItem(l['rec'])
+            self.t_export.setItem(i, 3, item)
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
