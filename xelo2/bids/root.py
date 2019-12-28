@@ -66,6 +66,10 @@ def create_bids(data_path, db=None, cur=None, deface=True, subset=None):
                         continue
 
                     file = files[0]
+                    if not Path(file.path).exists():
+                        lg.warning(f'{rec} does not exist')
+                        continue
+
                     if file.format == 'par':
                         convert_func(run, rec, file, mod_path, bids_run)
 

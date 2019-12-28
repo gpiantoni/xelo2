@@ -1,5 +1,6 @@
 from logging import getLogger
 from pathlib import Path
+from datetime import date
 
 from PyQt5.QtWidgets import (
     QGroupBox,
@@ -13,11 +14,14 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
-    QAbstractItemView
+    QAbstractItemView,
+    QComboBox,
+    QDateEdit,
     )
 from PyQt5.QtGui import (
     QBrush,
     QColor,
+    QPalette,
     )
 from PyQt5.QtCore import (
     Qt,
@@ -31,6 +35,11 @@ from ..bids.root import create_bids
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
+SQL_TABLES = Path('/home/gio/tools/xelo2bids/xelo2bids/data/sql/tables.json')
+from json import load
+
+with SQL_TABLES.open() as f:
+    TABLES = load(f)
 
 class Interface(QMainWindow):
 
@@ -262,19 +271,33 @@ class Interface(QMainWindow):
                 continue
             obj = item.data(Qt.UserRole)
 
+            parameters = {}
             if k == 'subj':
-                parameters = {
-                    'Date of Birth': obj.date_of_birth,
-                    'Sex': obj.sex,
-                    }
 
-            elif k == 'metc':
+                w = QComboBox()
+                w.addItems(TABLES['subjects']['sex'])
+                w.setCurrentText(obj.sex)
+                parameters['Sex'] = w
+
+                w = QDateEdit()
+                w.setCalendarPopup(True)
+                w.setDisplayFormat('dd MMM yyyy')
+                if obj.date_of_birth is None:
+                    w.setDate(date(1900, 1, 1))
+                    palette = QPalette()
+                    palette.setColor(QPalette.Text, Qt.red)
+                    w.setPalette(palette)
+                else:
+                    w.setDate(obj.date_of_birth)
+                parameters['Date of Birth'] = w
+
+            elif k == 'metc' and False:
                 parameters = {
                     'Version': obj.version,
                     'Date of Signature': obj.date_of_signature,
                     }
 
-            elif k == 'sess':
+            elif k == 'sess' and False:
                 parameters = {}
 
                 if obj.name in ('IEMU', 'OR'):
@@ -290,16 +313,13 @@ class Interface(QMainWindow):
                 elif obj.name == 'MRI':
                     parameters['Magnetic Field Strength'] = obj.MagneticFieldStrength
 
-            elif k == 'run':
+            elif k == 'run' and False:
                 parameters = {
                     'Task Name': obj.task_name,
                     'Acquisition': obj.acquisition,
                     'Start Time': obj.start_time,
                     'End Time': obj.end_time,
                     }
-
-            else:
-                parameters = {}
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -319,7 +339,7 @@ class Interface(QMainWindow):
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             self.t_params.setItem(i, 1, item)
             item = QTableWidgetItem(str(val['value']))
-            self.t_params.setItem(i, 2, item)
+            self.t_params.setCellWidget(i, 2, val['value'])
 
         self.t_params.blockSignals(False)
 
