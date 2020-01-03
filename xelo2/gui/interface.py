@@ -29,17 +29,12 @@ from PyQt5.QtCore import (
     QSettings,
     )
 
-from ..model import list_subjects
+from ..model.structure import list_subjects, TABLES
 from ..bids.root import create_bids
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
-SQL_TABLES = Path('/home/gio/tools/xelo2bids/xelo2bids/data/sql/tables.json')
-from json import load
-
-with SQL_TABLES.open() as f:
-    TABLES = load(f)
 
 class Interface(QMainWindow):
 

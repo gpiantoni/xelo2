@@ -2,7 +2,7 @@ from json import dump
 from pathlib import Path
 from logging import getLogger
 
-from ..model import open_database, list_subjects
+from ..model.structure import open_database, list_subjects
 from .func import convert_func
 
 lg = getLogger(__name__)
