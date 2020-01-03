@@ -1,245 +1,271 @@
 {
- "subjects": {
-  "id": null,
-  "code": {
-   "name": "Subject Code",
-   "type": "TEXT UNIQUE"
+  "subjects": {
+    "id": null,
+    "code": {
+      "name": "Subject Code",
+      "type": "TEXT UNIQUE"
+    },
+    "date_of_birth": {
+      "name": "Date of Birth",
+      "type": "DATE"
+    },
+    "sex": {
+      "name": "Sex",
+      "type": "TEXT",
+      "values": [
+        "Female",
+        "Male",
+        "Unknown"
+      ]
+    }
   },
-  "date_of_birth": {
-   "name": "Date of Birth",
-   "type": "DATE"
+  "protocols": {
+    "id": null,
+    "metc": {
+      "name": "METC",
+      "type": "TEXT",
+      "values": [
+        "07-260",
+        "14-090",
+        "14-420",
+        "14-622",
+        "Request from clinic"
+      ]
+    },
+    "date_of_signature": {
+      "name": "Date of Signature",
+      "type": "DATE"
+    }
   },
-  "sex": {
-   "name": "Sex",
-   "type": "TEXT",
-   "values": [
-    "Female",
-    "Male",
-    "Unknown"
-   ]
+  "sessions": {
+    "id": null,
+    "subject_id": null,
+    "name": {
+      "name": "name",
+      "type": "TEXT",
+      "values": [
+        "IEMU",
+        "OR",
+        "MRI",
+        "CT"
+      ]
+    },
+    "subtables": {
+      "sessions_iemu": {
+        "session_id": null,
+        "date_of_implantation": {
+          "name": "Date of Implementation",
+          "type": "DATE"
+        },
+        "date_of_explantation": {
+          "name": "Date of Explantation",
+          "type": "DATE"
+        }
+      },
+      "sessions_or": {
+        "session_id": null,
+        "date_of_surgery": {
+          "name": "Date of Surgery",
+          "type": "DATE"
+        }
+      },
+      "sessions_mri": {
+        "session_id": null,
+        "magneticfieldstrength": {
+          "name": "MagneticFieldStrength",
+          "type": "TEXT",
+          "values": [
+            "3T",
+            "7T"
+          ]
+        }
+      }
+    }
+  },
+  "sessions_protocols": {
+    "session_id": null,
+    "protocol_id": null
+  },
+  "runs": {
+    "id": null,
+    "session_id": null,
+    "task_name": {
+      "name": "Task Name",
+      "type": "TEXT"
+    },
+    "acquisition": {
+      "name": "Acquisition",
+      "type": "TEXT",
+      "values": [
+        "func",
+        "anat",
+        "dwi",
+        "fmap",
+        "ieeg",
+        "dwi",
+        "eeg",
+        "meg",
+        "beh",
+        "ct"
+      ]
+    },
+    "start_time": {
+      "name": "Start Time",
+      "type": "DATETIME"
+    },
+    "end_time": {
+      "name": "End Time",
+      "type": "DATETIME"
+    },
+    "subtables": {
+      "runs_motor": {
+        "body_part": {
+          "name": "Body Part",
+          "type": "TEXT",
+          "values": [
+            "hand",
+            "foot"
+          ]
+        },
+        "left_right": {
+          "name": "Laterality",
+          "type": "TEXT",
+          "values": [
+            "left",
+            "right",
+            "both"
+          ]
+        }
+      }
+    }
+  },
+  "events": {
+    "id": null,
+    "run_id": null,
+    "onset": {
+      "name": "onset",
+      "type": "FLOAT"
+    },
+    "duration": {
+      "name": "duration",
+      "type": "FLOAT"
+    },
+    "trial_type": {
+      "name": "trial_type",
+      "type": "TEXT"
+    }
+  },
+  "recordings": {
+    "id": null,
+    "run_id": null,
+    "modality": {
+      "name": "modality",
+      "type": "text",
+      "values": [
+        "ieeg",
+        "bold",
+        "T1w",
+        "T2w",
+        "T2star",
+        "PD",
+        "angio",
+        "epi",
+        "dwi",
+        "ct"
+      ]
+    },
+    "offset": {
+      "name": "offset",
+      "type": "FLOAT"
+    }
+  },
+  "channels": {
+    "session_id": null,
+    "name": {
+      "name": "name",
+      "type": "TEXT"
+    },
+    "type": {
+      "name": "type",
+      "type": "TEXT",
+      "values": [
+        "ECOG",
+        "SEEG",
+        "EOG",
+        "EMG",
+        "TRIG",
+        "OTHER"
+      ]
+    },
+    "units": {
+      "name": "units",
+      "type": "TEXT",
+      "values": [
+        "V",
+        "mV",
+        "microV"
+      ]
+    }
+  },
+  "electrodes": {
+    "session_id": null,
+    "name": {
+      "name": "name",
+      "type": "TEXT"
+    },
+    "x": {
+      "name": "offset",
+      "type": "FLOAT"
+    },
+    "y": {
+      "name": "offset",
+      "type": "FLOAT"
+    },
+    "z": {
+      "name": "offset",
+      "type": "FLOAT"
+    },
+    "size": {
+      "name": "offset",
+      "type": "FLOAT"
+    }
+  },
+  "files": {
+    "id": null,
+    "format": {
+      "name": "format",
+      "type": "TEXT",
+      "values": [
+        "par",
+        "nifti",
+        "bci2000",
+        "micromed",
+        "blackrock"
+      ]
+    },
+    "path": {
+      "name": "path",
+      "type": "TEXT"
+    }
+  },
+  "subjects_files": {
+    "subject_id": null,
+    "file_id": null
+  },
+  "sessions_files": {
+    "session_id": null,
+    "file_id": null
+  },
+  "protocols_files": {
+    "protocol_id": null,
+    "file_id": null
+  },
+  "runs_files": {
+    "run_id": null,
+    "file_id": null
+  },
+  "recordings_files": {
+    "recording_id": null,
+    "file_id": null
   }
- },
- "protocols": {
-  "id": null,
-  "metc": {
-   "name": "METC",
-   "type": "TEXT",
-   "values": [
-    "07-260",
-    "14-090",
-    "14-420",
-    "14-622",
-    "Request from clinic"
-   ]
-  },
-  "date_of_signature": {
-   "name": "Date of Signature",
-   "type": "DATE"
-  }
- },
- "sessions": {
-  "id": null,
-  "subject_id": null,
-  "name": {
-   "name": "name",
-   "type": "TEXT",
-   "values": [
-    "MRI",
-    "IEMU",
-    "OR",
-    "CT"
-   ]
-  }
- },
- "sessions_ieeg": {
-  "session_id": null,
-  "manufacturer": {
-   "name": "Manufacturer",
-   "type": "TEXT",
-   "values": [
-    "BlackRock",
-    "Micromed",
-    null
-   ]
-  }
- },
- "sessions_iemu": {
-  "session_id": null,
-  "date_of_implantation": {
-   "name": "Date of Implementation",
-   "type": "DATE"
-  },
-  "date_of_explantation": {
-   "name": "Date of Explantation",
-   "type": "DATE"
-  }
- },
- "sessions_or": {
-  "session_id": null,
-  "date_of_surgery": {
-   "name": "Date of Surgery",
-   "type": "DATE"
-  }
- },
- "sessions_mri": {
-  "session_id": null,
-  "magneticfieldstrength": {
-   "name": "MagneticFieldStrength",
-   "type": "TEXT",
-   "values": [
-    "3T",
-    "7T"
-   ]
-  },
-  "PulseSequenceType": {
-   "name": "PhaseSequenceType",
-   "type": "TEXT",
-   "values": [
-    "Gradient-Echo EPI",
-    "Spin-Echo EPI",
-    "Multiband Gradient-Echo EPI"
-   ]
-  }
- },
- "sessions_protocols": {
-  "session_id": null,
-  "protocol_id": null
- },
- "channels": {
-  "session_id": null,
-  "name": {
-   "name": "name",
-   "type": "TEXT"
-  },
-  "type": {
-   "name": "type",
-   "type": "TEXT",
-   "values": [
-   "ECOG",
-   "SEEG",
-   "EOG",
-   "EMG",
-   "TRIG",
-   "OTHER"
-  ]
-  },
-  "units": {
-   "name": "units",
-   "type": "TEXT",
-   "values": [
-   "V",
-   "mV",
-   "microV"
-  ]
-  }
- },
- "electrodes": {
-  "session_id": null,
-  "name": "TEXT",
-  "x": "FLOAT",
-  "y": "FLOAT",
-  "z": "FLOAT",
-  "size": "FLOAT"
- },
- "runs": {
-  "id": null,
-  "session_id": null,
-  "task_name": {
-   "name": "Task Name",
-   "type": "TEXT",
-   "values": [
-    "motor",
-    null
-   ]
-  },
-  "acquisition": {
-   "name": "Acquisition",
-   "type": "TEXT",
-   "values": [
-    "func",
-    "anat",
-    "dwi",
-    "fmap",
-    "ieeg",
-    "dwi",
-    "eeg",
-    "meg",
-    "beh",
-    "ct"
-   ]
-  },
-  "start_time": {
-   "name": "Start Time",
-   "type": "DATETIME"
-  },
-  "end_time": {
-   "name": "End Time",
-   "type": "DATETIME"
-  }
- },
- "runs_motor": {
-  "body_part": [
-   "hand",
-   "foot"
-  ],
-  "left_right": [
-   "left",
-   "right"
-  ]
- },
- "events": {
-  "id": null,
-  "run_id": null,
-  "onset": "FLOAT",
-  "duration": "FLOAT",
-  "trial_type": "TEXT"
- },
- "recordings": {
-  "id": null,
-  "run_id": null,
-  "modality": [
-   "ieeg",
-   "bold",
-   "T1w",
-   "T2w",
-   "T2star",
-   "PD",
-   "angio",
-   "epi",
-   "dwi",
-   "ct"
-  ],
-  "offset": "FLOAT"
- },
- "files": {
-  "id": null,
-  "format": [
-   "par",
-   "nifti",
-   "bci2000",
-   "micromed",
-   "blackrock"
-  ],
-  "path": "TEXT"
- },
- "subjects_files": {
-  "subject_id": null,
-  "file_id": null
- },
- "sessions_files": {
-  "session_id": null,
-  "file_id": null
- },
- "protocols_files": {
-  "protocol_id": null,
-  "file_id": null
- },
- "runs_files": {
-  "run_id": null,
-  "file_id": null
- },
- "recordings_files": {
-  "recording_id": null,
-  "file_id": null
- }
 }

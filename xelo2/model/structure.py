@@ -241,12 +241,12 @@ class Session(Table_with_files):
 
         return Run(self.cur, run_id)
 
-    def add_protocol(self, METC, version=None, date_of_signature=None):
+    def add_protocol(self, METC, date_of_signature=None):
 
         if isinstance(METC, str):
             self.cur.execute(f"""\
-            INSERT INTO protocols ("METC", "version", "date_of_signature")
-            VALUES ("{METC}", {_null(version)}, {_date(date_of_signature)})""")
+            INSERT INTO protocols ("METC", "date_of_signature")
+            VALUES ("{METC}", {_date(date_of_signature)})""")
             self.cur.execute("""SELECT last_insert_rowid()""")
             protocol_id = self.cur.fetchone()[0]
 
@@ -291,16 +291,6 @@ class Subject(Table_with_files):
         VALUES ("{self.id}", "{name}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
         session_id = self.cur.fetchone()[0]
-
-        if name in ('IEMU', 'OR'):
-            self.cur.execute(f"""\
-            INSERT INTO sessions_ieeg (
-                "session_id",
-                "Manufacturer")
-            VALUES (
-                "{session_id}",
-                {_null(kwargs.get('Manufacturer'))}
-                )""")
 
         if name == 'IEMU':
             self.cur.execute(f"""\
