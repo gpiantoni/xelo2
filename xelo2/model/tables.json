@@ -3,7 +3,7 @@
     "id": null,
     "code": {
       "name": "Subject Code",
-      "type": "TEXT UNIQUE"
+      "type": "TEXT UNIQUE NOT NULL"
     },
     "date_of_birth": {
       "name": "Date of Birth",
@@ -23,7 +23,7 @@
     "id": null,
     "metc": {
       "name": "METC",
-      "type": "TEXT",
+      "type": "TEXT NOT NULL",
       "values": [
         "07-260",
         "14-090",
@@ -42,7 +42,7 @@
     "subject_id": null,
     "name": {
       "name": "name",
-      "type": "TEXT",
+      "type": "TEXT NOT NULL",
       "values": [
         "IEMU",
         "OR",
@@ -91,7 +91,7 @@
     "session_id": null,
     "task_name": {
       "name": "Task Name",
-      "type": "TEXT",
+      "type": "TEXT NOT NULL",
       "values": [
         "DTI",
         "MIQ",
@@ -206,7 +206,7 @@
     },
     "acquisition": {
       "name": "Acquisition",
-      "type": "TEXT",
+      "type": "TEXT NOT NULL",
       "values": [
         "func",
         "anat",

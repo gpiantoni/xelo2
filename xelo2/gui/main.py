@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from PyQt5.QtWidgets import QApplication
 
 from .interface import Interface
-from ..model import open_database
+from ..model.structure import open_database
 
 
 app = QApplication([])

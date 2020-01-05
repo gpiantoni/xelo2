@@ -3,20 +3,22 @@ from pathlib import Path
 from datetime import date
 
 from PyQt5.QtWidgets import (
-    QGroupBox,
-    QDockWidget,
-    QListWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QListWidgetItem,
-    QMainWindow,
-    QWidget,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
     QAbstractItemView,
     QComboBox,
     QDateEdit,
+    QDateTimeEdit,
+    QDockWidget,
+    QGroupBox,
+    QHBoxLayout,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
     )
 from PyQt5.QtGui import (
     QBrush,
@@ -268,35 +270,15 @@ class Interface(QMainWindow):
 
             parameters = {}
             if k == 'subj':
+                for v in ('sex', 'date_of_birth'):
+                    parameters.update(table_widget(TABLES['subjects'][v], getattr(obj, v)))
 
-                w = QComboBox()
-                w.addItems(TABLES['subjects']['sex'])
-                w.setCurrentText(obj.sex)
-                parameters['Sex'] = w
-
-                w = QDateEdit()
-                w.setCalendarPopup(True)
-                w.setDisplayFormat('dd MMM yyyy')
-                if obj.date_of_birth is None:
-                    w.setDate(date(1900, 1, 1))
-                    palette = QPalette()
-                    palette.setColor(QPalette.Text, Qt.red)
-                    w.setPalette(palette)
-                else:
-                    w.setDate(obj.date_of_birth)
-                parameters['Date of Birth'] = w
-
-            elif k == 'metc' and False:
-                parameters = {
-                    'Version': obj.version,
-                    'Date of Signature': obj.date_of_signature,
-                    }
+            elif k == 'metc':
+                for v in ('date_of_signature', ):
+                    parameters.update(table_widget(TABLES['protocols'][v], getattr(obj, v)))
 
             elif k == 'sess' and False:
                 parameters = {}
-
-                if obj.name in ('IEMU', 'OR'):
-                    parameters['Manufacturer'] = obj.Manufacturer
 
                 if obj.name == 'IEMU':
                     parameters['Date of implantation'] = obj.date_of_implantation
@@ -308,13 +290,9 @@ class Interface(QMainWindow):
                 elif obj.name == 'MRI':
                     parameters['Magnetic Field Strength'] = obj.MagneticFieldStrength
 
-            elif k == 'run' and False:
-                parameters = {
-                    'Task Name': obj.task_name,
-                    'Acquisition': obj.acquisition,
-                    'Start Time': obj.start_time,
-                    'End Time': obj.end_time,
-                    }
+            elif k == 'run':
+                for v in ('task_name', 'acquisition', 'start_time', 'end_time'):
+                    parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -437,3 +415,72 @@ class Interface(QMainWindow):
         settings.setValue('window/state', self.saveState())
 
         event.accept()
+
+
+def table_widget(table, value):
+
+    if table['type'].startswith('DATETIME'):
+        d = make_datetime(table, value)
+
+    elif table['type'].startswith('DATE'):
+        d = make_date(table, value)
+
+    elif table['type'].startswith('TEXT'):
+        if 'values' in table:
+            d = make_combobox(table, value)
+        else:
+            d = make_edit(table, value)
+
+    else:
+        raise ValueError(f'unknown type "{table["type"]}"')
+
+    return d
+
+
+def make_edit(table, value):
+    w = QLineEdit()
+    w.insert(value)
+    d = {table['name']: w}
+
+    return d
+
+
+def make_combobox(table, value):
+    w = QComboBox()
+    w.addItems(table['values'])
+    w.setCurrentText(value)
+    d = {table['name']: w}
+
+    return d
+
+
+def make_date(table, value):
+    w = QDateEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat('dd MMM yyyy')
+    if value is None:
+        w.setDate(date(1900, 1, 1))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDate(value)
+    d = {table['name']: w}
+
+    return d
+
+
+def make_datetime(table, value):
+    w = QDateTimeEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat('dd MMM yyyy HH:mm:ss')
+    if value is None:
+        w.setDateTime(date(1900, 1, 1))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDateTime(value)
+    d = {table['name']: w}
+
+    return d
