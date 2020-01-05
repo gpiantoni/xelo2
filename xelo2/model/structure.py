@@ -27,10 +27,12 @@ def list_subjects(cur):
 
 class Table():
     t = ''
+    subtables = {}
 
     def __init__(self, cur, id):
         self.id = id
         self.cur = cur
+        self.subtables = construct_subtables(self.t)
 
     def __repr__(self):
         return f'<{self.t} (#{self.id})>'
@@ -43,14 +45,15 @@ class Table():
         """So that we can compare instances very easily with set"""
         return hash(self.__repr__())
 
-    def __getattr__(self, key, table_name=None):
+    def __getattr__(self, key):
 
-        if table_name is None:
-            table_name = f'{self.t}s'
-            id_name = 'id'
+        if key in self.subtables:
+            table_name = self.subtables[key]
+            id_name = f'{self.t}_id'
 
         else:
-            id_name = f'{self.t}_id'
+            table_name = f'{self.t}s'
+            id_name = 'id'
 
         self.cur.execute(f"SELECT {key} FROM {table_name} WHERE {id_name} == {self.id}")
         out = self.cur.fetchone()
@@ -70,18 +73,19 @@ class Table():
         else:
             return out
 
-    def __setattr__(self, key, value, table_name=None):
+    def __setattr__(self, key, value):
 
-        if key in ('cur', 'id', 't', 'code'):
+        if key in ('cur', 'id', 't', 'code', 'subtables'):
             super().__setattr__(key, value)
             return
 
-        if table_name is None:
-            table_name = f'{self.t}s'
-            id_name = 'id'
+        if key in self.subtables:
+            table_name = self.subtables[key]
+            id_name = f'{self.t}_id'
 
         else:
-            id_name = f'{self.t}_id'
+            table_name = f'{self.t}s'
+            id_name = 'id'
 
         if key.startswith('date_of_'):
             value = _date(value)
@@ -162,16 +166,14 @@ class Protocol(Table_with_files):
     t = 'protocol'
 
     def __init__(self, cur, id):
-        self.id = id
-        self.cur = cur
+        super().__init__(cur, id)
 
 
 class Session(Table_with_files):
     t = 'session'
 
     def __init__(self, cur, id):
-        self.id = id
-        self.cur = cur
+        super().__init__(cur, id)
 
     def __repr__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
@@ -189,36 +191,6 @@ class Session(Table_with_files):
             SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
             """)
         return self.cur.fetchone()[0]
-
-    def __getattr__(self, key):
-
-        if key in ('date_of_surgery', ):
-            return super().__getattr__(key, 'sessions_or')
-
-        elif key in ('date_of_implantation', 'date_of_explantation'):
-            return super().__getattr__(key, 'sessions_iemu')
-
-        elif key in ('MagneticFieldStrength', ):
-            return super().__getattr__(key, 'sessions_mri')
-
-        else:
-            return super().__getattr__(key)
-
-    def __setattr__(self, key, value):
-        """When changing name, then you need to delete the unused table
-        """
-
-        if key in ('date_of_surgery', ):
-            return super().__setattr__(key, value, 'sessions_or')
-
-        elif key in ('date_of_implantation', 'date_of_explantation'):
-            return super().__setattr__(key, value, 'sessions_iemu')
-
-        elif key in ('MagneticFieldStrength', ):
-            return super().__setattr__(key, value, 'sessions_mri')
-
-        else:
-            return super().__setattr__(key, value)
 
     def list_runs(self):
         self.cur.execute(f"""\
@@ -263,7 +235,6 @@ class Subject(Table_with_files):
     t = 'subject'
 
     def __init__(self, cur, code):
-        self.cur = cur
         self.code = code
         cur.execute(f"SELECT id FROM subjects WHERE code == '{code}'")
         output = cur.fetchone()
@@ -271,7 +242,8 @@ class Subject(Table_with_files):
             raise ValueError(f'There is no "{code}" in "subjects" table')
 
         else:
-            self.id = output[0]
+            subj_id = output[0]
+        super().__init__(cur, subj_id)
 
     def list_sessions(self):
         self.cur.execute(f"""\
@@ -287,38 +259,6 @@ class Subject(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         session_id = self.cur.fetchone()[0]
 
-        if name == 'IEMU':
-            self.cur.execute(f"""\
-            INSERT INTO sessions_iemu (
-                "session_id",
-                "date_of_implantation",
-                "date_of_explantation")
-            VALUES (
-                "{session_id}",
-                {_date(kwargs.get('date_of_implantation'))},
-                {_date(kwargs.get('date_of_explantation'))}
-                )""")
-
-        elif name == 'OR':
-            self.cur.execute(f"""\
-            INSERT INTO sessions_or (
-                "session_id",
-                "date_of_surgery")
-            VALUES (
-                "{session_id}",
-                {_date(kwargs.get('date_of_surgery'))}
-                )""")
-
-        elif name == 'MRI':
-            self.cur.execute(f"""\
-            INSERT INTO sessions_mri (
-                "session_id",
-                "MagneticFieldStrength")
-            VALUES (
-                "{session_id}",
-                {_null(kwargs.get('MagneticFieldStrength'))}
-                )""")
-
         return Session(self.cur, session_id)
 
     @classmethod
@@ -328,6 +268,20 @@ class Subject(Table_with_files):
             INSERT INTO subjects ("code", "date_of_birth", "sex")
             VALUES ("{code}", {_date(date_of_birth)}, {_null(sex)})""")
         return Subject(cur, code)
+
+
+def construct_subtables(t):
+    if 'subtables' not in TABLES[t + 's']:
+        return {}
+    else:
+        subtables = TABLES[t + 's']['subtables']
+
+    attr_tables = {}
+    for k, v in subtables.items():
+        for i_v in v:
+            attr_tables[i_v] = k
+
+    return attr_tables
 
 
 def _null(s):

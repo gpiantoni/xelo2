@@ -71,8 +71,8 @@
       },
       "sessions_mri": {
         "session_id": null,
-        "magneticfieldstrength": {
-          "name": "MagneticFieldStrength",
+        "MagneticFieldStrength": {
+          "name": "Magnetic Field Strength",
           "type": "TEXT",
           "values": [
             "3T",

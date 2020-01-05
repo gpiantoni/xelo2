@@ -277,22 +277,28 @@ class Interface(QMainWindow):
                 for v in ('date_of_signature', ):
                     parameters.update(table_widget(TABLES['protocols'][v], getattr(obj, v)))
 
-            elif k == 'sess' and False:
+            elif k == 'sess':
                 parameters = {}
 
                 if obj.name == 'IEMU':
-                    parameters['Date of implantation'] = obj.date_of_implantation
-                    parameters['Date of explantation'] = obj.date_of_explantation
+                    for v in ('date_of_implantation', 'date_of_explantation'):
+                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_iemu'][v], getattr(obj, v)))
 
                 elif obj.name == 'OR':
-                    parameters['Date of surgery'] = obj.date_of_surgery
+                    for v in ('date_of_surgery', ):
+                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_or'][v], getattr(obj, v)))
 
                 elif obj.name == 'MRI':
-                    parameters['Magnetic Field Strength'] = obj.MagneticFieldStrength
+                    for v in ('MagneticFieldStrength', ):
+                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_mri'][v], getattr(obj, v)))
 
             elif k == 'run':
                 for v in ('task_name', 'acquisition', 'start_time', 'end_time'):
                     parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
+
+                if obj.task_name == 'motor':
+                    for v in ('body_part', 'left_right'):
+                        parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
