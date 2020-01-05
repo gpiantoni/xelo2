@@ -192,10 +192,7 @@ class Session(Table_with_files):
 
     def __getattr__(self, key):
 
-        if key in ('Manufacturer', ):
-            return super().__getattr__(key, 'sessions_ieeg')
-
-        elif key in ('date_of_surgery', ):
+        if key in ('date_of_surgery', ):
             return super().__getattr__(key, 'sessions_or')
 
         elif key in ('date_of_implantation', 'date_of_explantation'):
@@ -210,10 +207,8 @@ class Session(Table_with_files):
     def __setattr__(self, key, value):
         """When changing name, then you need to delete the unused table
         """
-        if key in ('Manufacturer', ):
-            return super().__setattr__(key, value, 'sessions_ieeg')
 
-        elif key in ('date_of_surgery', ):
+        if key in ('date_of_surgery', ):
             return super().__setattr__(key, value, 'sessions_or')
 
         elif key in ('date_of_implantation', 'date_of_explantation'):
