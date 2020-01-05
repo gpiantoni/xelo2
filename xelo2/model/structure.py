@@ -1,7 +1,7 @@
 from logging import getLogger
 from datetime import datetime
 from pathlib import Path
-from sqlite3 import OperationalError, connect
+from sqlite3 import OperationalError, connect, IntegrityError
 from json import load
 
 lg = getLogger(__name__)
@@ -75,7 +75,7 @@ class Table():
 
     def __setattr__(self, key, value):
 
-        if key in ('cur', 'id', 't', 'code', 'subtables'):
+        if key in ('cur', 'id', 't', 'code', 'subtables', '__class__'):
             super().__setattr__(key, value)
             return
 
@@ -94,12 +94,24 @@ class Table():
         else:
             value = _null(value)
 
+        try:  # create record id if it does not exist
+            self.cur.execute(f"""\
+                INSERT INTO {table_name} ("{id_name}")
+                VALUES ("{self.id}")
+                """)
+
+        except IntegrityError:
+            pass
+
         try:
-            self.cur.execute(f"UPDATE {table_name} SET {key} = {value} WHERE {id_name} == {self.id}")
+            self.cur.execute(f"""\
+                UPDATE {table_name}
+                SET "{key}"={value}
+                WHERE {id_name} == "{self.id}"
+                """)
 
-        except OperationalError as err:
+        except (OperationalError, IntegrityError) as err:
             lg.warning(err)
-
 
 class Table_with_files(Table):
 
@@ -164,6 +176,20 @@ class Run(Table_with_files):
 
 class Protocol(Table_with_files):
     t = 'protocol'
+
+    def __init__(self, cur, id):
+        super().__init__(cur, id)
+
+
+class Channels(Table_with_files):
+    t = 'channel'
+
+    def __init__(self, cur, id):
+        super().__init__(cur, id)
+
+
+class Electrodes(Table_with_files):
+    t = 'electrode'
 
     def __init__(self, cur, id):
         super().__init__(cur, id)

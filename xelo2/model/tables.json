@@ -230,6 +230,7 @@
     },
     "subtables": {
       "runs_motor": {
+        "run_id": null,
         "body_part": {
           "name": "Body Part",
           "type": "TEXT",
@@ -294,7 +295,7 @@
     "session_id": null,
     "name": {
       "name": "name",
-      "type": "TEXT"
+      "type": "TEXT UNIQUE"
     },
     "type": {
       "name": "type",
@@ -319,10 +320,10 @@
     }
   },
   "electrodes": {
-    "session_id": null,
+    "id": null,
     "name": {
       "name": "name",
-      "type": "TEXT"
+      "type": "TEXT UNIQUE"
     },
     "x": {
       "name": "offset",
@@ -369,6 +370,14 @@
   },
   "protocols_files": {
     "protocol_id": null,
+    "file_id": null
+  },
+  "channels_files": {
+    "channel_id": null,
+    "file_id": null
+  },
+  "electrodes_files": {
+    "electrode_id": null,
     "file_id": null
   },
   "runs_files": {
