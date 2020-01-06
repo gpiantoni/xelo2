@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QDateTimeEdit,
     QDockWidget,
     QGroupBox,
+    QFileDialog,
     QHBoxLayout,
     QLineEdit,
     QListWidget,
@@ -402,8 +403,7 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 3, item)
 
     def do_export(self):
-        recording_ids = tuple([x['recording'] for x in self.exports])
-        print(recording_ids)
+        recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'
         self.cur.execute(f"""\
             SELECT subjects.id, sessions.id, runs.id, recordings.id FROM recordings
             JOIN runs ON runs.id == recordings.run_id
@@ -413,8 +413,11 @@ class Interface(QMainWindow):
             """)
         subset = self.cur.fetchall()
 
-        data_path = Path('/home/gio/tools/xelo2/data/bids')
-        create_bids(data_path, cur=self.cur, deface=False, subset=subset)
+        data_path = QFileDialog.getExistingDirectory()
+        if data_path == '':
+            return
+        create_bids(Path(data_path), cur=self.cur, deface=False, subset=subset)
+        lg.warning('export finished')
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
