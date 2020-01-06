@@ -1,391 +1,400 @@
 {
-  "subjects": {
-    "id": null,
-    "code": {
-      "name": "Subject Code",
-      "type": "TEXT UNIQUE NOT NULL"
-    },
-    "date_of_birth": {
-      "name": "Date of Birth",
-      "type": "DATE"
-    },
-    "sex": {
-      "name": "Sex",
-      "type": "TEXT",
-      "values": [
-        "Female",
-        "Male",
-        "Unknown"
-      ]
-    }
-  },
-  "protocols": {
-    "id": null,
-    "metc": {
-      "name": "METC",
-      "type": "TEXT NOT NULL",
-      "values": [
-        "07-260",
-        "14-090",
-        "14-420",
-        "14-622",
-        "Request from clinic"
-      ]
-    },
-    "date_of_signature": {
-      "name": "Date of Signature",
-      "type": "DATE"
-    }
-  },
-  "sessions": {
-    "id": null,
-    "subject_id": null,
-    "name": {
-      "name": "name",
-      "type": "TEXT NOT NULL",
-      "values": [
-        "IEMU",
-        "OR",
-        "MRI",
-        "CT"
-      ]
-    },
-    "subtables": {
-      "sessions_iemu": {
-        "session_id": null,
-        "date_of_implantation": {
-          "name": "Date of Implementation",
-          "type": "DATE"
+    "subjects": {
+        "id": null,
+        "code": {
+            "name": "Subject Code",
+            "type": "TEXT UNIQUE NOT NULL"
         },
-        "date_of_explantation": {
-          "name": "Date of Explantation",
-          "type": "DATE"
+        "date_of_birth": {
+            "name": "Date of Birth",
+            "type": "DATE"
+        },
+        "sex": {
+            "name": "Sex",
+            "type": "TEXT",
+            "values": [
+                "Female",
+                "Male",
+                "Unknown"
+            ]
         }
-      },
-      "sessions_or": {
+    },
+    "protocols": {
+        "id": null,
+        "metc": {
+            "name": "METC",
+            "type": "TEXT NOT NULL",
+            "values": [
+                "07-260",
+                "14-090",
+                "14-420",
+                "14-622",
+                "Request from clinic"
+            ]
+        },
+        "date_of_signature": {
+            "name": "Date of Signature",
+            "type": "DATE"
+        }
+    },
+    "sessions": {
+        "id": null,
+        "subject_id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT NOT NULL",
+            "values": [
+                "IEMU",
+                "OR",
+                "MRI",
+                "CT"
+            ]
+        },
+        "subtables": {
+            "sessions_iemu": {
+                "session_id": null,
+                "date_of_implantation": {
+                    "name": "Date of Implementation",
+                    "type": "DATE"
+                },
+                "date_of_explantation": {
+                    "name": "Date of Explantation",
+                    "type": "DATE"
+                }
+            },
+            "sessions_or": {
+                "session_id": null,
+                "date_of_surgery": {
+                    "name": "Date of Surgery",
+                    "type": "DATE"
+                }
+            },
+            "sessions_mri": {
+                "session_id": null,
+                "MagneticFieldStrength": {
+                    "name": "Magnetic Field Strength",
+                    "type": "TEXT",
+                    "values": [
+                        "3T",
+                        "7T"
+                    ]
+                }
+            }
+        }
+    },
+    "sessions_protocols": {
         "session_id": null,
-        "date_of_surgery": {
-          "name": "Date of Surgery",
-          "type": "DATE"
-        }
-      },
-      "sessions_mri": {
+        "protocol_id": null
+    },
+    "runs": {
+        "id": null,
         "session_id": null,
-        "MagneticFieldStrength": {
-          "name": "Magnetic Field Strength",
-          "type": "TEXT",
-          "values": [
-            "3T",
-            "7T"
-          ]
+        "task_name": {
+            "name": "Task Name",
+            "type": "TEXT NOT NULL",
+            "values": [
+                "DTI",
+                "MIQ",
+                "P300",
+                "abled",
+                "action_selection",
+                "angiography_scan",
+                "animal",
+                "audcomsent",
+                "audcomword",
+                "auditory_attention",
+                "auditory_localizer",
+                "bair_hrfpattern",
+                "bair_prf",
+                "bair_spatialobject",
+                "bair_spatialpattern",
+                "bair_temporalpattern",
+                "bargrasp",
+                "bci_cursor_control_attent",
+                "bci_cursor_control_motor",
+                "bci_cursor_control_taal",
+                "bci_cursor_control_visual",
+                "bci_cursor_control_wm",
+                "boldfinger",
+                "boldhand",
+                "boldsat",
+                "calc",
+                "checkerboard",
+                "chill",
+                "clickaway",
+                "count",
+                "deleted",
+                "divatt",
+                "eccentricity_mapping",
+                "emotion",
+                "error_potential",
+                "eye_task",
+                "eyes_open_close",
+                "faces_emotion",
+                "faces_houses",
+                "facial_expressions",
+                "feedback_wm",
+                "finger_mapping",
+                "gestures",
+                "instant_aud_recall",
+                "knottask",
+                "language",
+                "letter_picture_matching",
+                "line_bisection",
+                "mario",
+                "mental_rotation",
+                "mickey_task",
+                "mooney",
+                "motionmapper",
+                "motor",
+                "mouth_movements",
+                "move_imagine_rest",
+                "move_three_conditions",
+                "movi",
+                "movie_watching",
+                "movieben",
+                "multi_localizer",
+                "music",
+                "natural_rest",
+                "notask",
+                "noun",
+                "number",
+                "numerosity",
+                "phonemes",
+                "picnam",
+                "pokemotor",
+                "polar_mapping",
+                "portem",
+                "pulse",
+                "reading_task",
+                "reference_scan",
+                "rest",
+                "retinotopic_map",
+                "rotating_sphere",
+                "rotmotion",
+                "saccade",
+                "sendkeys",
+                "single_words",
+                "sleep",
+                "smartbrain",
+                "soc_patterns",
+                "somatosensory",
+                "sternberg",
+                "stimulation",
+                "story",
+                "sweeptone",
+                "switchspeed",
+                "syllables",
+                "t1_anatomy_scan",
+                "t2_anatomy_scan",
+                "t2star_anatomy_scan",
+                "threshold",
+                "tongue_movements",
+                "touchy",
+                "vardy_beeps",
+                "verb",
+                "verb_it",
+                "visual_attention",
+                "visual_field_map",
+                "visual_left_right_map",
+                "visual_speed_task",
+                "visual_task_Serge",
+                "visual_up_down_map",
+                "vowels",
+                "woezel_pip"
+            ]
+        },
+        "acquisition": {
+            "name": "Acquisition",
+            "type": "TEXT NOT NULL",
+            "values": [
+                "func",
+                "anat",
+                "dwi",
+                "fmap",
+                "ieeg",
+                "dwi",
+                "eeg",
+                "meg",
+                "beh",
+                "ct"
+            ]
+        },
+        "start_time": {
+            "name": "Start Time",
+            "type": "DATETIME"
+        },
+        "end_time": {
+            "name": "End Time",
+            "type": "DATETIME"
+        },
+        "subtables": {
+            "runs_motor": {
+                "run_id": null,
+                "body_part": {
+                    "name": "Body Part",
+                    "type": "TEXT",
+                    "values": [
+                        "arm",
+                        "foot",
+                        "hand",
+                        "indexfinger",
+                        "leg",
+                        "littlefinger",
+                        "middlefinger",
+                        "mouth",
+                        "ringfinger",
+                        "thumb",
+                        "tongue"
+                    ]
+                },
+                "left_right": {
+                    "name": "Laterality",
+                    "type": "TEXT",
+                    "values": [
+                        "left",
+                        "right",
+                        "both"
+                    ]
+                }
+            }
         }
-      }
-    }
-  },
-  "sessions_protocols": {
-    "session_id": null,
-    "protocol_id": null
-  },
-  "runs": {
-    "id": null,
-    "session_id": null,
-    "task_name": {
-      "name": "Task Name",
-      "type": "TEXT NOT NULL",
-      "values": [
-        "DTI",
-        "MIQ",
-        "P300",
-        "abled",
-        "action_selection",
-        "angiography_scan",
-        "animal",
-        "audcomsent",
-        "audcomword",
-        "auditory_attention",
-        "auditory_localizer",
-        "bair_hrfpattern",
-        "bair_prf",
-        "bair_spatialobject",
-        "bair_spatialpattern",
-        "bair_temporalpattern",
-        "bargrasp",
-        "bci_cursor_control_attent",
-        "bci_cursor_control_motor",
-        "bci_cursor_control_taal",
-        "bci_cursor_control_visual",
-        "bci_cursor_control_wm",
-        "boldfinger",
-        "boldhand",
-        "boldsat",
-        "calc",
-        "checkerboard",
-        "chill",
-        "clickaway",
-        "count",
-        "deleted",
-        "divatt",
-        "eccentricity_mapping",
-        "emotion",
-        "error_potential",
-        "eye_task",
-        "eyes_open_close",
-        "faces_emotion",
-        "faces_houses",
-        "facial_expressions",
-        "feedback_wm",
-        "finger_mapping",
-        "gestures",
-        "instant_aud_recall",
-        "knottask",
-        "language",
-        "letter_picture_matching",
-        "line_bisection",
-        "mario",
-        "mental_rotation",
-        "mickey_task",
-        "mooney",
-        "motionmapper",
-        "motor",
-        "mouth_movements",
-        "move_imagine_rest",
-        "move_three_conditions",
-        "movi",
-        "movie_watching",
-        "movieben",
-        "multi_localizer",
-        "music",
-        "natural_rest",
-        "notask",
-        "noun",
-        "number",
-        "numerosity",
-        "phonemes",
-        "picnam",
-        "pokemotor",
-        "polar_mapping",
-        "portem",
-        "pulse",
-        "reading_task",
-        "reference_scan",
-        "rest",
-        "retinotopic_map",
-        "rotating_sphere",
-        "rotmotion",
-        "saccade",
-        "sendkeys",
-        "single_words",
-        "sleep",
-        "smartbrain",
-        "soc_patterns",
-        "somatosensory",
-        "sternberg",
-        "stimulation",
-        "story",
-        "sweeptone",
-        "switchspeed",
-        "syllables",
-        "t1_anatomy_scan",
-        "t2_anatomy_scan",
-        "t2star_anatomy_scan",
-        "threshold",
-        "tongue_movements",
-        "touchy",
-        "vardy_beeps",
-        "verb",
-        "verb_it",
-        "visual_attention",
-        "visual_field_map",
-        "visual_left_right_map",
-        "visual_speed_task",
-        "visual_task_Serge",
-        "visual_up_down_map",
-        "vowels",
-        "woezel_pip"
-      ]
     },
-    "acquisition": {
-      "name": "Acquisition",
-      "type": "TEXT NOT NULL",
-      "values": [
-        "func",
-        "anat",
-        "dwi",
-        "fmap",
-        "ieeg",
-        "dwi",
-        "eeg",
-        "meg",
-        "beh",
-        "ct"
-      ]
-    },
-    "start_time": {
-      "name": "Start Time",
-      "type": "DATETIME"
-    },
-    "end_time": {
-      "name": "End Time",
-      "type": "DATETIME"
-    },
-    "subtables": {
-      "runs_motor": {
+    "events": {
+        "id": null,
         "run_id": null,
-        "body_part": {
-          "name": "Body Part",
-          "type": "TEXT",
-          "values": [
-            "hand",
-            "foot"
-          ]
+        "onset": {
+            "name": "onset",
+            "type": "FLOAT"
         },
-        "left_right": {
-          "name": "Laterality",
-          "type": "TEXT",
-          "values": [
-            "left",
-            "right",
-            "both"
-          ]
+        "duration": {
+            "name": "duration",
+            "type": "FLOAT"
+        },
+        "trial_type": {
+            "name": "trial_type",
+            "type": "TEXT"
         }
-      }
+    },
+    "recordings": {
+        "id": null,
+        "run_id": null,
+        "modality": {
+            "name": "modality",
+            "type": "text",
+            "values": [
+                "ieeg",
+                "bold",
+                "T1w",
+                "T2w",
+                "T2star",
+                "PD",
+                "angio",
+                "epi",
+                "dwi",
+                "ct"
+            ]
+        },
+        "offset": {
+            "name": "offset",
+            "type": "FLOAT"
+        }
+    },
+    "channels": {
+        "recording_id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT UNIQUE"
+        },
+        "type": {
+            "name": "type",
+            "type": "TEXT",
+            "values": [
+                "ECOG",
+                "SEEG",
+                "EOG",
+                "EMG",
+                "TRIG",
+                "OTHER"
+            ]
+        },
+        "units": {
+            "name": "units",
+            "type": "TEXT",
+            "values": [
+                "V",
+                "mV",
+                "microV"
+            ]
+        }
+    },
+    "electrodes": {
+        "id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT UNIQUE"
+        },
+        "x": {
+            "name": "offset",
+            "type": "FLOAT"
+        },
+        "y": {
+            "name": "offset",
+            "type": "FLOAT"
+        },
+        "z": {
+            "name": "offset",
+            "type": "FLOAT"
+        },
+        "size": {
+            "name": "offset",
+            "type": "FLOAT"
+        }
+    },
+    "files": {
+        "id": null,
+        "format": {
+            "name": "format",
+            "type": "TEXT",
+            "values": [
+                "par",
+                "nifti",
+                "bci2000",
+                "micromed",
+                "blackrock"
+            ]
+        },
+        "path": {
+            "name": "path",
+            "type": "TEXT"
+        }
+    },
+    "subjects_files": {
+        "subject_id": null,
+        "file_id": null
+    },
+    "sessions_files": {
+        "session_id": null,
+        "file_id": null
+    },
+    "protocols_files": {
+        "protocol_id": null,
+        "file_id": null
+    },
+    "channels_files": {
+        "channel_id": null,
+        "file_id": null
+    },
+    "electrodes_files": {
+        "electrode_id": null,
+        "file_id": null
+    },
+    "runs_files": {
+        "run_id": null,
+        "file_id": null
+    },
+    "recordings_files": {
+        "recording_id": null,
+        "file_id": null
     }
-  },
-  "events": {
-    "id": null,
-    "run_id": null,
-    "onset": {
-      "name": "onset",
-      "type": "FLOAT"
-    },
-    "duration": {
-      "name": "duration",
-      "type": "FLOAT"
-    },
-    "trial_type": {
-      "name": "trial_type",
-      "type": "TEXT"
-    }
-  },
-  "recordings": {
-    "id": null,
-    "run_id": null,
-    "modality": {
-      "name": "modality",
-      "type": "text",
-      "values": [
-        "ieeg",
-        "bold",
-        "T1w",
-        "T2w",
-        "T2star",
-        "PD",
-        "angio",
-        "epi",
-        "dwi",
-        "ct"
-      ]
-    },
-    "offset": {
-      "name": "offset",
-      "type": "FLOAT"
-    }
-  },
-  "channels": {
-    "session_id": null,
-    "name": {
-      "name": "name",
-      "type": "TEXT UNIQUE"
-    },
-    "type": {
-      "name": "type",
-      "type": "TEXT",
-      "values": [
-        "ECOG",
-        "SEEG",
-        "EOG",
-        "EMG",
-        "TRIG",
-        "OTHER"
-      ]
-    },
-    "units": {
-      "name": "units",
-      "type": "TEXT",
-      "values": [
-        "V",
-        "mV",
-        "microV"
-      ]
-    }
-  },
-  "electrodes": {
-    "id": null,
-    "name": {
-      "name": "name",
-      "type": "TEXT UNIQUE"
-    },
-    "x": {
-      "name": "offset",
-      "type": "FLOAT"
-    },
-    "y": {
-      "name": "offset",
-      "type": "FLOAT"
-    },
-    "z": {
-      "name": "offset",
-      "type": "FLOAT"
-    },
-    "size": {
-      "name": "offset",
-      "type": "FLOAT"
-    }
-  },
-  "files": {
-    "id": null,
-    "format": {
-      "name": "format",
-      "type": "TEXT",
-      "values": [
-        "par",
-        "nifti",
-        "bci2000",
-        "micromed",
-        "blackrock"
-      ]
-    },
-    "path": {
-      "name": "path",
-      "type": "TEXT"
-    }
-  },
-  "subjects_files": {
-    "subject_id": null,
-    "file_id": null
-  },
-  "sessions_files": {
-    "session_id": null,
-    "file_id": null
-  },
-  "protocols_files": {
-    "protocol_id": null,
-    "file_id": null
-  },
-  "channels_files": {
-    "channel_id": null,
-    "file_id": null
-  },
-  "electrodes_files": {
-    "electrode_id": null,
-    "file_id": null
-  },
-  "runs_files": {
-    "run_id": null,
-    "file_id": null
-  },
-  "recordings_files": {
-    "recording_id": null,
-    "file_id": null
-  }
 }
