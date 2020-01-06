@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
     QMainWindow,
     QPushButton,
+    QDoubleSpinBox,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -38,6 +39,7 @@ from ..bids.root import create_bids
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
+ELECTRODES_COLUMNS = ["name", "x", "y", "z", "size", "material"]
 
 class Interface(QMainWindow):
 
@@ -84,6 +86,13 @@ class Interface(QMainWindow):
         t_files.setColumnCount(3)
         t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
         t_files.verticalHeader().setVisible(False)
+
+        # ELECTRODES: Widget
+        t_elec = QTableWidget()
+        t_elec.horizontalHeader().setStretchLastSection(True)
+        t_elec.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_elec.setColumnCount(len(ELECTRODES_COLUMNS))
+        t_elec.setHorizontalHeaderLabels(ELECTRODES_COLUMNS)
 
         # EXPORT: Widget
         w_export = QWidget()
@@ -148,6 +157,14 @@ class Interface(QMainWindow):
         dockwidget.setObjectName('dock_files')  # savestate
         self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
 
+        # electrodes
+        dockwidget = QDockWidget('Electrodes', self)
+        dockwidget.setWidget(t_elec)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_elec')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
         # export
         dockwidget = QDockWidget('Export', self)
         dockwidget.setWidget(w_export)
@@ -169,6 +186,7 @@ class Interface(QMainWindow):
         self.lists = lists
         self.t_params = t_params
         self.t_files = t_files
+        self.t_elec = t_elec
         self.t_export = t_export
         self.exports = []
 
@@ -202,6 +220,7 @@ class Interface(QMainWindow):
 
         elif item.t == 'session':
             self.list_runs(item)
+            self.show_electrodes(item)
 
         elif item.t == 'protocol':
             pass
@@ -246,6 +265,21 @@ class Interface(QMainWindow):
         self.lists['run'].setCurrentRow(0)
 
         self.list_recordings(run)
+
+    def show_electrodes(self, sess):
+        self.cur.execute(f"""\
+            SELECT name, x, y, z, size, material FROM electrodes
+            WHERE session_id == {sess.id}
+        """)
+        val = self.cur.fetchall()
+
+        self.t_elec.clearContents()
+        self.t_elec.setRowCount(len(val))
+
+        for i_row, v in enumerate(val):
+            for i_col, name in enumerate(ELECTRODES_COLUMNS):
+                item = QTableWidgetItem(str(v[i_col]))
+                self.t_elec.setItem(i_row, i_col, item)
 
     def list_recordings(self, run):
 
@@ -434,6 +468,9 @@ def table_widget(table, value):
     elif table['type'].startswith('DATE'):
         d = make_date(table, value)
 
+    elif table['type'].startswith('FLOAT'):
+        d = make_float(table, value)
+
     elif table['type'].startswith('TEXT'):
         if 'values' in table:
             d = make_combobox(table, value)
@@ -449,6 +486,15 @@ def table_widget(table, value):
 def make_edit(table, value):
     w = QLineEdit()
     w.insert(value)
+    d = {table['name']: w}
+
+    return d
+
+
+def make_float(table, value):
+    w = QDoubleSpinBox()
+    w.setRange(-500, 500)
+    w.setValue(value)
     d = {table['name']: w}
 
     return d

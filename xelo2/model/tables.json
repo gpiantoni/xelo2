@@ -329,26 +329,34 @@
         }
     },
     "electrodes": {
-        "id": null,
+        "session_id": null,
         "name": {
             "name": "name",
-            "type": "TEXT UNIQUE"
+            "type": "TEXT"
         },
         "x": {
-            "name": "offset",
+            "name": "x",
             "type": "FLOAT"
         },
         "y": {
-            "name": "offset",
+            "name": "y",
             "type": "FLOAT"
         },
         "z": {
-            "name": "offset",
+            "name": "z",
             "type": "FLOAT"
         },
         "size": {
-            "name": "offset",
+            "name": "size",
             "type": "FLOAT"
+        },
+        "material": {
+            "name": "material",
+            "type": "TEXT",
+            "values": [
+                "platinum",
+                "titanium"
+            ]
         }
     },
     "files": {
@@ -383,10 +391,6 @@
     },
     "channels_files": {
         "channel_id": null,
-        "file_id": null
-    },
-    "electrodes_files": {
-        "electrode_id": null,
         "file_id": null
     },
     "runs_files": {

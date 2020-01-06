@@ -188,7 +188,7 @@ class Channels(Table_with_files):
         super().__init__(cur, id)
 
 
-class Electrodes(Table_with_files):
+class Electrodes(Table):
     t = 'electrode'
 
     def __init__(self, cur, id):
