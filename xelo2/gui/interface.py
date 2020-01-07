@@ -335,6 +335,12 @@ class Interface(QMainWindow):
                     for v in ('body_part', 'left_right', 'execution_imagery'):
                         parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))
 
+            elif k == 'rec':
+
+                if obj.modality == 'bold':
+                    for v in ('RepetitionTime', ):
+                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_bold'][v], getattr(obj, v)))
+
             for p_k, p_v in parameters.items():
                 all_params.append({
                     'level': self.groups[k].title(),
@@ -494,7 +500,16 @@ def make_edit(table, value):
 def make_float(table, value):
     w = QDoubleSpinBox()
     w.setRange(-500, 500)
-    w.setValue(value)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        w.setValue(value)
+
     d = {table['name']: w}
 
     return d

@@ -322,6 +322,15 @@
         "offset": {
             "name": "offset",
             "type": "FLOAT"
+        },
+        "subtables": {
+            "recordings_bold": {
+                "recording_id": null,
+                "RepetitionTime": {
+                    "name": "Repetition Time (TR)",
+                    "type": "FLOAT"
+                }
+            }
         }
     },
     "channels": {
