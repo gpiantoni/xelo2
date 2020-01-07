@@ -45,6 +45,13 @@ class Table():
         """So that we can compare instances very easily with set"""
         return hash(self.__repr__())
 
+    def delete(self):
+        self.cur.execute(f"""\
+            DELETE FROM {self.t}s WHERE id == {self.id}
+            """)
+        self.id = None
+        self.cur = None
+
     def __getattr__(self, key):
 
         if key in self.subtables:
@@ -181,7 +188,7 @@ class Protocol(Table_with_files):
         super().__init__(cur, id)
 
 
-class Channels(Table_with_files):
+class Channels(Table):
     t = 'channel'
 
     def __init__(self, cur, id):

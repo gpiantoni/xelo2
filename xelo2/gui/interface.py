@@ -331,6 +331,10 @@ class Interface(QMainWindow):
                 for v in ('task_name', 'acquisition', 'start_time', 'end_time', 'xelo_stem', 'performance', 'task_description', 'information'):
                     parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
 
+                if obj.task_name == 'mario':
+                    for v in ('velocity', ):
+                        parameters.update(table_widget(TABLES['runs']['subtables']['runs_mario'][v], getattr(obj, v)))
+
                 if obj.task_name == 'motor':
                     for v in ('body_part', 'left_right', 'execution_imagery'):
                         parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))

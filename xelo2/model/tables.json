@@ -245,6 +245,13 @@
             "type": "TEXT"
         },
         "subtables": {
+            "runs_mario": {
+                "run_id": null,
+                "velocity": {
+                    "name": "Velocity",
+                    "type": "TEXT"
+                }
+            },
             "runs_motor": {
                 "run_id": null,
                 "body_part": {
@@ -436,10 +443,6 @@
     },
     "protocols_files": {
         "protocol_id": null,
-        "file_id": null
-    },
-    "channels_files": {
-        "channel_id": null,
         "file_id": null
     },
     "runs_files": {
