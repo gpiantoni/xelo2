@@ -202,7 +202,8 @@
                 "visual_task_Serge",
                 "visual_up_down_map",
                 "vowels",
-                "woezel_pip"
+                "woezel_pip",
+                "top_up"
             ]
         },
         "acquisition": {
@@ -426,7 +427,8 @@
                 "micromed",
                 "blackrock",
                 "task_log",
-                "dataglove"
+                "dataglove",
+                "scanphyslog"
             ]
         },
         "path": {
