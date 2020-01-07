@@ -118,7 +118,8 @@ class Table():
                 """)
 
         except (OperationalError, IntegrityError) as err:
-            lg.warning(err)
+            lg.warning(f'{str(err)} when setting {key}={value} for {repr(self)}')
+
 
 class Table_with_files(Table):
 

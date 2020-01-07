@@ -75,6 +75,7 @@
                     "name": "Magnetic Field Strength",
                     "type": "TEXT",
                     "values": [
+                        "1.5T",
                         "3T",
                         "7T"
                     ]
