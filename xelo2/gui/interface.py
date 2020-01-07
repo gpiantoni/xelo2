@@ -328,11 +328,11 @@ class Interface(QMainWindow):
                         parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_mri'][v], getattr(obj, v)))
 
             elif k == 'run':
-                for v in ('task_name', 'acquisition', 'start_time', 'end_time'):
+                for v in ('task_name', 'acquisition', 'start_time', 'end_time', 'xelo_stem', 'performance', 'task_description', 'information'):
                     parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
 
                 if obj.task_name == 'motor':
-                    for v in ('body_part', 'left_right'):
+                    for v in ('body_part', 'left_right', 'execution_imagery'):
                         parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():

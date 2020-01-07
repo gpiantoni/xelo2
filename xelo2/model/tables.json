@@ -228,6 +228,22 @@
             "name": "End Time",
             "type": "DATETIME"
         },
+        "xelo_stem": {
+            "name": "Xelo xml file",
+            "type": "TEXT"
+        },
+        "performance": {
+            "name": "Performance",
+            "type": "TEXT"
+        },
+        "task_description": {
+            "name": "Task Description",
+            "type": "TEXT"
+        },
+        "information": {
+            "name": "Information (Acquisition)",
+            "type": "TEXT"
+        },
         "subtables": {
             "runs_motor": {
                 "run_id": null,
@@ -255,6 +271,14 @@
                         "left",
                         "right",
                         "both"
+                    ]
+                },
+                "execution_imagery": {
+                    "name": "Execution/Imagery",
+                    "type": "TEXT",
+                    "values": [
+                        "execution",
+                        "imagery"
                     ]
                 }
             }
