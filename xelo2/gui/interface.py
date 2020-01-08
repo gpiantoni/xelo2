@@ -525,7 +525,8 @@ def make_float(table, value):
 
 def make_combobox(table, value):
     w = QComboBox()
-    w.addItems(table['values'])
+    values = ['Unknown', ] + table['values']
+    w.addItems(values)
     w.setCurrentText(value)
     d = {table['name']: w}
 

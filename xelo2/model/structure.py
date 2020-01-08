@@ -285,7 +285,7 @@ class Subject(Table_with_files):
         WHERE sessions.subject_id ==  '{self.id}'""")
         return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
 
-    def add_session(self, name, **kwargs):
+    def add_session(self, name):
 
         self.cur.execute(f"""\
         INSERT INTO sessions ("subject_id", "name")

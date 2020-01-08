@@ -14,8 +14,7 @@
             "type": "TEXT",
             "values": [
                 "Female",
-                "Male",
-                "Unknown"
+                "Male"
             ]
         }
     },
@@ -294,7 +293,6 @@
         }
     },
     "events": {
-        "id": null,
         "run_id": null,
         "onset": {
             "name": "onset",
