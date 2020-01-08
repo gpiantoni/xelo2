@@ -202,6 +202,7 @@
                 "visual_up_down_map",
                 "vowels",
                 "woezel_pip",
+                "ct_anatomy_scan",
                 "top_up"
             ]
         },
@@ -333,15 +334,34 @@
             "type": "FLOAT"
         },
         "subtables": {
-            "recordings_bold": {
+            "recordings_mri": {
                 "recording_id": null,
-                "RepetitionTime": {
-                    "name": "Repetition Time (TR)",
-                    "type": "FLOAT"
+                "region_of_interest": {
+                    "name": "Region of Interest",
+                    "type": "TEXT"
+                },
+                "PulseSequenceType": {
+                    "name": "Pulse Sequence Type",
+                    "type": "TEXT",
+                    "values": [
+                        "Gradient-Echo EPI",
+                        "Spin-Echo EPI",
+                        "Multiband Gradient-Echo EPI",
+                        "PRESTO",
+                        "MP2RAGE"
+                    ]
                 }
             },
             "recordings_epi": {
                 "recording_id": null,
+                "FlipAngle": {
+                    "name": "Flip Angle",
+                    "type": "FLOAT"
+                },
+                "MultibandAccelerationFactor": {
+                    "name": "Multiband Acceleration Factor",
+                    "type": "INTEGER"
+                },
                 "PhaseEncodingDirection": {
                     "name": "Phase Encoding Direction",
                     "type": "TEXT",
@@ -352,6 +372,33 @@
                         "PA",
                         "SI",
                         "IS"
+                    ]
+                },
+                "SliceEncodingDirection": {
+                    "name": "Slice Encoding Direction",
+                    "type": "TEXT",
+                    "values": [
+                        "LR",
+                        "RL",
+                        "AP",
+                        "PA",
+                        "SI",
+                        "IS"
+                    ]
+                },
+                "RepetitionTime": {
+                    "name": "Repetition Time (TR)",
+                    "type": "FLOAT"
+                }
+            },
+            "recordings_ieeg": {
+                "recording_id": null,
+                "Manufacturer": {
+                    "name": "Manufacturer",
+                    "type": "TEXT",
+                    "values": [
+                        "BlackRock",
+                        "Micromed"
                     ]
                 }
             }
@@ -381,7 +428,7 @@
             "values": [
                 "V",
                 "mV",
-                "microV"
+                "µV"
             ]
         }
     },
@@ -415,6 +462,27 @@
                 "titanium"
             ]
         }
+    },
+    "experimenters": {
+        "id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT UNIQUE",
+            "values": [
+                "Efraim",
+                "Erik",
+                "Francisco",
+                "Gio",
+                "Mariana",
+                "Mariska",
+                "Sacha",
+                "Zac"
+            ]
+        }
+    },
+    "runs_experimenters": {
+        "run_id": null,
+        "experimenter_id": null
     },
     "files": {
         "id": null,

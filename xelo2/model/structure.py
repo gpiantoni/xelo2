@@ -181,6 +181,24 @@ class Run(Table_with_files):
 
         return Recording(self.cur, recording_id)
 
+    @property
+    def experimenters(self):
+        self.cur.execute(f"""\
+            SELECT name FROM experimenters
+            JOIN runs_experimenters ON experimenters.id == runs_experimenters.experimenter_id
+            WHERE run_id == {self.id}""")
+        return [x[0] for x in self.cur.fetchall()]
+
+    @experimenters.setter
+    def experimenters(self, experimenters):
+        """TODO: probably we should delete the previous pairs"""
+        for exp in experimenters:
+            self.cur.execute(f'SELECT id FROM experimenters WHERE name == "{exp}"')
+            exp_id = self.cur.fetchone()[0]
+            self.cur.execute(f"""\
+                INSERT INTO runs_experimenters ("run_id", "experimenter_id")
+                VALUES ("{self.id}", "{exp_id}")""")
+
 
 class Protocol(Table_with_files):
     t = 'protocol'
