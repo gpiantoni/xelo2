@@ -66,8 +66,7 @@ class Interface(QMainWindow):
             new[k] = QPushButton('New ' + v.title())
             new[k].setDisabled(True)
             layout.addWidget(new[k])
-            if k == 'subjects':
-                lists[k].setSortingEnabled(True)
+            lists[k].setSortingEnabled(True)
             if k == 'recordings':
                 to_export = QPushButton('Export')
                 to_export.clicked.connect(self.exporting)
@@ -244,8 +243,7 @@ class Interface(QMainWindow):
 
         protocols = []
         for sess in subj.list_sessions():
-            item = QListWidgetItem(sess.name)
-            item.setData(Qt.UserRole, sess)
+            item = QListWidgetItem_time(sess, f'{sess.name} ({sess.start_time:%d %b %Y})')
             self.lists['sessions'].addItem(item)
             protocols.extend(sess.list_protocols())
         self.lists['sessions'].setCurrentRow(0)
@@ -262,8 +260,7 @@ class Interface(QMainWindow):
             self.lists[l].clear()
 
         for run in sess.list_runs():
-            item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
-            item.setData(Qt.UserRole, run)
+            item = QListWidgetItem_time(run, f'{run.task_name} ({run.acquisition})')
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
 
@@ -591,3 +588,13 @@ def make_datetime(table, value):
         w.setDateTime(value)
 
     return w
+
+
+class QListWidgetItem_time(QListWidgetItem):
+    def __init__(self, obj, title):
+        self.obj = obj
+        super().__init__(title)
+        self.setData(Qt.UserRole, obj)
+
+    def __lt__(self, other):
+        return self.obj.start_time < other.obj.start_time

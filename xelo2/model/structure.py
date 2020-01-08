@@ -95,7 +95,7 @@ class Table():
             'experimenters',
             'subject',
             'session',
-            'run'
+            'run',
             )
 
         if key in BUILTINS:
@@ -261,18 +261,18 @@ class Session(Table_with_files):
         return f'<{self.t} {self.name} (#{self.id})>'
 
     @property
-    def start_date(self):
+    def start_time(self):
         self.cur.execute(f"""\
             SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id == {self.id}
             """)
-        return self.cur.fetchone()[0]
+        return _datetime_out(self.cur.fetchone()[0])
 
     @property
-    def end_date(self):
+    def end_time(self):
         self.cur.execute(f"""\
             SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
             """)
-        return self.cur.fetchone()[0]
+        return _datetime_out(self.cur.fetchone()[0])
 
     def list_runs(self):
         self.cur.execute(f"""\
