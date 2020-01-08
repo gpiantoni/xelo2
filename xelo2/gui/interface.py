@@ -488,37 +488,30 @@ def table_widget(table, obj):
         value = getattr(obj, v)
 
         if item['type'].startswith('DATETIME'):
-            d.update(
-                make_datetime(item, value)
-                )
+            w = make_datetime(item, value)
 
         elif item['type'].startswith('DATE'):
-            d.update(
-                make_date(item, value)
-                )
+            w = make_date(item, value)
 
         elif item['type'].startswith('FLOAT'):
-            d.update(
-                make_float(item, value)
-                )
+            w = make_float(item, value)
 
         elif item['type'].startswith('INTEGER'):
-            d.update(
-                make_integer(item, value)
-                )
+            w = make_integer(item, value)
 
         elif item['type'].startswith('TEXT'):
             if 'values' in item:
-                d.update(
-                    make_combobox(item, value)
-                    )
+                w = make_combobox(item, value)
             else:
-                d.update(
-                    make_edit(item, value)
-                    )
+                w = make_edit(item, value)
 
         else:
             raise ValueError(f'unknown type "{item["type"]}"')
+
+        if 'doc' in item:
+            w.setToolTip(item['doc'])
+
+        d[item['name']] = w
 
     return d
 
@@ -526,9 +519,7 @@ def table_widget(table, obj):
 def make_edit(table, value):
     w = QLineEdit()
     w.insert(value)
-    d = {table['name']: w}
-
-    return d
+    return w
 
 
 def make_integer(table, value):
@@ -544,9 +535,7 @@ def make_integer(table, value):
     else:
         w.setValue(value)
 
-    d = {table['name']: w}
-
-    return d
+    return w
 
 
 def make_float(table, value):
@@ -562,19 +551,16 @@ def make_float(table, value):
     else:
         w.setValue(value)
 
-    d = {table['name']: w}
-
-    return d
+    return w
 
 
 def make_combobox(table, value):
     w = QComboBox()
-    values = ['Unknown', ] + table['values']
+    values = ['Unknown / Unspecified', ] + table['values']
     w.addItems(values)
     w.setCurrentText(value)
-    d = {table['name']: w}
 
-    return d
+    return w
 
 
 def make_date(table, value):
@@ -588,9 +574,8 @@ def make_date(table, value):
         w.setPalette(palette)
     else:
         w.setDate(value)
-    d = {table['name']: w}
 
-    return d
+    return w
 
 
 def make_datetime(table, value):
@@ -604,6 +589,5 @@ def make_datetime(table, value):
         w.setPalette(palette)
     else:
         w.setDateTime(value)
-    d = {table['name']: w}
 
-    return d
+    return w

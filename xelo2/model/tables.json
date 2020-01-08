@@ -2,16 +2,19 @@
     "subjects": {
         "id": null,
         "code": {
-            "name": "Subject Code",
-            "type": "TEXT UNIQUE NOT NULL"
+            "name": "Code",
+            "type": "TEXT UNIQUE NOT NULL",
+            "doc": "Unique identifier for each subject"
         },
         "date_of_birth": {
             "name": "Date of Birth",
-            "type": "DATE"
+            "type": "DATE",
+            "doc": "Date of Birth of the subject, if known"
         },
         "sex": {
             "name": "Sex",
             "type": "TEXT",
+            "doc": "Sex of the participant, if known",
             "values": [
                 "Female",
                 "Male"
@@ -23,6 +26,7 @@
         "metc": {
             "name": "METC",
             "type": "TEXT NOT NULL",
+            "doc": "Code of the METC protocol",
             "values": [
                 "07-260",
                 "14-090",
@@ -33,7 +37,8 @@
         },
         "date_of_signature": {
             "name": "Date of Signature",
-            "type": "DATE"
+            "type": "DATE",
+            "doc": "Date when the first protocol was signed"
         }
     },
     "sessions": {
@@ -282,6 +287,7 @@
                 "left_right": {
                     "name": "Laterality",
                     "type": "TEXT",
+                    "doc": "Which side of the body was used to perform the task. Use 'both' when the Body Part is the tongue",
                     "values": [
                         "left",
                         "right",
