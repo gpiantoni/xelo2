@@ -319,7 +319,7 @@
         "run_id": null,
         "modality": {
             "name": "modality",
-            "type": "text",
+            "type": "TEXT",
             "values": [
                 "ieeg",
                 "bold",

@@ -48,11 +48,11 @@ class Interface(QMainWindow):
         super().__init__()
 
         groups = {
-            'subj': QGroupBox('Subject'),
-            'sess': QGroupBox('Session'),
-            'metc': QGroupBox('Protocol'),
-            'run': QGroupBox('Run'),
-            'rec': QGroupBox('Recording'),
+            'subjects': QGroupBox('Subject'),
+            'sessions': QGroupBox('Session'),
+            'protocols': QGroupBox('Protocol'),
+            'runs': QGroupBox('Run'),
+            'recordings': QGroupBox('Recording'),
             }
 
         lists = {}
@@ -65,9 +65,9 @@ class Interface(QMainWindow):
             new[k] = QPushButton('New ' + v.title())
             new[k].setDisabled(True)
             layout.addWidget(new[k])
-            if k == 'subj':
+            if k == 'subjects':
                 lists[k].setSortingEnabled(True)
-            if k == 'rec':
+            if k == 'recordings':
                 to_export = QPushButton('Export')
                 to_export.clicked.connect(self.exporting)
                 layout.addWidget(to_export)
@@ -120,15 +120,15 @@ class Interface(QMainWindow):
 
         # session and protocol in the same column
         col_sessmetc = QVBoxLayout()
-        col_sessmetc.addWidget(groups['sess'])
-        col_sessmetc.addWidget(groups['metc'])
+        col_sessmetc.addWidget(groups['sessions'])
+        col_sessmetc.addWidget(groups['protocols'])
 
         # TOP PANELS
         layout_top = QHBoxLayout()
-        layout_top.addWidget(groups['subj'])
+        layout_top.addWidget(groups['subjects'])
         layout_top.addLayout(col_sessmetc)
-        layout_top.addWidget(groups['run'])
-        layout_top.addWidget(groups['rec'])
+        layout_top.addWidget(groups['runs'])
+        layout_top.addWidget(groups['recordings'])
 
         # FULL LAYOUT
         # central widget
@@ -207,7 +207,7 @@ class Interface(QMainWindow):
         for subj in list_subjects(self.cur):
             item = QListWidgetItem(subj.code)
             item.setData(Qt.UserRole, subj)
-            self.lists['subj'].addItem(item)
+            self.lists['subjects'].addItem(item)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
     def proc_all(self, current, previous):
@@ -238,33 +238,33 @@ class Interface(QMainWindow):
 
     def list_sessions_and_protocols(self, subj):
 
-        for l in ('sess', 'metc', 'run', 'rec'):
+        for l in ('sessions', 'protocols', 'runs', 'recordings'):
             self.lists[l].clear()
 
         protocols = []
         for sess in subj.list_sessions():
             item = QListWidgetItem(sess.name)
             item.setData(Qt.UserRole, sess)
-            self.lists['sess'].addItem(item)
+            self.lists['sessions'].addItem(item)
             protocols.extend(sess.list_protocols())
-        self.lists['sess'].setCurrentRow(0)
+        self.lists['sessions'].setCurrentRow(0)
 
         for protocol in set(protocols):
             item = QListWidgetItem(protocol.METC)
             item.setData(Qt.UserRole, protocol)
-            self.lists['metc'].addItem(item)
-        self.lists['metc'].setCurrentRow(0)
+            self.lists['protocols'].addItem(item)
+        self.lists['protocols'].setCurrentRow(0)
 
     def list_runs(self, sess):
 
-        for l in ('run', 'rec'):
+        for l in ('runs', 'recordings'):
             self.lists[l].clear()
 
         for run in sess.list_runs():
             item = QListWidgetItem(f'{run.task_name} ({run.acquisition})')
             item.setData(Qt.UserRole, run)
-            self.lists['run'].addItem(item)
-        self.lists['run'].setCurrentRow(0)
+            self.lists['runs'].addItem(item)
+        self.lists['runs'].setCurrentRow(0)
 
         self.list_recordings(run)
 
@@ -285,13 +285,13 @@ class Interface(QMainWindow):
 
     def list_recordings(self, run):
 
-        self.lists['rec'].clear()
+        self.lists['recordings'].clear()
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
-            self.lists['rec'].addItem(item)
-        self.lists['rec'].setCurrentRow(0)
+            self.lists['recordings'].addItem(item)
+        self.lists['recordings'].setCurrentRow(0)
 
     def list_params(self):
 
@@ -306,16 +306,17 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            if k == 'subj':
-                for v in ('sex', 'date_of_birth'):
-                    parameters.update(table_widget(TABLES['subjects'][v], getattr(obj, v)))
 
-            elif k == 'metc':
-                for v in ('date_of_signature', ):
-                    parameters.update(table_widget(TABLES['protocols'][v], getattr(obj, v)))
+            for v in obj.columns:
+                parameters.update(table_widget(TABLES[k][v], getattr(obj, v)))
 
-            elif k == 'sess':
-                parameters = {}
+            if k == 'subjects':
+                pass
+
+            elif k == 'protocols':
+                pass
+
+            elif k == 'sessions':
 
                 if obj.name == 'IEMU':
                     for v in ('date_of_implantation', 'date_of_explantation'):
@@ -329,9 +330,7 @@ class Interface(QMainWindow):
                     for v in ('MagneticFieldStrength', ):
                         parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_mri'][v], getattr(obj, v)))
 
-            elif k == 'run':
-                for v in ('task_name', 'acquisition', 'start_time', 'end_time', 'xelo_stem', 'performance', 'task_description', 'information'):
-                    parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
+            elif k == 'runs':
 
                 w = QLineEdit()
                 if obj.experimenters is not None:
@@ -346,11 +345,15 @@ class Interface(QMainWindow):
                     for v in ('body_part', 'left_right', 'execution_imagery'):
                         parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))
 
-            elif k == 'rec':
+            elif k == 'recordings':
 
                 if obj.modality == 'ieeg':
                     for v in ('Manufacturer', ):
                         parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_ieeg'][v], getattr(obj, v)))
+
+                if obj.run.session.name == 'MRI':
+                    for v in ('region_of_interest', 'PulseSequenceType'):
+                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_mri'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
                 # p_v.setEnabled(False)
@@ -420,14 +423,14 @@ class Interface(QMainWindow):
     def exporting(self):
 
         d = {}
-        subj = self.lists['subj'].currentItem().data(Qt.UserRole)
-        d['subj'] = subj.code
-        sess = self.lists['sess'].currentItem().data(Qt.UserRole)
-        d['sess'] = sess.name
-        run = self.lists['run'].currentItem().data(Qt.UserRole)
-        d['run'] = f'{run.task_name} ({run.acquisition})'
-        rec = self.lists['rec'].currentItem().data(Qt.UserRole)
-        d['rec'] = rec.modality
+        subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
+        d['subjects'] = subj.code
+        sess = self.lists['sessions'].currentItem().data(Qt.UserRole)
+        d['sessions'] = sess.name
+        run = self.lists['runs'].currentItem().data(Qt.UserRole)
+        d['runs'] = f'{run.task_name} ({run.acquisition})'
+        rec = self.lists['recordings'].currentItem().data(Qt.UserRole)
+        d['recordings'] = rec.modality
         d['recording'] = rec.id
         self.exports.append(d)
 
@@ -445,13 +448,13 @@ class Interface(QMainWindow):
         self.t_export.setRowCount(n_exports)
 
         for i, l in enumerate(self.exports):
-            item = QTableWidgetItem(l['subj'])
+            item = QTableWidgetItem(l['subjects'])
             self.t_export.setItem(i, 0, item)
-            item = QTableWidgetItem(l['sess'])
+            item = QTableWidgetItem(l['sessions'])
             self.t_export.setItem(i, 1, item)
-            item = QTableWidgetItem(l['run'])
+            item = QTableWidgetItem(l['runs'])
             self.t_export.setItem(i, 2, item)
-            item = QTableWidgetItem(l['rec'])
+            item = QTableWidgetItem(l['recordings'])
             self.t_export.setItem(i, 3, item)
 
     def do_export(self):

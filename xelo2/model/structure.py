@@ -84,7 +84,21 @@ class Table():
 
     def __setattr__(self, key, value):
 
-        if key in ('cur', 'id', 't', 'code', 'columns', 'subtables', '__class__', 'experimenters'):
+        BUILTINS = (
+            'cur',
+            'id',
+            't',
+            'code',
+            'columns',
+            'subtables',
+            '__class__',
+            'experimenters',
+            'subject',
+            'session',
+            'run'
+            )
+
+        if key in BUILTINS:
             super().__setattr__(key, value)
             return
 
@@ -153,15 +167,19 @@ class File(Table):
 
 class Recording(Table_with_files):
     t = 'recording'
+    run = None
 
-    def __init__(self, cur, id):
+    def __init__(self, cur, id, run=None):
+        self.run = run
         super().__init__(cur, id)
 
 
 class Run(Table_with_files):
     t = 'run'
+    session = None
 
-    def __init__(self, cur, id):
+    def __init__(self, cur, id, session=None):
+        self.session = session
         super().__init__(cur, id)
 
     def __repr__(self):
@@ -171,7 +189,7 @@ class Run(Table_with_files):
         self.cur.execute(f"""\
         SELECT recordings.id FROM recordings
         WHERE recordings.run_id == {self.id}""")
-        return [Recording(self.cur, x[0]) for x in self.cur.fetchall()]
+        return [Recording(self.cur, x[0], run=self) for x in self.cur.fetchall()]
 
     def add_recording(self, modality, offset=0):
 
@@ -181,7 +199,10 @@ class Run(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         recording_id = self.cur.fetchone()[0]
 
-        return Recording(self.cur, recording_id)
+        recording = Recording(self.cur, recording_id)
+        recording.run = self
+
+        return recording
 
     @property
     def experimenters(self):
@@ -230,9 +251,11 @@ class Electrodes(Table):
 
 class Session(Table_with_files):
     t = 'session'
+    subject = None
 
-    def __init__(self, cur, id):
+    def __init__(self, cur, id, subject=None):
         super().__init__(cur, id)
+        self.subject = subject
 
     def __repr__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
@@ -255,7 +278,7 @@ class Session(Table_with_files):
         self.cur.execute(f"""\
         SELECT runs.id FROM runs
         WHERE runs.session_id == {self.id}""")
-        return [Run(self.cur, x[0]) for x in self.cur.fetchall()]
+        return [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
 
     def add_run(self, task_name, acquisition, start_time, end_time):
 
@@ -265,7 +288,10 @@ class Session(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         run_id = self.cur.fetchone()[0]
 
-        return Run(self.cur, run_id)
+        run = Run(self.cur, run_id)
+        run.session = self
+
+        return run
 
     def add_protocol(self, METC, date_of_signature=None):
 
@@ -281,7 +307,10 @@ class Session(Table_with_files):
 
         self.cur.execute(f"""\
             INSERT INTO sessions_protocols ("session_id", "protocol_id") VALUES ({self.id}, {protocol_id})""")
-        return Protocol(self.cur, protocol_id)
+
+        protocol = Protocol(self.cur, protocol_id)
+
+        return protocol
 
     def list_protocols(self):
         self.cur.execute(f"""\
@@ -308,7 +337,7 @@ class Subject(Table_with_files):
         self.cur.execute(f"""\
         SELECT sessions.id, name FROM sessions
         WHERE sessions.subject_id ==  '{self.id}'""")
-        return [Session(self.cur, x[0]) for x in self.cur.fetchall()]
+        return [Session(self.cur, x[0], subject=self) for x in self.cur.fetchall()]
 
     def add_session(self, name):
 
@@ -318,7 +347,10 @@ class Subject(Table_with_files):
         self.cur.execute("""SELECT last_insert_rowid()""")
         session_id = self.cur.fetchone()[0]
 
-        return Session(self.cur, session_id)
+        sess = Session(self.cur, session_id)
+        sess.subject = self
+
+        return sess
 
     @classmethod
     def add(cls, cur, code, date_of_birth=None, sex=None):
