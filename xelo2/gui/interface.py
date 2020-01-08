@@ -65,6 +65,8 @@ class Interface(QMainWindow):
             new[k] = QPushButton('New ' + v.title())
             new[k].setDisabled(True)
             layout.addWidget(new[k])
+            if k == 'subj':
+                lists[k].setSortingEnabled(True)
             if k == 'rec':
                 to_export = QPushButton('Export')
                 to_export.clicked.connect(self.exporting)
@@ -341,13 +343,9 @@ class Interface(QMainWindow):
 
             elif k == 'rec':
 
-                if obj.modality == 'bold':
-                    for v in ('RepetitionTime', ):
-                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_bold'][v], getattr(obj, v)))
-
-                if obj.modality in ('bold', 'epi'):
-                    for v in ('PhaseEncodingDirection', ):
-                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_epi'][v], getattr(obj, v)))
+                if obj.modality == 'ieeg':
+                    for v in ('Manufacturer', ):
+                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_ieeg'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
                 all_params.append({

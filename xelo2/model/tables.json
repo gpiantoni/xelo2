@@ -202,7 +202,13 @@
                 "visual_up_down_map",
                 "vowels",
                 "woezel_pip",
+                "bair_finger_mapping",
                 "ct_anatomy_scan",
+                "flair_anatomy_scan",
+                "frontal_eye_field",
+                "MP2RAGE",
+                "pd_anatomy_scan",
+                "pRF_alessio",
                 "top_up"
             ]
         },
@@ -321,6 +327,7 @@
                 "T2w",
                 "T2star",
                 "PD",
+                "FLAIR",
                 "angio",
                 "epi",
                 "dwi",
@@ -497,7 +504,8 @@
                 "blackrock",
                 "task_log",
                 "dataglove",
-                "scanphyslog"
+                "scanphyslog",
+                "dicom"
             ]
         },
         "path": {
