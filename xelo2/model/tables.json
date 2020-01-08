@@ -340,7 +340,10 @@
                 "RepetitionTime": {
                     "name": "Repetition Time (TR)",
                     "type": "FLOAT"
-                },
+                }
+            },
+            "recordings_epi": {
+                "recording_id": null,
                 "PhaseEncodingDirection": {
                     "name": "Phase Encoding Direction",
                     "type": "TEXT",

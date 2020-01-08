@@ -345,6 +345,10 @@ class Interface(QMainWindow):
                     for v in ('RepetitionTime', ):
                         parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_bold'][v], getattr(obj, v)))
 
+                if obj.modality in ('bold', 'epi'):
+                    for v in ('PhaseEncodingDirection', ):
+                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_epi'][v], getattr(obj, v)))
+
             for p_k, p_v in parameters.items():
                 all_params.append({
                     'level': self.groups[k].title(),

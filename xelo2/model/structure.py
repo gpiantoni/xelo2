@@ -313,6 +313,8 @@ def construct_subtables(t):
     attr_tables = {}
     for k, v in subtables.items():
         for i_v in v:
+            if i_v.endswith('_id'):
+                continue
             attr_tables[i_v] = k
 
     return attr_tables
