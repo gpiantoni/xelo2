@@ -27,11 +27,13 @@ def list_subjects(cur):
 
 class Table():
     t = ''
+    columns = []
     subtables = {}
 
     def __init__(self, cur, id):
         self.id = id
         self.cur = cur
+        self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
 
     def __repr__(self):
@@ -82,7 +84,7 @@ class Table():
 
     def __setattr__(self, key, value):
 
-        if key in ('cur', 'id', 't', 'code', 'subtables', '__class__', 'experimenters'):
+        if key in ('cur', 'id', 't', 'code', 'columns', 'subtables', '__class__', 'experimenters'):
             super().__setattr__(key, value)
             return
 
@@ -325,6 +327,10 @@ class Subject(Table_with_files):
             INSERT INTO subjects ("code", "date_of_birth", "sex")
             VALUES ("{code}", {_date(date_of_birth)}, {_null(sex)})""")
         return Subject(cur, code)
+
+
+def columns(t):
+    return [x for x in TABLES[t + 's'] if not x.endswith('id') and x != 'subtables']
 
 
 def construct_subtables(t):

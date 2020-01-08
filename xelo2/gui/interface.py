@@ -353,7 +353,7 @@ class Interface(QMainWindow):
                         parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_ieeg'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
-                p_v.setEnabled(False)
+                # p_v.setEnabled(False)
                 all_params.append({
                     'level': self.groups[k].title(),
                     'parameter': p_k,
