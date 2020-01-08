@@ -82,7 +82,7 @@ class Table():
 
     def __setattr__(self, key, value):
 
-        if key in ('cur', 'id', 't', 'code', 'subtables', '__class__'):
+        if key in ('cur', 'id', 't', 'code', 'subtables', '__class__', 'experimenters'):
             super().__setattr__(key, value)
             return
 
