@@ -194,7 +194,12 @@ class Run(Table_with_files):
         """TODO: probably we should delete the previous pairs"""
         for exp in experimenters:
             self.cur.execute(f'SELECT id FROM experimenters WHERE name == "{exp}"')
-            exp_id = self.cur.fetchone()[0]
+            exp_id = self.cur.fetchone()
+            if exp_id is None:
+                lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
+                continue
+            else:
+                exp_id = exp_id[0]
             self.cur.execute(f"""\
                 INSERT INTO runs_experimenters ("run_id", "experimenter_id")
                 VALUES ("{self.id}", "{exp_id}")""")
