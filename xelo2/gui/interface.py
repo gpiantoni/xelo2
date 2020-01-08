@@ -333,6 +333,11 @@ class Interface(QMainWindow):
                 for v in ('task_name', 'acquisition', 'start_time', 'end_time', 'xelo_stem', 'performance', 'task_description', 'information'):
                     parameters.update(table_widget(TABLES['runs'][v], getattr(obj, v)))
 
+                w = QLineEdit()
+                if obj.experimenters is not None:
+                    w.insert(', '.join(obj.experimenters))
+                parameters.update({'Experimenters': w})
+
                 if obj.task_name == 'mario':
                     for v in ('velocity', ):
                         parameters.update(table_widget(TABLES['runs']['subtables']['runs_mario'][v], getattr(obj, v)))
@@ -348,6 +353,7 @@ class Interface(QMainWindow):
                         parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_ieeg'][v], getattr(obj, v)))
 
             for p_k, p_v in parameters.items():
+                p_v.setEnabled(False)
                 all_params.append({
                     'level': self.groups[k].title(),
                     'parameter': p_k,
