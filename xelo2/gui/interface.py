@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
     QDoubleSpinBox,
+    QSpinBox,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -307,8 +308,7 @@ class Interface(QMainWindow):
 
             parameters = {}
 
-            for v in obj.columns:
-                parameters.update(table_widget(TABLES[k][v], getattr(obj, v)))
+            parameters.update(table_widget(TABLES[k], obj))
 
             if k == 'subjects':
                 pass
@@ -319,16 +319,13 @@ class Interface(QMainWindow):
             elif k == 'sessions':
 
                 if obj.name == 'IEMU':
-                    for v in ('date_of_implantation', 'date_of_explantation'):
-                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_iemu'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_iemu'], obj))
 
                 elif obj.name == 'OR':
-                    for v in ('date_of_surgery', ):
-                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_or'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_or'], obj))
 
                 elif obj.name == 'MRI':
-                    for v in ('MagneticFieldStrength', ):
-                        parameters.update(table_widget(TABLES['sessions']['subtables']['sessions_mri'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_mri'], obj))
 
             elif k == 'runs':
 
@@ -338,22 +335,21 @@ class Interface(QMainWindow):
                 parameters.update({'Experimenters': w})
 
                 if obj.task_name == 'mario':
-                    for v in ('velocity', ):
-                        parameters.update(table_widget(TABLES['runs']['subtables']['runs_mario'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj))
 
                 if obj.task_name == 'motor':
-                    for v in ('body_part', 'left_right', 'execution_imagery'):
-                        parameters.update(table_widget(TABLES['runs']['subtables']['runs_motor'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_motor'], obj))
 
             elif k == 'recordings':
 
                 if obj.modality == 'ieeg':
-                    for v in ('Manufacturer', ):
-                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_ieeg'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj))
+
+                if obj.modality in ('bold', 'epi'):
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj))
 
                 if obj.run.session.name == 'MRI':
-                    for v in ('region_of_interest', 'PulseSequenceType'):
-                        parameters.update(table_widget(TABLES['recordings']['subtables']['recordings_mri'][v], getattr(obj, v)))
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_mri'], obj))
 
             for p_k, p_v in parameters.items():
                 # p_v.setEnabled(False)
@@ -481,25 +477,48 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def table_widget(table, value):
+def table_widget(table, obj):
 
-    if table['type'].startswith('DATETIME'):
-        d = make_datetime(table, value)
+    d = {}
+    for v in table:
+        if v.endswith('id') or v == 'subtables':
+            continue
 
-    elif table['type'].startswith('DATE'):
-        d = make_date(table, value)
+        item = table[v]
+        value = getattr(obj, v)
 
-    elif table['type'].startswith('FLOAT'):
-        d = make_float(table, value)
+        if item['type'].startswith('DATETIME'):
+            d.update(
+                make_datetime(item, value)
+                )
 
-    elif table['type'].startswith('TEXT'):
-        if 'values' in table:
-            d = make_combobox(table, value)
+        elif item['type'].startswith('DATE'):
+            d.update(
+                make_date(item, value)
+                )
+
+        elif item['type'].startswith('FLOAT'):
+            d.update(
+                make_float(item, value)
+                )
+
+        elif item['type'].startswith('INTEGER'):
+            d.update(
+                make_integer(item, value)
+                )
+
+        elif item['type'].startswith('TEXT'):
+            if 'values' in item:
+                d.update(
+                    make_combobox(item, value)
+                    )
+            else:
+                d.update(
+                    make_edit(item, value)
+                    )
+
         else:
-            d = make_edit(table, value)
-
-    else:
-        raise ValueError(f'unknown type "{table["type"]}"')
+            raise ValueError(f'unknown type "{item["type"]}"')
 
     return d
 
@@ -507,6 +526,24 @@ def table_widget(table, value):
 def make_edit(table, value):
     w = QLineEdit()
     w.insert(value)
+    d = {table['name']: w}
+
+    return d
+
+
+def make_integer(table, value):
+    w = QSpinBox()
+    w.setRange(-500, 500)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        w.setValue(value)
+
     d = {table['name']: w}
 
     return d
