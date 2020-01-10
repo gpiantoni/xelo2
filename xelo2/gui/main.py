@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 from PyQt5.QtWidgets import QApplication
 
 from .interface import Interface
-from ..model.structure import open_database
 
 
 app = QApplication([])
@@ -20,11 +19,10 @@ def main():
     args = parser.parse_args()
 
     sqlite = Path(args.sqlite).resolve()
-    sql, cur = open_database(sqlite)
 
-    w = Interface(cur)
+    w = Interface(sqlite)
     app.exec()
-    sql.close()
+    w.sql.close()
 
 
 if __name__ == '__main__':

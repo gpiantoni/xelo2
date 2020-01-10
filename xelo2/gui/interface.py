@@ -1,6 +1,7 @@
 from logging import getLogger
 from pathlib import Path
 from datetime import date
+from functools import partial
 
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -34,7 +35,7 @@ from PyQt5.QtCore import (
     QSettings,
     )
 
-from ..model.structure import list_subjects, TABLES
+from ..model.structure import list_subjects, TABLES, open_database
 from ..bids.root import create_bids
 
 settings = QSettings("xelo2", "xelo2")
@@ -42,10 +43,13 @@ lg = getLogger(__name__)
 
 ELECTRODES_COLUMNS = ["name", "x", "y", "z", "size", "material"]
 
+
 class Interface(QMainWindow):
 
-    def __init__(self, cur):
-        self.cur = cur
+    def __init__(self, sqlite_file):
+        self.sqlite_file = sqlite_file
+        self.sql_commands = sqlite_file.with_suffix('.log').open('w+')
+
         super().__init__()
 
         groups = {
@@ -198,6 +202,7 @@ class Interface(QMainWindow):
     def access_db(self):
         """This is where you access the database
         """
+        self.sql, self.cur = open_database(self.sqlite_file)
         self.list_subjects()
 
     def list_subjects(self):
@@ -413,9 +418,13 @@ class Interface(QMainWindow):
 
         self.t_files.blockSignals(False)
 
-    def changed_combo(self, obj, x):
-        print(obj)
-        print(x)
+    def changed(self, obj, value, x):
+        if isinstance(x, QLineEdit):
+            x = x.text()
+
+        cmd = f'{repr(obj)}.{value} = "{x}"'
+        print(cmd)
+        self.sql_commands.write(cmd + '\n')
 
     def exporting(self):
 
@@ -474,6 +483,7 @@ class Interface(QMainWindow):
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())
+        self.sql_commands.close()
 
         event.accept()
 
@@ -490,24 +500,27 @@ def table_widget(table, obj, parent=None):
 
         if item['type'].startswith('DATETIME'):
             w = make_datetime(item, value)
+            w.dateTimeChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('DATE'):
             w = make_date(item, value)
-            w.dateChanged.connect(lambda x: parent.changed_combo(obj, x))
+            w.dateChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('FLOAT'):
             w = make_float(item, value)
+            w.valueChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('INTEGER'):
             w = make_integer(item, value)
-            w.valueChanged.connect(lambda x: parent.changed_combo(obj, x))
+            w.valueChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('TEXT'):
             if 'values' in item:
                 w = make_combobox(item, value)
-                w.currentTextChanged.connect(lambda x: parent.changed_combo(obj, x))
+                w.currentTextChanged.connect(partial(parent.changed, obj, v))
             else:
                 w = make_edit(item, value)
+                w.returnPressed.connect(partial(parent.changed, obj, v, w))
 
         else:
             raise ValueError(f'unknown type "{item["type"]}"')
