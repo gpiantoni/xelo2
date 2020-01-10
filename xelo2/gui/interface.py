@@ -316,13 +316,13 @@ class Interface(QMainWindow):
             elif k == 'sessions':
 
                 if obj.name == 'IEMU':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_iemu'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_iemu'], obj, self))
 
                 elif obj.name == 'OR':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_or'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_or'], obj, self))
 
                 elif obj.name == 'MRI':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_mri'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_mri'], obj, self))
 
             elif k == 'runs':
 
@@ -332,21 +332,21 @@ class Interface(QMainWindow):
                 parameters.update({'Experimenters': w})
 
                 if obj.task_name == 'mario':
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
 
                 if obj.task_name == 'motor':
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_motor'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_motor'], obj, self))
 
             elif k == 'recordings':
 
                 if obj.modality == 'ieeg':
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
 
                 if obj.modality in ('bold', 'epi'):
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj, self))
 
                 if obj.run.session.name == 'MRI':
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_mri'], obj))
+                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_mri'], obj, self))
 
             for p_k, p_v in parameters.items():
                 # p_v.setEnabled(False)
@@ -493,12 +493,14 @@ def table_widget(table, obj, parent=None):
 
         elif item['type'].startswith('DATE'):
             w = make_date(item, value)
+            w.dateChanged.connect(lambda x: parent.changed_combo(obj, x))
 
         elif item['type'].startswith('FLOAT'):
             w = make_float(item, value)
 
         elif item['type'].startswith('INTEGER'):
             w = make_integer(item, value)
+            w.valueChanged.connect(lambda x: parent.changed_combo(obj, x))
 
         elif item['type'].startswith('TEXT'):
             if 'values' in item:
