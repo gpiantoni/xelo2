@@ -260,7 +260,7 @@ class Interface(QMainWindow):
             self.lists[l].clear()
 
         for run in sess.list_runs():
-            item = QListWidgetItem_time(run, f'{run.task_name} ({run.acquisition})')
+            item = QListWidgetItem_time(run, f'{run.task_name}')
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
 
@@ -478,7 +478,7 @@ def table_widget(table, obj):
 
     d = {}
     for v in table:
-        if v.endswith('id') or v == 'subtables':
+        if v.endswith('id') or v == 'subtables' or v == 'when':
             continue
 
         item = table[v]

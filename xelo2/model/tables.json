@@ -32,6 +32,7 @@
                 "14-090",
                 "14-420",
                 "14-622",
+                "16-816",
                 "Request from clinic"
             ]
         },
@@ -57,6 +58,13 @@
         "subtables": {
             "sessions_iemu": {
                 "session_id": null,
+                "when": {
+                    "level": "session",
+                    "parameter": "name",
+                    "value": [
+                        "IEMU"
+                    ]
+                },
                 "date_of_implantation": {
                     "name": "Date of Implementation",
                     "type": "DATE"
@@ -68,6 +76,13 @@
             },
             "sessions_or": {
                 "session_id": null,
+                "when": {
+                    "level": "session",
+                    "parameter": "name",
+                    "value": [
+                        "OR"
+                    ]
+                },
                 "date_of_surgery": {
                     "name": "Date of Surgery",
                     "type": "DATE"
@@ -75,6 +90,13 @@
             },
             "sessions_mri": {
                 "session_id": null,
+                "when": {
+                    "level": "session",
+                    "parameter": "name",
+                    "value": [
+                        "MRI"
+                    ]
+                },
                 "MagneticFieldStrength": {
                     "name": "Magnetic Field Strength",
                     "type": "TEXT",
@@ -214,22 +236,7 @@
                 "MP2RAGE",
                 "pd_anatomy_scan",
                 "pRF_alessio",
-                "top_up"
-            ]
-        },
-        "acquisition": {
-            "name": "Acquisition",
-            "type": "TEXT NOT NULL",
-            "values": [
-                "func",
-                "anat",
-                "dwi",
-                "fmap",
-                "ieeg",
-                "eeg",
-                "meg",
-                "beh",
-                "ct"
+                "TopUp"
             ]
         },
         "start_time": {
@@ -252,13 +259,20 @@
             "name": "Task Description",
             "type": "TEXT"
         },
-        "information": {
-            "name": "Information (Acquisition)",
+        "acquisition": {
+            "name": "Acquisition",
             "type": "TEXT"
         },
         "subtables": {
             "runs_mario": {
                 "run_id": null,
+                "when": {
+                    "level": "run",
+                    "parameter": "task_name",
+                    "value": [
+                        "mario"
+                    ]
+                },
                 "velocity": {
                     "name": "Velocity",
                     "type": "TEXT"
@@ -266,6 +280,13 @@
             },
             "runs_motor": {
                 "run_id": null,
+                "when": {
+                    "level": "run",
+                    "parameter": "task_name",
+                    "value": [
+                        "motor"
+                    ]
+                },
                 "body_part": {
                     "name": "Body Part",
                     "type": "TEXT",
@@ -348,6 +369,13 @@
         "subtables": {
             "recordings_mri": {
                 "recording_id": null,
+                "when": {
+                    "level": "session",
+                    "parameter": "name",
+                    "value": [
+                        "MRI"
+                    ]
+                },
                 "region_of_interest": {
                     "name": "Region of Interest",
                     "type": "TEXT"
@@ -366,6 +394,14 @@
             },
             "recordings_epi": {
                 "recording_id": null,
+                "when": {
+                    "level": "recording",
+                    "parameter": "modality",
+                    "value": [
+                        "bold",
+                        "epi"
+                    ]
+                },
                 "FlipAngle": {
                     "name": "Flip Angle",
                     "type": "FLOAT"
@@ -405,6 +441,13 @@
             },
             "recordings_ieeg": {
                 "recording_id": null,
+                "when": {
+                    "level": "recording",
+                    "parameter": "modality",
+                    "value": [
+                        "ieeg"
+                    ]
+                },
                 "Manufacturer": {
                     "name": "Manufacturer",
                     "type": "TEXT",

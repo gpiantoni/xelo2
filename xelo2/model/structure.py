@@ -183,7 +183,7 @@ class Run(Table_with_files):
         super().__init__(cur, id)
 
     def __repr__(self):
-        return f'<{self.t} {self.acquisition} (#{self.id})>'
+        return f'<{self.t} (#{self.id})>'
 
     def list_recordings(self):
         self.cur.execute(f"""\
@@ -280,11 +280,11 @@ class Session(Table_with_files):
         WHERE runs.session_id == {self.id}""")
         return [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
 
-    def add_run(self, task_name, acquisition, start_time, end_time):
+    def add_run(self, task_name, start_time, end_time):
 
         self.cur.execute(f"""\
-        INSERT INTO runs ("session_id", "task_name", "acquisition", "start_time", "end_time")
-        VALUES ("{self.id}", "{task_name}", "{acquisition}", "{start_time}", "{end_time}")""")
+        INSERT INTO runs ("session_id", "task_name", "start_time", "end_time")
+        VALUES ("{self.id}", "{task_name}", "{start_time}", "{end_time}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
         run_id = self.cur.fetchone()[0]
 
