@@ -305,7 +305,7 @@ class Interface(QMainWindow):
 
             parameters = {}
 
-            parameters.update(table_widget(TABLES[k], obj))
+            parameters.update(table_widget(TABLES[k], obj, self))
 
             if k == 'subjects':
                 pass
@@ -413,6 +413,10 @@ class Interface(QMainWindow):
 
         self.t_files.blockSignals(False)
 
+    def changed_combo(self, obj, x):
+        print(obj)
+        print(x)
+
     def exporting(self):
 
         d = {}
@@ -474,7 +478,7 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def table_widget(table, obj):
+def table_widget(table, obj, parent=None):
 
     d = {}
     for v in table:
@@ -499,6 +503,7 @@ def table_widget(table, obj):
         elif item['type'].startswith('TEXT'):
             if 'values' in item:
                 w = make_combobox(item, value)
+                w.currentTextChanged.connect(lambda x: parent.changed_combo(obj, x))
             else:
                 w = make_edit(item, value)
 
