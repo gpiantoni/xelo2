@@ -41,6 +41,14 @@ settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
 ELECTRODES_COLUMNS = ["name", "x", "y", "z", "size", "material"]
+LEVELS = [
+    'subjects',
+    'sessions',
+    'protocols',
+    'runs',
+    'recordings',
+    ]
+
 
 class Interface(QMainWindow):
 
@@ -48,30 +56,16 @@ class Interface(QMainWindow):
         self.cur = cur
         super().__init__()
 
-        groups = {
-            'subjects': QGroupBox('Subject'),
-            'sessions': QGroupBox('Session'),
-            'protocols': QGroupBox('Protocol'),
-            'runs': QGroupBox('Run'),
-            'recordings': QGroupBox('Recording'),
-            }
-
         lists = {}
-        new = {}
-        for k, v in groups.items():
+        groups = {}
+        for k in LEVELS:
+            groups[k] = QGroupBox(k.capitalize())
             lists[k] = QListWidget()
             lists[k].currentItemChanged.connect(self.proc_all)
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
-            new[k] = QPushButton('New ' + v.title())
-            new[k].setDisabled(True)
-            layout.addWidget(new[k])
             lists[k].setSortingEnabled(True)
-            if k == 'recordings':
-                to_export = QPushButton('Export')
-                to_export.clicked.connect(self.exporting)
-                layout.addWidget(to_export)
-            v.setLayout(layout)
+            groups[k].setLayout(layout)
 
         # PARAMETERS: Widget
         t_params = QTableWidget()
@@ -418,6 +412,7 @@ class Interface(QMainWindow):
         print(x)
 
     def exporting(self):
+        """TODO"""
 
         d = {}
         subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
