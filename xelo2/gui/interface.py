@@ -34,8 +34,13 @@ from PyQt5.QtCore import (
     QSettings,
     )
 
+
 from ..model.structure import list_subjects, TABLES
 from ..bids.root import create_bids
+
+from .actions import create_menubar
+from .modal import NewFile
+
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
@@ -185,6 +190,8 @@ class Interface(QMainWindow):
         self.t_elec = t_elec
         self.t_export = t_export
         self.exports = []
+
+        create_menubar(self)
 
         self.access_db()
         self.show()
@@ -465,6 +472,30 @@ class Interface(QMainWindow):
             return
         create_bids(Path(data_path), cur=self.cur, deface=False, subset=subset)
         lg.warning('export finished')
+
+    def new_subject(self, checked):
+        print(checked)
+
+    def new_session(self, checked):
+        print(checked)
+
+    def new_protocol(self, checked):
+        print(checked)
+
+    def new_run(self, checked):
+        print(checked)
+
+    def new_recording(self, checked):
+        print(checked)
+
+    def new_file(self, checked):
+        get_new_file = NewFile(self)
+        result = get_new_file.exec()
+
+        if result:
+            print(get_new_file.level.currentText())
+            print(get_new_file.filepath.text())
+            print(get_new_file.format.currentText())
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
