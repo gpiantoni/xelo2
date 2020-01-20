@@ -30,6 +30,7 @@ from PyQt5.QtGui import (
     QBrush,
     QColor,
     QDesktopServices,
+    QGuiApplication,
     QPalette,
     )
 from PyQt5.QtCore import (
@@ -490,12 +491,15 @@ class Interface(QMainWindow):
         url_file = QUrl(str(file_path))
         url_directory = QUrl(str(file_path.parent))
 
+        action_copy = QAction('Copy Full Path to File', self)
+        action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_path)))
         action_openfile = QAction('Open File', self)
         action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
         action_opendirectory = QAction('Open Containing Folder', self)
         action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
 
         menu = QMenu('File Information', self)
+        menu.addAction(action_copy)
         menu.addAction(action_openfile)
         menu.addAction(action_opendirectory)
         menu.popup(self.t_files.mapToGlobal(pos))
@@ -669,6 +673,11 @@ def make_datetime(table, value):
         w.setDateTime(value)
 
     return w
+
+def copy_to_clipboard(text):
+
+    clipboard = QGuiApplication.clipboard()
+    clipboard.setText(text)
 
 
 class QListWidgetItem_time(QListWidgetItem):

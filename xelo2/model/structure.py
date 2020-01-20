@@ -147,12 +147,24 @@ class Table_with_files(Table):
         return [File(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_file(self, format, path):
-        path = Path(path)
-        self.cur.execute(f"""\
-        INSERT INTO files ("format", "path")
-        VALUES ("{format}", "{path.resolve()}")""")
-        self.cur.execute("""SELECT last_insert_rowid()""")
-        file_id = self.cur.fetchone()[0]
+        path = Path(path).resolve()
+
+        self.cur.execute(f"SELECT id, format FROM files WHERE path == '{path}'")
+        file_row = self.cur.fetchone()
+
+        if file_row is not None:
+            file_id, format_in_table = file_row
+
+            if format != format_in_table:
+                raise ValueError(f'Input format "{format}" does not match the format "{format_in_table}" in the table for {path}')
+
+        else:
+            self.cur.execute(f"""\
+            INSERT INTO files ("format", "path")
+            VALUES ("{format}", "{path.resolve()}")""")
+            self.cur.execute("""SELECT last_insert_rowid()""")
+            file_id = self.cur.fetchone()[0]
+
         self.cur.execute(f"""INSERT INTO {self.t}s_files ("{self.t}_id", "file_id") VALUES ({self.id}, {file_id})""")
 
 
