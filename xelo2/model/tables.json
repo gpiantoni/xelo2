@@ -571,7 +571,9 @@
                 "task_log",
                 "dataglove",
                 "scanphyslog",
-                "dicom"
+                "dicom",
+                "pdf",
+                "docx"
             ]
         },
         "path": {
