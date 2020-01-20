@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
 from functools import partial
 
 from PyQt5.QtWidgets import (
@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QFileDialog,
     QHBoxLayout,
+    QInputDialog,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
@@ -40,7 +41,7 @@ from PyQt5.QtCore import (
     QUrl,
     )
 
-from ..model.structure import list_subjects, TABLES, open_database
+from ..model.structure import list_subjects, TABLES, open_database, Subject
 from ..bids.root import create_bids
 
 from .actions import create_menubar
@@ -64,9 +65,12 @@ class Interface(QMainWindow):
 
     def __init__(self, sqlite_file):
         self.sqlite_file = sqlite_file
-        self.sql_commands = sqlite_file.with_suffix('.log').open('w+')
+        now = datetime.now()
+        log_file = sqlite_file.parent / f'{sqlite_file.stem}_{now:%Y%m%d_%H%M%S}.log'
+        self.sql_commands = log_file.open('w+')
 
         super().__init__()
+        self.setWindowTitle(log_file.stem)
 
         lists = {}
         groups = {}
@@ -528,7 +532,16 @@ class Interface(QMainWindow):
         lg.warning('export finished')
 
     def new_subject(self, checked):
-        print(checked)
+
+        text, ok = QInputDialog.getText(
+            self,
+            'Add New Subject',
+            'Subject Code:',
+            )
+
+        if ok and text != '':
+            Subject.add(self.cur, text.strip())
+            self.list_subjects()
 
     def new_session(self, checked):
         print(checked)
