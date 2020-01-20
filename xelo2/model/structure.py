@@ -217,7 +217,8 @@ class Run(Table_with_files):
 
     @experimenters.setter
     def experimenters(self, experimenters):
-        """TODO: probably we should delete the previous pairs"""
+
+        self.cur.execute(f'DELETE FROM runs_experimenters WHERE run_id == "{self.id}"')
         for exp in experimenters:
             self.cur.execute(f'SELECT id FROM experimenters WHERE name == "{exp}"')
             exp_id = self.cur.fetchone()
@@ -226,6 +227,7 @@ class Run(Table_with_files):
                 continue
             else:
                 exp_id = exp_id[0]
+
             self.cur.execute(f"""\
                 INSERT INTO runs_experimenters ("run_id", "experimenter_id")
                 VALUES ("{self.id}", "{exp_id}")""")

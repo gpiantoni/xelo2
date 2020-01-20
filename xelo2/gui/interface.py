@@ -43,7 +43,7 @@ from ..model.structure import list_subjects, TABLES, open_database
 from ..bids.root import create_bids
 
 from .actions import create_menubar
-from .modal import NewFile
+from .modal import NewFile, Popup_Experimenters
 
 
 settings = QSettings("xelo2", "xelo2")
@@ -338,9 +338,7 @@ class Interface(QMainWindow):
 
             elif k == 'runs':
 
-                w = QLineEdit()
-                if obj.experimenters is not None:
-                    w.insert(', '.join(obj.experimenters))
+                w = Popup_Experimenters(obj, self)
                 parameters.update({'Experimenters': w})
 
                 if obj.task_name == 'mario':
