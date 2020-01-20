@@ -147,13 +147,24 @@ class Table_with_files(Table):
         return [File(self.cur, x[0]) for x in self.cur.fetchall()]
 
     def add_file(self, format, path):
-        path = Path(path)
-        self.cur.execute(f"""\
-        INSERT INTO files ("format", "path")
-        VALUES ("{format}", "{path.resolve()}")""")
-        self.cur.execute("""SELECT last_insert_rowid()""")
-        file_id = self.cur.fetchone()[0]
+        path = Path(path).resolve()
+
+        self.cur.execute(f'SELECT id FROM files WHERE path == "{path}"')
+        file_id = self.cur.fetchone()
+        if file_id is None:
+            self.cur.execute(f"""\
+            INSERT INTO files ("format", "path")
+            VALUES ("{format}", "{path.resolve()}")""")
+            self.cur.execute("""SELECT last_insert_rowid()""")
+            file_id = self.cur.fetchone()
+
+        file_id = file_id[0]
         self.cur.execute(f"""INSERT INTO {self.t}s_files ("{self.t}_id", "file_id") VALUES ({self.id}, {file_id})""")
+
+    def delete_file(self, file):
+        """TODO: add trigger to remove file, here we only remove the link in the table
+        """
+        self.cur.execute(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
 
 
 class File(Table):

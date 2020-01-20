@@ -18,7 +18,7 @@ from ..model.filetype import parse_filetype
 
 class NewFile(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, file_obj=None):
         super().__init__(parent)
         self.setWindowModality(Qt.WindowModal)
 
@@ -52,6 +52,11 @@ class NewFile(QDialog):
         layout.addWidget(bbox)
 
         self.setLayout(layout)
+
+        if file_obj is not None:
+            # self.level.setCurrentText(file_obj)
+            self.filepath.setText(str(file_obj.path))
+            self.format.setCurrentText(file_obj.format)
 
     def browse(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Select File')

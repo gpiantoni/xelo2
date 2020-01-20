@@ -397,7 +397,7 @@ class Interface(QMainWindow):
                     'level': self.groups[k].title(),
                     'format': file.format,
                     'path': file.path,
-                    'obj': file,
+                    'obj': [obj, file],
                     })
 
         self.t_files.setRowCount(len(all_files))
@@ -483,19 +483,26 @@ class Interface(QMainWindow):
         if item is None:
             return
 
-        file_obj = item.data(Qt.UserRole)
+        level_obj, file_obj = item.data(Qt.UserRole)
         file_path = file_obj.path.resolve()
         url_file = QUrl(str(file_path))
         url_directory = QUrl(str(file_path.parent))
 
+        action_edit = QAction('Edit File', self)
+        action_edit.triggered.connect(lambda x: self.edit_file(file_obj))
         action_openfile = QAction('Open File', self)
         action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
         action_opendirectory = QAction('Open Containing Folder', self)
         action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+        action_delete = QAction('Delete', self)
+        action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
 
         menu = QMenu('File Information', self)
+        menu.addAction(action_edit)
         menu.addAction(action_openfile)
         menu.addAction(action_opendirectory)
+        menu.addSeparator()
+        menu.addAction(action_delete)
         menu.popup(self.t_files.mapToGlobal(pos))
 
     def do_export(self):
@@ -538,6 +545,18 @@ class Interface(QMainWindow):
             print(get_new_file.level.currentText())
             print(get_new_file.filepath.text())
             print(get_new_file.format.currentText())
+
+    def edit_file(self, file_obj):
+        get_new_file = NewFile(self, file_obj)
+        result = get_new_file.exec()
+
+        if result:
+            print(get_new_file.level.currentText())
+            print(get_new_file.filepath.text())
+            print(get_new_file.format.currentText())
+
+    def delete_file(self, level_obj, file_obj):
+        level_obj.delete(file_obj)
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())

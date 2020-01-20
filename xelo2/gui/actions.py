@@ -21,7 +21,7 @@ def create_menubar(main):
         'protocol': main.new_protocol,
         'run': main.new_run,
         'recording': main.new_recording,
-        'file': main.new_file,
+        'file': lambda x: main.new_file(main),
         }
 
     for name, method in NEW_ITEMS.items():
