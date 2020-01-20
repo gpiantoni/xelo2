@@ -149,7 +149,6 @@ class Table_with_files(Table):
     def add_file(self, format, path):
         path = Path(path).resolve()
 
-<<<<<<< HEAD
         self.cur.execute(f"SELECT id, format FROM files WHERE path == '{path}'")
         file_row = self.cur.fetchone()
 
@@ -160,23 +159,13 @@ class Table_with_files(Table):
                 raise ValueError(f'Input format "{format}" does not match the format "{format_in_table}" in the table for {path}')
 
         else:
-=======
-        self.cur.execute(f'SELECT id FROM files WHERE path == "{path}"')
-        file_id = self.cur.fetchone()
-        if file_id is None:
->>>>>>> 4973d5ba15c461a45f921743bc01f8e9f48789bf
             self.cur.execute(f"""\
             INSERT INTO files ("format", "path")
             VALUES ("{format}", "{path.resolve()}")""")
             self.cur.execute("""SELECT last_insert_rowid()""")
-<<<<<<< HEAD
-            file_id = self.cur.fetchone()[0]
-
-=======
             file_id = self.cur.fetchone()
 
         file_id = file_id[0]
->>>>>>> 4973d5ba15c461a45f921743bc01f8e9f48789bf
         self.cur.execute(f"""INSERT INTO {self.t}s_files ("{self.t}_id", "file_id") VALUES ({self.id}, {file_id})""")
 
     def delete_file(self, file):
