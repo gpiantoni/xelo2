@@ -36,8 +36,11 @@ class Table():
         self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
 
-    def __repr__(self):
+    def __str__(self):
         return f'<{self.t} (#{self.id})>'
+
+    def __repr__(self):
+        return f'{self.t.capitalize()}(cur, id={self.id})'
 
     def __eq__(self, other):
         """So that we can compare instances very easily with set"""
@@ -45,7 +48,7 @@ class Table():
 
     def __hash__(self):
         """So that we can compare instances very easily with set"""
-        return hash(self.__repr__())
+        return hash(self.__str__())
 
     def delete(self):
         self.cur.execute(f"""\
@@ -134,7 +137,7 @@ class Table():
                 """)
 
         except (OperationalError, IntegrityError) as err:
-            lg.warning(f'{str(err)} when setting {key}={value} for {repr(self)}')
+            lg.warning(f'{str(err)} when setting {key}={value} for {self}')
 
 
 class Table_with_files(Table):
@@ -182,7 +185,7 @@ class Run(Table_with_files):
         self.session = session
         super().__init__(cur, id)
 
-    def __repr__(self):
+    def __str__(self):
         return f'<{self.t} (#{self.id})>'
 
     def list_recordings(self):
@@ -257,7 +260,7 @@ class Session(Table_with_files):
         super().__init__(cur, id)
         self.subject = subject
 
-    def __repr__(self):
+    def __str__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
 
     @property
@@ -322,16 +325,22 @@ class Session(Table_with_files):
 class Subject(Table_with_files):
     t = 'subject'
 
-    def __init__(self, cur, code):
-        self.code = code
-        cur.execute(f"SELECT id FROM subjects WHERE code == '{code}'")
-        output = cur.fetchone()
-        if output is None:
-            raise ValueError(f'There is no "{code}" in "subjects" table')
+    def __init__(self, cur, code=None, id=None):
 
-        else:
-            subj_id = output[0]
-        super().__init__(cur, subj_id)
+        if code is not None:
+            self.code = code
+            cur.execute(f"SELECT id FROM subjects WHERE code == '{code}'")
+            output = cur.fetchone()
+            if output is None:
+                raise ValueError(f'There is no "{code}" in "subjects" table')
+
+            else:
+                id = output[0]
+
+        super().__init__(cur, id)
+
+        if code is None:
+            self.code = self.__getattr__('code')  # explicit otherwise it gets ignored
 
     def list_sessions(self):
         self.cur.execute(f"""\

@@ -1,9 +1,11 @@
 from logging import getLogger
 from pathlib import Path
 from datetime import date
+from functools import partial
 
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QAction,
     QComboBox,
     QDateEdit,
     QDateTimeEdit,
@@ -15,6 +17,7 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMenu,
     QPushButton,
     QDoubleSpinBox,
     QSpinBox,
@@ -26,16 +29,17 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import (
     QBrush,
     QColor,
+    QDesktopServices,
     QPalette,
     )
 from PyQt5.QtCore import (
     Qt,
     pyqtSlot,
     QSettings,
+    QUrl,
     )
 
-
-from ..model.structure import list_subjects, TABLES
+from ..model.structure import list_subjects, TABLES, open_database
 from ..bids.root import create_bids
 
 from .actions import create_menubar
@@ -55,10 +59,13 @@ LEVELS = [
     ]
 
 
+
 class Interface(QMainWindow):
 
-    def __init__(self, cur):
-        self.cur = cur
+    def __init__(self, sqlite_file):
+        self.sqlite_file = sqlite_file
+        self.sql_commands = sqlite_file.with_suffix('.log').open('w+')
+
         super().__init__()
 
         lists = {}
@@ -87,6 +94,9 @@ class Interface(QMainWindow):
         t_files.setColumnCount(3)
         t_files.setHorizontalHeaderLabels(['Level', 'Format', 'File'])
         t_files.verticalHeader().setVisible(False)
+        # right click
+        t_files.setContextMenuPolicy(Qt.CustomContextMenu)
+        t_files.customContextMenuRequested.connect(self.rightclick_files)
 
         # ELECTRODES: Widget
         t_elec = QTableWidget()
@@ -199,6 +209,7 @@ class Interface(QMainWindow):
     def access_db(self):
         """This is where you access the database
         """
+        self.sql, self.cur = open_database(self.sqlite_file)
         self.list_subjects()
 
     def list_subjects(self):
@@ -388,16 +399,23 @@ class Interface(QMainWindow):
                     'level': self.groups[k].title(),
                     'format': file.format,
                     'path': file.path,
+                    'obj': file,
                     })
 
         self.t_files.setRowCount(len(all_files))
 
         for i, val in enumerate(all_files):
+
             item = QTableWidgetItem(val['level'])
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             item.setBackground(QBrush(QColor('lightGray')))
+            item.setData(Qt.UserRole, val['obj'])
             self.t_files.setItem(i, 0, item)
-            self.t_files.setItem(i, 1, QTableWidgetItem(val['format']))
+
+            item = QTableWidgetItem(val['format'])
+            item.setData(Qt.UserRole, val['obj'])
+            self.t_files.setItem(i, 1, item)
+
             item = QTableWidgetItem(str(val['path']))
             try:
                 path_exists = val['path'].exists()
@@ -410,13 +428,18 @@ class Interface(QMainWindow):
                 if not path_exists:
                     item.setForeground(QBrush(QColor('red')))
 
+            item.setData(Qt.UserRole, val['obj'])
             self.t_files.setItem(i, 2, item)
 
         self.t_files.blockSignals(False)
 
-    def changed_combo(self, obj, x):
-        print(obj)
-        print(x)
+    def changed(self, obj, value, x):
+        if isinstance(x, QLineEdit):
+            x = x.text()
+
+        cmd = f'{repr(obj)}.{value} = "{x}"'
+        print(cmd)
+        self.sql_commands.write(cmd + '\n')
 
     def exporting(self):
         """TODO"""
@@ -455,6 +478,27 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 2, item)
             item = QTableWidgetItem(l['recordings'])
             self.t_export.setItem(i, 3, item)
+
+    def rightclick_files(self, pos):
+        item = self.t_files.itemAt(pos)
+
+        if item is None:
+            return
+
+        file_obj = item.data(Qt.UserRole)
+        file_path = file_obj.path.resolve()
+        url_file = QUrl(str(file_path))
+        url_directory = QUrl(str(file_path.parent))
+
+        action_openfile = QAction('Open File', self)
+        action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
+        action_opendirectory = QAction('Open Containing Folder', self)
+        action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+
+        menu = QMenu('File Information', self)
+        menu.addAction(action_openfile)
+        menu.addAction(action_opendirectory)
+        menu.popup(self.t_files.mapToGlobal(pos))
 
     def do_export(self):
         recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'
@@ -500,6 +544,7 @@ class Interface(QMainWindow):
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())
+        self.sql_commands.close()
 
         event.accept()
 
@@ -516,24 +561,27 @@ def table_widget(table, obj, parent=None):
 
         if item['type'].startswith('DATETIME'):
             w = make_datetime(item, value)
+            w.dateTimeChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('DATE'):
             w = make_date(item, value)
-            w.dateChanged.connect(lambda x: parent.changed_combo(obj, x))
+            w.dateChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('FLOAT'):
             w = make_float(item, value)
+            w.valueChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('INTEGER'):
             w = make_integer(item, value)
-            w.valueChanged.connect(lambda x: parent.changed_combo(obj, x))
+            w.valueChanged.connect(partial(parent.changed, obj, v))
 
         elif item['type'].startswith('TEXT'):
             if 'values' in item:
                 w = make_combobox(item, value)
-                w.currentTextChanged.connect(lambda x: parent.changed_combo(obj, x))
+                w.currentTextChanged.connect(partial(parent.changed, obj, v))
             else:
                 w = make_edit(item, value)
+                w.returnPressed.connect(partial(parent.changed, obj, v, w))
 
         else:
             raise ValueError(f'unknown type "{item["type"]}"')
