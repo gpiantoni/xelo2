@@ -481,29 +481,34 @@ class Interface(QMainWindow):
         item = self.t_files.itemAt(pos)
 
         if item is None:
-            return
+            menu = QMenu(self)
+            action = QAction(f'Add File', self)
+            action.triggered.connect(lambda x: self.new_file(self))
+            menu.addAction(action)
+            menu.popup(self.t_files.mapToGlobal(pos))
 
-        level_obj, file_obj = item.data(Qt.UserRole)
-        file_path = file_obj.path.resolve()
-        url_file = QUrl(str(file_path))
-        url_directory = QUrl(str(file_path.parent))
+        else:
+            level_obj, file_obj = item.data(Qt.UserRole)
+            file_path = file_obj.path.resolve()
+            url_file = QUrl(str(file_path))
+            url_directory = QUrl(str(file_path.parent))
 
-        action_edit = QAction('Edit File', self)
-        action_edit.triggered.connect(lambda x: self.edit_file(file_obj))
-        action_openfile = QAction('Open File', self)
-        action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
-        action_opendirectory = QAction('Open Containing Folder', self)
-        action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
-        action_delete = QAction('Delete', self)
-        action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
+            action_edit = QAction('Edit File', self)
+            action_edit.triggered.connect(lambda x: self.edit_file(file_obj))
+            action_openfile = QAction('Open File', self)
+            action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
+            action_opendirectory = QAction('Open Containing Folder', self)
+            action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+            action_delete = QAction('Delete', self)
+            action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
 
-        menu = QMenu('File Information', self)
-        menu.addAction(action_edit)
-        menu.addAction(action_openfile)
-        menu.addAction(action_opendirectory)
-        menu.addSeparator()
-        menu.addAction(action_delete)
-        menu.popup(self.t_files.mapToGlobal(pos))
+            menu = QMenu('File Information', self)
+            menu.addAction(action_edit)
+            menu.addAction(action_openfile)
+            menu.addAction(action_opendirectory)
+            menu.addSeparator()
+            menu.addAction(action_delete)
+            menu.popup(self.t_files.mapToGlobal(pos))
 
     def do_export(self):
         recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'

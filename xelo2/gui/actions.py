@@ -4,14 +4,25 @@ from PyQt5.QtWidgets import (
 
 def create_menubar(main):
     menubar = main.menuBar()
-    menubar.clear()
+    # menubar.clear()
 
     # FILE
-    menubar.addMenu('Database')
-    # connect
-    # commit
-    # revert
-    # close
+    menu_db = menubar.addMenu('Database')
+
+    action_connect = QAction('Connect', main)
+    menu_db.addAction(action_connect)
+
+    action_commit = QAction('Commit', main)
+    action_commit.triggered.connect(lambda x: main.sql.commit())
+    menu_db.addAction(action_commit)
+
+    action_revert = QAction('Rollback', main)
+    action_revert.triggered.connect(lambda x: main.sql.rollback())
+    menu_db.addAction(action_revert)
+
+    action_close = QAction('Close', main)
+    action_close.triggered.connect(lambda x: main.sql.close())
+    menu_db.addAction(action_close)
 
     # New
     menu_new = menubar.addMenu('Add ...')
