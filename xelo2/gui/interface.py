@@ -44,7 +44,7 @@ from ..model.structure import list_subjects, TABLES, open_database
 from ..bids.root import create_bids
 
 from .actions import create_menubar
-from .modal import NewFile
+from .modal import NewFile, Popup_Experimenters
 
 
 settings = QSettings("xelo2", "xelo2")
@@ -58,7 +58,6 @@ LEVELS = [
     'runs',
     'recordings',
     ]
-
 
 
 class Interface(QMainWindow):
@@ -339,9 +338,7 @@ class Interface(QMainWindow):
 
             elif k == 'runs':
 
-                w = QLineEdit()
-                if obj.experimenters is not None:
-                    w.insert(', '.join(obj.experimenters))
+                w = Popup_Experimenters(obj, self)
                 parameters.update({'Experimenters': w})
 
                 if obj.task_name == 'mario':
@@ -400,7 +397,7 @@ class Interface(QMainWindow):
                     'level': self.groups[k].title(),
                     'format': file.format,
                     'path': file.path,
-                    'obj': file,
+                    'obj': [obj, file],
                     })
 
         self.t_files.setRowCount(len(all_files))
@@ -484,25 +481,34 @@ class Interface(QMainWindow):
         item = self.t_files.itemAt(pos)
 
         if item is None:
-            return
+            menu = QMenu(self)
+            action = QAction(f'Add File', self)
+            action.triggered.connect(lambda x: self.new_file(self))
+            menu.addAction(action)
+            menu.popup(self.t_files.mapToGlobal(pos))
 
-        file_obj = item.data(Qt.UserRole)
-        file_path = file_obj.path.resolve()
-        url_file = QUrl(str(file_path))
-        url_directory = QUrl(str(file_path.parent))
+        else:
+            level_obj, file_obj = item.data(Qt.UserRole)
+            file_path = file_obj.path.resolve()
+            url_file = QUrl(str(file_path))
+            url_directory = QUrl(str(file_path.parent))
 
-        action_copy = QAction('Copy Full Path to File', self)
-        action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_path)))
-        action_openfile = QAction('Open File', self)
-        action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
-        action_opendirectory = QAction('Open Containing Folder', self)
-        action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+            action_edit = QAction('Edit File', self)
+            action_edit.triggered.connect(lambda x: self.edit_file(file_obj))
+            action_openfile = QAction('Open File', self)
+            action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
+            action_opendirectory = QAction('Open Containing Folder', self)
+            action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+            action_delete = QAction('Delete', self)
+            action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
 
-        menu = QMenu('File Information', self)
-        menu.addAction(action_copy)
-        menu.addAction(action_openfile)
-        menu.addAction(action_opendirectory)
-        menu.popup(self.t_files.mapToGlobal(pos))
+            menu = QMenu('File Information', self)
+            menu.addAction(action_edit)
+            menu.addAction(action_openfile)
+            menu.addAction(action_opendirectory)
+            menu.addSeparator()
+            menu.addAction(action_delete)
+            menu.popup(self.t_files.mapToGlobal(pos))
 
     def do_export(self):
         recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'
@@ -544,6 +550,18 @@ class Interface(QMainWindow):
             print(get_new_file.level.currentText())
             print(get_new_file.filepath.text())
             print(get_new_file.format.currentText())
+
+    def edit_file(self, file_obj):
+        get_new_file = NewFile(self, file_obj)
+        result = get_new_file.exec()
+
+        if result:
+            print(get_new_file.level.currentText())
+            print(get_new_file.filepath.text())
+            print(get_new_file.format.currentText())
+
+    def delete_file(self, level_obj, file_obj):
+        level_obj.delete(file_obj)
 
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())

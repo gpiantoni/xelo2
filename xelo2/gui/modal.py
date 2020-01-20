@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import (
+    QAction,
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
     QHBoxLayout,
     QLineEdit,
+    QMenu,
     QPushButton,
     QVBoxLayout,
     )
@@ -16,7 +18,7 @@ from ..model.filetype import parse_filetype
 
 class NewFile(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, file_obj=None):
         super().__init__(parent)
         self.setWindowModality(Qt.WindowModal)
 
@@ -51,6 +53,11 @@ class NewFile(QDialog):
 
         self.setLayout(layout)
 
+        if file_obj is not None:
+            # self.level.setCurrentText(file_obj)
+            self.filepath.setText(str(file_obj.path))
+            self.format.setCurrentText(file_obj.format)
+
     def browse(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Select File')
 
@@ -65,3 +72,34 @@ class NewFile(QDialog):
 
             else:
                 self.format.setCurrentText(filetype)
+
+
+class Popup_Experimenters(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        self.menu = QMenu(self)
+        for name in TABLES['experimenters']['name']['values']:
+            action = QAction(name, self)
+            action.setCheckable(True)
+            action.toggled.connect(self.action_toggle)
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked):
+
+        names = []
+        for action in self.menu.actions():
+            if action.isChecked():
+                names.append(action.text())
+
+        self.run.experimenters = names
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(', '.join(self.run.experimenters))
