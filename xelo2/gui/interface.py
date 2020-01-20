@@ -37,6 +37,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtCore import (
     Qt,
     pyqtSlot,
+    QDate,
     QSettings,
     QUrl,
     )
@@ -436,11 +437,15 @@ class Interface(QMainWindow):
         self.t_files.blockSignals(False)
 
     def changed(self, obj, value, x):
-        if isinstance(x, QLineEdit):
-            x = x.text()
+        if isinstance(x, QDate):
+            x = repr(x.toPyDate())
+        else:
+            if isinstance(x, QLineEdit):
+                x = x.text()
 
-        cmd = f'{repr(obj)}.{value} = "{x}"'
-        print(cmd)
+            x = f'"{x}"'
+
+        cmd = f'{repr(obj)}.{value} = {x}'
         self.sql_commands.write(cmd + '\n')
 
     def exporting(self):
@@ -541,6 +546,8 @@ class Interface(QMainWindow):
 
         if ok and text != '':
             Subject.add(self.cur, text.strip())
+            cmd = f'Subject.add(cur, "{text.strip()}")'
+            self.sql_commands.write(cmd + '\n')
             self.list_subjects()
 
     def new_session(self, checked):
