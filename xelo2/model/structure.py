@@ -303,11 +303,11 @@ class Session(Table_with_files):
         WHERE runs.session_id == {self.id}""")
         return [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
 
-    def add_run(self, task_name, start_time, end_time):
+    def add_run(self, task_name, start_time=None, end_time=None):
 
         self.cur.execute(f"""\
         INSERT INTO runs ("session_id", "task_name", "start_time", "end_time")
-        VALUES ("{self.id}", "{task_name}", "{start_time}", "{end_time}")""")
+        VALUES ("{self.id}", "{task_name}", "{_datetime(start_time)}", "{_datetime(end_time)}")""")
         self.cur.execute("""SELECT last_insert_rowid()""")
         run_id = self.cur.fetchone()[0]
 
@@ -435,14 +435,14 @@ def _datetime(s):
 
 
 def _date_out(s):
-    if s is None:
+    if s == 'null' or s is None:
         return None
     else:
         return datetime.strptime(s, '%Y-%m-%d').date()
 
 
 def _datetime_out(s):
-    if s is None:
+    if s == 'null' or s is None:
         return None
     else:
         return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')

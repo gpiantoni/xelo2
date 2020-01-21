@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
 from functools import partial
 
 from PyQt5.QtWidgets import (
@@ -590,7 +590,19 @@ class Interface(QMainWindow):
         print(checked)
 
     def new_run(self, checked):
-        print(checked)
+        current_session = self.current('sessions')
+
+        text, ok = QInputDialog.getItem(
+            self,
+            'Add New Run for {current_session.name}',
+            'Task Name:',
+            TABLES['runs']['task_name']['values'],
+            0, False)
+
+        if ok and text != '':
+            current_session.add_run(text)
+            self.journal.add(f'{repr(current_session)}.add_run("{text}")')
+            self.list_runs(current_session)
 
     def new_recording(self, checked):
         print(checked)
@@ -736,7 +748,7 @@ def make_datetime(table, value):
     w.setCalendarPopup(True)
     w.setDisplayFormat('dd MMM yyyy HH:mm:ss')
     if value is None:
-        w.setDateTime(date(1900, 1, 1))
+        w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
         palette = QPalette()
         palette.setColor(QPalette.Text, Qt.red)
         w.setPalette(palette)
