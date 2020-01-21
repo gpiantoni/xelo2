@@ -33,12 +33,12 @@ def key_to_sort_subjects(subj):
     if len(sessions) > 0:
         start_time = sessions[0].start_time
         if start_time is None:
-            return datetime(1, 1, 1)
+            return datetime.now()
         else:
             return start_time
 
     else:
-        return datetime(1, 1, 1)
+        return datetime.now()
 
 
 class Table():
