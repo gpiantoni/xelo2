@@ -47,6 +47,7 @@ from ..bids.root import create_bids
 
 from .actions import create_menubar
 from .modal import NewFile, Popup_Experimenters
+from .journal import Journal
 
 
 settings = QSettings("xelo2", "xelo2")
@@ -66,12 +67,10 @@ class Interface(QMainWindow):
 
     def __init__(self, sqlite_file):
         self.sqlite_file = sqlite_file
-        now = datetime.now()
-        log_file = sqlite_file.parent / f'{sqlite_file.stem}_{now:%Y%m%d_%H%M%S}.log'
-        self.sql_commands = log_file.open('w+')
+        self.journal = Journal(sqlite_file)
 
         super().__init__()
-        self.setWindowTitle(log_file.stem)
+        self.setWindowTitle(sqlite_file.stem)
 
         lists = {}
         groups = {}
@@ -208,14 +207,26 @@ class Interface(QMainWindow):
 
         create_menubar(self)
 
-        self.access_db()
+        self.sql_access()
         self.show()
 
-    def access_db(self):
+    def sql_access(self):
         """This is where you access the database
         """
         self.sql, self.cur = open_database(self.sqlite_file)
         self.list_subjects()
+
+    def sql_commit(self):
+        self.sql.commit()
+        self.journal.add('sql.commit()')
+
+    def sql_rollback(self):
+        self.sql.rollback()
+        self.journal.add('sql.rollback()')
+
+    def sql_close(self):
+        self.sql.close()
+        self.journal.add('sql.close()')
 
     def list_subjects(self):
         for l in self.lists.values():
@@ -446,7 +457,7 @@ class Interface(QMainWindow):
             x = f'"{x}"'
 
         cmd = f'{repr(obj)}.{value} = {x}'
-        self.sql_commands.write(cmd + '\n')
+        self.journal.add(cmd)
 
     def exporting(self):
         """TODO"""
@@ -546,8 +557,7 @@ class Interface(QMainWindow):
 
         if ok and text != '':
             Subject.add(self.cur, text.strip())
-            cmd = f'Subject.add(cur, "{text.strip()}")'
-            self.sql_commands.write(cmd + '\n')
+            self.journal.add(f'Subject.add(cur, "{text.strip()}")')
             self.list_subjects()
 
     def new_session(self, checked):
@@ -586,7 +596,7 @@ class Interface(QMainWindow):
     def closeEvent(self, event):
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())
-        self.sql_commands.close()
+        self.journal.close()
 
         event.accept()
 

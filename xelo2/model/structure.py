@@ -362,6 +362,9 @@ class Subject(Table_with_files):
         if code is None:
             self.code = self.__getattr__('code')  # explicit otherwise it gets ignored
 
+    def __repr__(self):
+        return f'{self.t.capitalize()}(cur, code="{self.code}")'
+
     def list_sessions(self):
         self.cur.execute(f"""\
         SELECT sessions.id, name FROM sessions

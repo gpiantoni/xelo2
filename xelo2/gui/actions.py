@@ -13,15 +13,15 @@ def create_menubar(main):
     menu_db.addAction(action_connect)
 
     action_commit = QAction('Commit', main)
-    action_commit.triggered.connect(lambda x: main.sql.commit())
+    action_commit.triggered.connect(main.sql_commit)
     menu_db.addAction(action_commit)
 
     action_revert = QAction('Rollback', main)
-    action_revert.triggered.connect(lambda x: main.sql.rollback())
+    action_revert.triggered.connect(main.sql_rollback)
     menu_db.addAction(action_revert)
 
     action_close = QAction('Close', main)
-    action_close.triggered.connect(lambda x: main.sql.close())
+    action_close.triggered.connect(main.sql_close)
     menu_db.addAction(action_close)
 
     # New
