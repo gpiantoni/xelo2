@@ -45,7 +45,7 @@ from PyQt5.QtCore import (
 from ..model.structure import list_subjects, TABLES, open_database, Subject
 from ..bids.root import create_bids
 
-from .actions import create_menubar
+from .actions import create_menubar, Search
 from .modal import NewFile, Popup_Experimenters
 from .journal import Journal
 
@@ -206,6 +206,7 @@ class Interface(QMainWindow):
         self.exports = []
 
         create_menubar(self)
+        self.search = Search()
 
         self.sql_access()
         self.show()
@@ -235,6 +236,8 @@ class Interface(QMainWindow):
 
         for subj in list_subjects(self.cur):
             item = QListWidgetItem(subj.code)
+            if subj.id in self.search.subjects:
+                highlight(item)
             item.setData(Qt.UserRole, subj)
             self.lists['subjects'].addItem(item)
 
@@ -277,6 +280,8 @@ class Interface(QMainWindow):
             else:
                 date_str = f'{sess.start_time:%d %b %Y}'
             item = QListWidgetItem_time(sess, f'{sess.name} ({date_str})')
+            if sess.id in self.search.sessions:
+                highlight(item)
             self.lists['sessions'].addItem(item)
             protocols.extend(sess.list_protocols())
         self.lists['sessions'].setCurrentRow(0)
@@ -294,6 +299,8 @@ class Interface(QMainWindow):
 
         for run in sess.list_runs():
             item = QListWidgetItem_time(run, f'{run.task_name}')
+            if run.id in self.search.runs:
+                highlight(item)
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
 
@@ -319,6 +326,8 @@ class Interface(QMainWindow):
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
+            if recording.id in self.search.recordings:
+                highlight(item)
             self.lists['recordings'].addItem(item)
         self.lists['recordings'].setCurrentRow(0)
 
@@ -540,6 +549,24 @@ class Interface(QMainWindow):
             menu.addSeparator()
             menu.addAction(action_delete)
             menu.popup(self.t_files.mapToGlobal(pos))
+
+    def sql_search(self):
+
+        text, ok = QInputDialog.getText(
+            self,
+            'Search the database',
+            'WHERE statement' + ' ' * 200,
+            QLineEdit.Normal,
+            self.search.previous,
+            )
+
+        if ok and text != '':
+            self.search = Search(self.cur, text)
+            self.list_subjects()
+
+    def sql_search_clear(self):
+        self.search.clear()
+        self.list_subjects()
 
     def do_export(self):
         recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'
@@ -763,6 +790,13 @@ def copy_to_clipboard(text):
 
     clipboard = QGuiApplication.clipboard()
     clipboard.setText(text)
+
+
+def highlight(item):
+    item.setBackground(Qt.yellow)
+    font = item.font()
+    font.setBold(True)
+    item.setFont(font)
 
 
 class QListWidgetItem_time(QListWidgetItem):

@@ -39,3 +39,51 @@ def create_menubar(main):
         action = QAction(f'new {name}', main)
         action.triggered.connect(method)
         menu_new.addAction(action)
+
+    # search
+    menu_search = menubar.addMenu('Search')
+    action_search = QAction('WHERE ...', main)
+    action_search.triggered.connect(main.sql_search)
+    menu_search.addAction(action_search)
+    action_clear = QAction('clear', main)
+    action_clear.triggered.connect(main.sql_search_clear)
+    menu_search.addAction(action_clear)
+
+
+SEARCH_STATEMENT = """\
+    SELECT subjects.id, sessions.id, runs.id, recordings.id FROM subjects
+    LEFT JOIN sessions ON sessions.subject_id == subjects.id
+    LEFT JOIN sessions_mri ON sessions_mri.session_id == sessions.id
+    LEFT JOIN runs ON runs.session_id == sessions.id
+    LEFT JOIN recordings ON recordings.run_id == runs.id
+    WHERE """
+
+
+class Search():
+
+    def __init__(self, cur=None, where=None):
+        """TODO: where is not sanitized!!!"""
+        self.clear()
+
+        if cur is None:
+            return
+
+        self.previous = where
+        cur.execute(
+            SEARCH_STATEMENT
+            + where)
+
+        for val in cur.fetchall():
+            self.subjects.append(val[0])
+            self.sessions.append(val[1])
+            self.runs.append(val[2])
+            self.recordings.append(val[3])
+
+    def clear(self):
+
+        self.subjects = []
+        self.sessions = []
+        self.runs = []
+        self.recordings = []
+
+        self.previous = ''
