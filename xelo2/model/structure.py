@@ -226,7 +226,7 @@ class Run(Table_with_files):
         self.cur.execute(f"""\
         SELECT recordings.id FROM recordings
         WHERE recordings.run_id == {self.id}""")
-        return [Recording(self.cur, x[0], run=self) for x in self.cur.fetchall()]
+        return sorted([Recording(self.cur, x[0], run=self) for x in self.cur.fetchall()])
 
     def add_recording(self, modality, offset=0):
 
@@ -317,7 +317,8 @@ class Session(Table_with_files):
         self.cur.execute(f"""\
         SELECT runs.id FROM runs
         WHERE runs.session_id == {self.id}""")
-        return [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
+        list_of_runs = [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
+        return sorted(list_of_runs, key=lambda x: x.start_time)
 
     def add_run(self, task_name, start_time=None, end_time=None):
 
