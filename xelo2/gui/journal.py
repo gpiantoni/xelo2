@@ -16,6 +16,9 @@ class Journal():
         now = datetime.now()
         self.f.write(f'{now:%Y-%m-%d %H:%M:%S}\t{cmd}\n')
 
+    def flush(self):
+        self.f.flush()
+
     def close(self):
         """TODO: remove duplicates in journal"""
         self.f.close()

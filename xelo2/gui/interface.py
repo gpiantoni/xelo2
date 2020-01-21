@@ -1,6 +1,6 @@
 from logging import getLogger
 from pathlib import Path
-from datetime import date, datetime
+from datetime import date
 from functools import partial
 
 from PyQt5.QtWidgets import (
@@ -219,6 +219,7 @@ class Interface(QMainWindow):
     def sql_commit(self):
         self.sql.commit()
         self.journal.add('sql.commit()')
+        self.journal.flush()
 
     def sql_rollback(self):
         self.sql.rollback()
@@ -271,7 +272,11 @@ class Interface(QMainWindow):
 
         protocols = []
         for sess in subj.list_sessions():
-            item = QListWidgetItem_time(sess, f'{sess.name} ({sess.start_time:%d %b %Y})')
+            if sess.start_time is None:
+                date_str = 'unknown date'
+            else:
+                date_str = f'{sess.start_time:%d %b %Y}'
+            item = QListWidgetItem_time(sess, f'{sess.name} ({date_str})')
             self.lists['sessions'].addItem(item)
             protocols.extend(sess.list_protocols())
         self.lists['sessions'].setCurrentRow(0)
@@ -291,8 +296,6 @@ class Interface(QMainWindow):
             item = QListWidgetItem_time(run, f'{run.task_name}')
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
-
-        self.list_recordings(run)
 
     def show_electrodes(self, sess):
         self.cur.execute(f"""\
@@ -396,6 +399,13 @@ class Interface(QMainWindow):
             self.t_params.setCellWidget(i, 2, val['value'])
 
         self.t_params.blockSignals(False)
+
+    def current(self, level):
+        assert level in LEVELS
+
+        item = self.lists[level].currentItem()
+        if item is not None:
+            return item.data(Qt.UserRole)
 
     def list_files(self):
 
@@ -561,7 +571,20 @@ class Interface(QMainWindow):
             self.list_subjects()
 
     def new_session(self, checked):
-        print(checked)
+
+        current_subject = self.current('subjects')
+
+        text, ok = QInputDialog.getItem(
+            self,
+            'Add New Session for {current_subject.code}',
+            'Session Name:',
+            TABLES['sessions']['name']['values'],
+            0, False)
+
+        if ok and text != '':
+            current_subject.add_session(text)
+            self.journal.add(f'{repr(current_subject)}.add_session("{text}")')
+            self.list_sessions_and_protocols(current_subject)
 
     def new_protocol(self, checked):
         print(checked)
