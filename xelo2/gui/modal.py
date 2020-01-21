@@ -78,6 +78,7 @@ class Popup_Experimenters(QPushButton):
 
     def __init__(self, run, parent):
         self.run = run
+        self.parent = parent
         super().__init__(parent)
         self.set_title()
 
@@ -97,6 +98,8 @@ class Popup_Experimenters(QPushButton):
                 names.append(action.text())
 
         self.run.experimenters = names
+        names_str = ','.join([f'"{x}"' for x in names])
+        self.parent.journal.add(f'{repr(self.run)}.experimenters = {names_str}')
 
         self.set_title()
         self.showMenu()

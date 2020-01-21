@@ -53,7 +53,7 @@ from .journal import Journal
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
-ELECTRODES_COLUMNS = ["name", "x", "y", "z", "size", "material"]
+ELECTRODES_COLUMNS = list(TABLES['electrodes'])[1:]
 LEVELS = [
     'subjects',
     'sessions',
@@ -464,8 +464,9 @@ class Interface(QMainWindow):
             if isinstance(x, QLineEdit):
                 x = x.text()
 
-            x = f'"{x}"'
+            x = f'{x}'
 
+        setattr(obj, value, x)
         cmd = f'{repr(obj)}.{value} = {x}'
         self.journal.add(cmd)
 
@@ -756,6 +757,7 @@ def make_datetime(table, value):
         w.setDateTime(value)
 
     return w
+
 
 def copy_to_clipboard(text):
 
