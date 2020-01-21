@@ -22,7 +22,23 @@ def open_database(path_to_database):
 
 def list_subjects(cur):
     cur.execute(f"SELECT code FROM subjects ORDER BY id")
-    return [Subject(cur, x[0]) for x in cur.fetchall()]
+
+    list_of_subjects = [Subject(cur, x[0]) for x in cur.fetchall()]
+    return sorted(list_of_subjects, key=key_to_sort_subjects)
+
+
+def key_to_sort_subjects(subj):
+    sessions = subj.list_sessions()
+
+    if len(sessions) > 0:
+        start_time = sessions[0].start_time
+        if start_time is None:
+            return datetime(1, 1, 1)
+        else:
+            return start_time
+
+    else:
+        return datetime(1, 1, 1)
 
 
 class Table():
@@ -369,7 +385,8 @@ class Subject(Table_with_files):
         self.cur.execute(f"""\
         SELECT sessions.id, name FROM sessions
         WHERE sessions.subject_id ==  '{self.id}'""")
-        return [Session(self.cur, x[0], subject=self) for x in self.cur.fetchall()]
+        list_of_sessions = [Session(self.cur, x[0], subject=self) for x in self.cur.fetchall()]
+        return sorted(list_of_sessions, key=lambda x: x.start_time)
 
     def add_session(self, name):
 

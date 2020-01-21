@@ -80,7 +80,7 @@ class Interface(QMainWindow):
             lists[k].currentItemChanged.connect(self.proc_all)
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
-            lists[k].setSortingEnabled(True)
+            # lists[k].setSortingEnabled(True)
             groups[k].setLayout(layout)
 
         # PARAMETERS: Widget
