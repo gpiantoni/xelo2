@@ -4,7 +4,7 @@ from pytest import raises
 from xelo2.database.create import open_database
 from xelo2.api import Subject, list_subjects
 
-from .paths import DB_PATH
+from .paths import DB_PATH, TRC_PATH
 
 
 def test_api_subject():
@@ -69,6 +69,7 @@ def test_api_run():
     run.end_time = fake_time
     assert run.end_time == fake_time
 
+
 def test_api_recording():
 
     subj = list_subjects()[0]
@@ -88,3 +89,11 @@ def test_api_recording():
     recording.delete()
     assert len(run.list_recordings()) == 0
 
+
+def test_api_files():
+
+    subj = list_subjects()[0]
+    file = subj.add_file('micromed', TRC_PATH)
+
+    assert len(subj.list_files()) == 1
+    assert file.path == TRC_PATH

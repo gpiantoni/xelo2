@@ -135,24 +135,26 @@ class Table_with_files(Table):
     def add_file(self, format, path):
         path = Path(path).resolve()
 
-        self.cur.execute(f"SELECT id, format FROM files WHERE path == '{path}'")
-        file_row = self.cur.fetchone()
+        query = QSqlQuery(f"SELECT id, format FROM files WHERE path == '{path}'")
 
-        if file_row is not None:
-            file_id, format_in_table = file_row
+        if query.next():
+            file_id = query.value('id')
+            format_in_table = query.value('format')
 
             if format != format_in_table:
                 raise ValueError(f'Input format "{format}" does not match the format "{format_in_table}" in the table for {path}')
 
         else:
-            self.cur.execute(f"""\
-            INSERT INTO files ("format", "path")
-            VALUES ("{format}", "{path.resolve()}")""")
-            self.cur.execute("""SELECT last_insert_rowid()""")
-            file_id = self.cur.fetchone()
+            QSqlQuery(f"""\
+                INSERT INTO files ("format", "path")
+                VALUES ("{format}", "{path.resolve()}")""")
+            file_id = query.lastInsertId()
 
-        file_id = file_id[0]
-        self.cur.execute(f"""INSERT INTO {self.t}s_files ("{self.t}_id", "file_id") VALUES ({self.id}, {file_id})""")
+        query = QSqlQuery(f"""\
+            INSERT INTO {self.t}s_files ("{self.t}_id", "file_id")
+            VALUES ({self.id}, {file_id})""")
+
+        return File(id=file_id)
 
     def delete_file(self, file):
         """TODO: add trigger to remove file, here we only remove the link in the table
@@ -163,13 +165,12 @@ class Table_with_files(Table):
 class File(Table):
     t = 'file'
 
-    def __init__(self, cur, id):
-        super().__init__(cur, id)
+    def __init__(self, id):
+        super().__init__(id)
 
     @property
     def path(self):
-        self.cur.execute(f"SELECT path FROM files WHERE id == {self.id}")
-        return Path(self.cur.fetchone()[0]).resolve()
+        return Path(self.__getattr__('path')).resolve()
 
 
 class Recording(Table_with_files):
