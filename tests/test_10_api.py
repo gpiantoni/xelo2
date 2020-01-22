@@ -97,3 +97,6 @@ def test_api_files():
 
     assert len(subj.list_files()) == 1
     assert file.path == TRC_PATH
+
+    subj.delete(file)
+    assert len(subj.list_files()) == 0

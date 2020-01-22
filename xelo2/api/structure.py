@@ -159,7 +159,7 @@ class Table_with_files(Table):
     def delete_file(self, file):
         """TODO: add trigger to remove file, here we only remove the link in the table
         """
-        self.cur.execute(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
+        QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
 
 
 class File(Table):
