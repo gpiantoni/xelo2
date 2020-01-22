@@ -48,7 +48,7 @@ class Table():
         return f'<{self.t} (#{self.id})>'
 
     def __repr__(self):
-        return f'{self.t.capitalize()}(cur, id={self.id})'
+        return f'{self.t.capitalize()}(id={self.id})'
 
     def __eq__(self, other):
         """So that we can compare instances very easily with set"""
@@ -63,7 +63,6 @@ class Table():
             DELETE FROM {self.t}s WHERE id == {self.id}
             """)
         self.id = None
-        self.cur = None
 
     def __getattr__(self, key):
 
@@ -354,12 +353,11 @@ class Subject(Table_with_files):
         if code is not None:
             self.code = code
             query = QSqlQuery(f"SELECT id FROM subjects WHERE code == '{code}'")
-            output = cur.fetchone()
-            if output is None:
-                raise ValueError(f'There is no "{code}" in "subjects" table')
 
+            if query.next():
+                id = query.value('id')
             else:
-                id = output[0]
+                raise ValueError(f'There is no "{code}" in "subjects" table')
 
         super().__init__(id)
 

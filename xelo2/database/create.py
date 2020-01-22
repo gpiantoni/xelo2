@@ -88,7 +88,7 @@ def parse_table(db, table_name, v, issubtable=False):
             cmd.append('id INTEGER PRIMARY KEY AUTOINCREMENT')
 
         elif col_name == 'when':
-            continue
+            continue  # TODO
 
         elif col_name.endswith('_id'):
             if issubtable:

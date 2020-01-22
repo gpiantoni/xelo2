@@ -14,3 +14,11 @@ def test_api_subj():
 
     with raises(ValueError):
         Subject.add('subject_test')
+
+    with raises(ValueError):
+        Subject('does_not_exist')
+
+    subj_copy = Subject('subject_test')
+
+    assert subj == subj_copy
+
