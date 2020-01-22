@@ -1,7 +1,6 @@
 from logging import getLogger
 from datetime import datetime
 from pathlib import Path
-from sqlite3 import OperationalError, IntegrityError
 
 from PyQt5.QtSql import QSqlQuery
 
@@ -16,8 +15,7 @@ def list_subjects():
     list_of_subjects = []
     while query.next():
         list_of_subjects.append(Subject(id=query.value('id')))
-    return list_of_subjects
-    #  TODO return sorted(list_of_subjects, key=key_to_sort_subjects)
+    return sorted(list_of_subjects, key=key_to_sort_subjects)
 
 
 def key_to_sort_subjects(subj):
@@ -121,20 +119,22 @@ class Table():
         else:
             value = _null(value)
 
+        # insert row in tables, if it doesn't exist
+        # we don't care if it works or if it fails, so we don't check output
         query = QSqlQuery(f"""\
             INSERT INTO {table_name} ("{id_name}")
             VALUES ("{self.id}")
             """)
 
-        if not query.isValid():
-            query = QSqlQuery(f"""\
-                UPDATE {table_name}
-                SET "{key}"={value}
-                WHERE {id_name} == "{self.id}"
-                """)
+        query = QSqlQuery(f"""\
+            UPDATE {table_name}
+            SET "{key}"={value}
+            WHERE {id_name} == "{self.id}"
+            """)
 
-        if not query.isValid():
-            lg.warning(f'Error when setting {key}={value} for {self}\n"{query.executedQuery}"')
+        if query.lastInsertId() is None:
+            err = query.lastError()
+            raise ValueError(f'{err.databaseText()}')
 
 
 class Table_with_files(Table):
@@ -143,7 +143,7 @@ class Table_with_files(Table):
         query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
         out = []
         while query.next():
-            out.append(File(q.value('file_id')))
+            out.append(File(query.value('file_id')))
         return out
 
     def add_file(self, format, path):
@@ -300,10 +300,17 @@ class Session(Table_with_files):
             return _datetime_out(query.value(0))
 
     def list_runs(self):
-        self.cur.execute(f"""\
-        SELECT runs.id FROM runs
-        WHERE runs.session_id == {self.id}""")
-        list_of_runs = [Run(self.cur, x[0], session=self) for x in self.cur.fetchall()]
+
+        query = QSqlQuery(f"""\
+            SELECT runs.id FROM runs
+            WHERE runs.session_id == {self.id}""")
+
+        list_of_runs = []
+        while query.next():
+            list_of_runs.append(
+                Run(
+                    id=query.value('id'),
+                    session=self))
         return sorted(list_of_runs, key=lambda x: x.start_time)
 
     def add_run(self, task_name, start_time=None, end_time=None):

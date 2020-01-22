@@ -37,6 +37,12 @@ def test_api_session():
     assert repr(sess) == 'Session(id=1)'
     assert sess.subject == subj
 
+    # set attribute in subtable
+    with raises(ValueError):
+        sess.MagneticFieldStrength = 'not correct'
+    sess.MagneticFieldStrength = '3T'
+    assert sess.MagneticFieldStrength == '3T'
+
 
 def test_api_run():
     subj = list_subjects()[0]
@@ -54,4 +60,7 @@ def test_api_run():
     run.end_time = fake_time
     assert run.end_time == fake_time
 
-
+def test_api_recording():
+    subj = list_subjects()[0]
+    sess = subj.list_sessions()[0]
+    run = sess.list_runs()[0]
