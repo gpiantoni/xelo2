@@ -35,3 +35,13 @@ def test_api_session():
     assert str(sess) == '<session MRI (#1)>'
     assert repr(sess) == 'Session(id=1)'
     assert sess.subject == subj
+
+
+def test_api_run():
+    subj = list_subjects()[0]
+    sess = subj.list_sessions()[0]
+
+    run = sess.add_run('motor')
+    assert str(run) == '<run "motor" (#1)>'
+    assert repr(run) == 'Run(id=1)'
+    assert run.session == sess
