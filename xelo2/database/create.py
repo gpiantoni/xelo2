@@ -28,7 +28,8 @@ def create_database(db_name, db_type='QSQLITE'):
     assert db.isValid()
 
     db_name = Path(db_name).resolve()
-    db_name.unlink()
+    if db_name.exists():
+        db_name.unlink()
     db.setDatabaseName(str(db_name))
     db.open()
 
