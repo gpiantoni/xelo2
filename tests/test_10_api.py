@@ -42,13 +42,16 @@ def test_api_run():
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
 
-    start_time = datetime(2000, 1, 1, 10, 0, 0)
-    run = sess.add_run('motor', start_time)
+    fake_time = datetime(2000, 1, 1, 10, 0, 0)
+    run = sess.add_run('motor', fake_time)
     assert str(run) == '<run (#1)>'
     assert repr(run) == 'Run(id=1)'
     assert run.session == sess
 
-    assert run.start_time == start_time
+    assert run.start_time == fake_time
     assert run.end_time is None
+
+    run.end_time = fake_time
+    assert run.end_time == fake_time
 
 
