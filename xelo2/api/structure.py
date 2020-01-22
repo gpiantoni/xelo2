@@ -76,10 +76,10 @@ class Table():
         if query.next():
             out = query.value(0)
 
-            if key.startswith('date_of_'):
+            if key.startswith('date_of_'):  # TODO: it should look TABLES up
                 return _date_out(out)
 
-            elif key.endswith('_time'):
+            elif key.endswith('_time'):  # TODO: it should look TABLES up
                 return _datetime_out(out)
 
             else:
@@ -112,9 +112,9 @@ class Table():
             table_name = f'{self.t}s'
             id_name = 'id'
 
-        if key.startswith('date_of_'):
+        if key.startswith('date_of_'):  # TODO: it should look TABLES up
             value = _date(value)
-        elif key.endswith('time'):
+        elif key.endswith('time'):  # TODO: it should look TABLES up
             value = _datetime(value)
         else:
             value = _null(value)
