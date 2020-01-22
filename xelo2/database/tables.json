@@ -441,6 +441,8 @@
             },
             "recordings_ieeg": {
                 "recording_id": null,
+                "channel_id": null,
+                "electrode_id": null,
                 "when": {
                     "level": "recording",
                     "parameter": "modality",
@@ -460,7 +462,7 @@
         }
     },
     "channels": {
-        "recording_id": null,
+        "id": null,
         "name": {
             "name": "name",
             "type": "TEXT UNIQUE"
@@ -488,7 +490,7 @@
         }
     },
     "electrodes": {
-        "session_id": null,
+        "id": null,
         "name": {
             "name": "name",
             "type": "TEXT"

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pytest import raises
 
 from xelo2.database.create import open_database
@@ -43,6 +43,15 @@ def test_api_session():
     sess.MagneticFieldStrength = '3T'
     assert sess.MagneticFieldStrength == '3T'
 
+    with raises(ValueError):
+        subj.add_session('xxx')
+
+    sess = subj.add_session('IEMU')
+    fake_date = date(2000, 1, 1)
+    sess.date_of_implantation = fake_date
+    assert sess.date_of_implantation == fake_date
+    assert sess.date_of_explantation is None
+
 
 def test_api_run():
     subj = list_subjects()[0]
@@ -61,6 +70,21 @@ def test_api_run():
     assert run.end_time == fake_time
 
 def test_api_recording():
+
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
+
+    recording = run.add_recording('ieeg')
+    assert str(recording) == '<recording (#1)>'
+    assert repr(recording) == 'Recording(id=1)'
+    assert recording.run == run
+
+    with raises(ValueError):
+        run.add_recording('xxx')
+
+    assert len(run.list_recordings()) == 1
+
+    recording.delete()
+    assert len(run.list_recordings()) == 0
+

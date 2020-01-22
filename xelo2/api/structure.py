@@ -15,21 +15,7 @@ def list_subjects():
     list_of_subjects = []
     while query.next():
         list_of_subjects.append(Subject(id=query.value('id')))
-    return sorted(list_of_subjects, key=key_to_sort_subjects)
-
-
-def key_to_sort_subjects(subj):
-    sessions = subj.list_sessions()
-
-    if len(sessions) > 0:
-        start_time = sessions[0].start_time
-        if start_time is None:
-            return datetime.now()
-        else:
-            return start_time
-
-    else:
-        return datetime.now()
+    return sorted(list_of_subjects)
 
 
 class Table():
@@ -134,7 +120,7 @@ class Table():
 
         if query.lastInsertId() is None:
             err = query.lastError()
-            raise ValueError(f'{err.databaseText()}')
+            raise ValueError(err.databaseText())
 
 
 class Table_with_files(Table):
@@ -190,9 +176,9 @@ class Recording(Table_with_files):
     t = 'recording'
     run = None
 
-    def __init__(self, cur, id, run=None):
+    def __init__(self, id, run=None):
         self.run = run
-        super().__init__(cur, id)
+        super().__init__(id)
 
 
 class Run(Table_with_files):
@@ -206,23 +192,43 @@ class Run(Table_with_files):
     def __str__(self):
         return f'<{self.t} (#{self.id})>'
 
+    def __lt__(self, other):
+        """For sorting. None goes to the end
+        """
+        if other.start_time is None:
+            return False
+
+        elif self.start_time is None:
+            return False
+
+        else:
+            return self.start_time < other.start_time
+
     def list_recordings(self):
-        self.cur.execute(f"""\
-        SELECT recordings.id FROM recordings
-        WHERE recordings.run_id == {self.id}""")
-        return sorted([Recording(self.cur, x[0], run=self) for x in self.cur.fetchall()])
+        query = QSqlQuery(f"""\
+            SELECT recordings.id FROM recordings
+            WHERE recordings.run_id == {self.id}""")
+
+        list_of_recordings = []
+        while query.next():
+            list_of_recordings.append(
+                Recording(
+                    id=query.value('id'),
+                    run=self))
+        return sorted(list_of_recordings)
 
     def add_recording(self, modality, offset=0):
 
-        self.cur.execute(f"""\
-        INSERT INTO recordings ("run_id", "modality", "offset")
-        VALUES ("{self.id}", "{modality}", "{offset}")""")
-        self.cur.execute("""SELECT last_insert_rowid()""")
-        recording_id = self.cur.fetchone()[0]
+        query = QSqlQuery(f"""\
+            INSERT INTO recordings ("run_id", "modality", "offset")
+            VALUES ("{self.id}", "{modality}", "{offset}")""")
 
-        recording = Recording(self.cur, recording_id)
-        recording.run = self
+        recording_id = query.lastInsertId()
+        if recording_id is None:
+            err = query.lastError()
+            raise ValueError(err.databaseText())
 
+        recording = Recording(recording_id, run=self)
         return recording
 
     @property
@@ -283,6 +289,19 @@ class Session(Table_with_files):
     def __str__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
 
+    def __lt__(self, other):
+        """For sorting
+        None goes to the end
+        """
+        if other.start_time is None:
+            return False
+
+        elif self.start_time is None:
+            return False
+
+        else:
+            return self.start_time < other.start_time
+
     @property
     def start_time(self):
         query = QSqlQuery(f"""\
@@ -311,7 +330,7 @@ class Session(Table_with_files):
                 Run(
                     id=query.value('id'),
                     session=self))
-        return sorted(list_of_runs, key=lambda x: x.start_time)
+        return sorted(list_of_runs)
 
     def add_run(self, task_name, start_time=None, end_time=None):
 
@@ -322,7 +341,7 @@ class Session(Table_with_files):
         run_id = query.lastInsertId()
         if run_id is None:
             err = query.lastError()
-            raise ValueError(f'{err.databaseText()} in query:\n{query.executedQuery()}')
+            raise ValueError(err.databaseText())
 
         run = Run(run_id, session=self)
         return run
@@ -375,6 +394,20 @@ class Subject(Table_with_files):
     def __repr__(self):
         return f'{self.t.capitalize()}(code="{self.code}")'
 
+    def __lt__(self, other):
+
+        self_sessions = self.list_sessions()
+        other_sessions = other.list_sessions()
+
+        if len(other_sessions) == 0 or other_sessions[0] is None:
+            return False
+
+        elif len(self_sessions) == 0 or self_sessions[0] is None:
+            return True
+
+        else:
+            return self_sessions[0].start_time < other_sessions[0].start_time
+
     def list_sessions(self):
         query = QSqlQuery(f"""\
             SELECT sessions.id, name FROM sessions
@@ -386,7 +419,7 @@ class Subject(Table_with_files):
                 Session(
                     id=query.value('id'),
                     subject=self))
-        return sorted(list_of_sessions, key=lambda x: x.start_time)
+        return sorted(list_of_sessions)
 
     def add_session(self, name):
 
@@ -397,7 +430,7 @@ class Subject(Table_with_files):
         session_id = query.lastInsertId()
         if session_id is None:
             err = query.lastError()
-            raise ValueError(f'{err.databaseText()}')
+            raise ValueError(err.databaseText())
 
         sess = Session(session_id, subject=self)
 
@@ -413,7 +446,7 @@ class Subject(Table_with_files):
         id = query.lastInsertId()
         if id is None:
             err = query.lastError()
-            raise ValueError(f'{err.databaseText()}')
+            raise ValueError(err.databaseText())
 
         return Subject(id=id)
 
@@ -449,7 +482,7 @@ def _date(s):
     if s is None:
         return 'null'
     else:
-        return f'"{s:%Y%m%d}"'
+        return f'"{s:%Y-%m-%d}"'
 
 
 def _datetime(s):
