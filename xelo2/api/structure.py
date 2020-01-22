@@ -365,7 +365,7 @@ class Subject(Table_with_files):
             self.code = self.__getattr__('code')  # explicit otherwise it gets ignored
 
     def __repr__(self):
-        return f'{self.t.capitalize()}(cur, code="{self.code}")'
+        return f'{self.t.capitalize()}(code="{self.code}")'
 
     def list_sessions(self):
         query = QSqlQuery(f"""\
@@ -382,14 +382,16 @@ class Subject(Table_with_files):
 
     def add_session(self, name):
 
-        self.cur.execute(f"""\
-        INSERT INTO sessions ("subject_id", "name")
-        VALUES ("{self.id}", "{name}")""")
-        self.cur.execute("""SELECT last_insert_rowid()""")
-        session_id = self.cur.fetchone()[0]
+        query = QSqlQuery(f"""\
+            INSERT INTO sessions ("subject_id", "name")
+            VALUES ("{self.id}", "{name}")""")
 
-        sess = Session(self.cur, session_id)
-        sess.subject = self
+        session_id = query.lastInsertId()
+        if session_id is None:
+            err = query.lastError()
+            raise ValueError(f'{err.databaseText()}')
+
+        sess = Session(session_id, subject=self)
 
         return sess
 
