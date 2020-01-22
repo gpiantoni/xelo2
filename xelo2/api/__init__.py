@@ -9,4 +9,3 @@ from .structure import (
     Electrodes,
     Channels,
     )
-

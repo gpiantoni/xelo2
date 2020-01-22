@@ -1,27 +1,23 @@
 from logging import getLogger
 from datetime import datetime
 from pathlib import Path
-from sqlite3 import OperationalError, connect, IntegrityError
+from sqlite3 import OperationalError, IntegrityError
+
+from PyQt5.QtSql import QSqlQuery
 
 from ..database import TABLES
 
 lg = getLogger(__name__)
 
 
-def open_database(path_to_database):
-    sql = connect(str(path_to_database))
+def list_subjects():
+    query = QSqlQuery(f"SELECT id FROM subjects")
 
-    cur = sql.cursor()
-    cur.execute('PRAGMA foreign_keys = ON;')
-
-    return sql, cur
-
-
-def list_subjects(cur):
-    cur.execute(f"SELECT code FROM subjects ORDER BY id")
-
-    list_of_subjects = [Subject(cur, x[0]) for x in cur.fetchall()]
-    return sorted(list_of_subjects, key=key_to_sort_subjects)
+    list_of_subjects = []
+    while query.next():
+        list_of_subjects.append(Subject(id=query.value('id')))
+    return list_of_subjects
+    #  TODO return sorted(list_of_subjects, key=key_to_sort_subjects)
 
 
 def key_to_sort_subjects(subj):
@@ -43,9 +39,8 @@ class Table():
     columns = []
     subtables = {}
 
-    def __init__(self, cur, id):
+    def __init__(self, id):
         self.id = id
-        self.cur = cur
         self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
 
@@ -64,7 +59,7 @@ class Table():
         return hash(self.__str__())
 
     def delete(self):
-        self.cur.execute(f"""\
+        QSqlQuery(f"""\
             DELETE FROM {self.t}s WHERE id == {self.id}
             """)
         self.id = None
@@ -80,38 +75,32 @@ class Table():
             table_name = f'{self.t}s'
             id_name = 'id'
 
-        self.cur.execute(f"SELECT {key} FROM {table_name} WHERE {id_name} == {self.id}")
-        out = self.cur.fetchone()
+        query = QSqlQuery(f"SELECT {key} FROM {table_name} WHERE {id_name} == {self.id}")
+        if query.next():
+            out = query.value(0)
 
-        if out is None:
-            return None
+            if key.startswith('date_of_'):
+                return _date_out(out)
 
-        else:
-            out = out[0]
+            elif key.endswith('_time'):
+                return _datetime_out(out)
 
-        if key.startswith('date_of_'):
-            return _date_out(out)
-
-        elif key.endswith('_time'):
-            return _datetime_out(out)
-
-        else:
-            return out
+            else:
+                return out
 
     def __setattr__(self, key, value):
 
         BUILTINS = (
-            'cur',
             'id',
             't',
             'code',
             'columns',
             'subtables',
-            '__class__',
             'experimenters',
             'subject',
             'session',
             'run',
+            '__class__',
             )
 
         if key in BUILTINS:
@@ -133,31 +122,30 @@ class Table():
         else:
             value = _null(value)
 
-        try:  # create record id if it does not exist
-            self.cur.execute(f"""\
-                INSERT INTO {table_name} ("{id_name}")
-                VALUES ("{self.id}")
-                """)
+        query = QSqlQuery(f"""\
+            INSERT INTO {table_name} ("{id_name}")
+            VALUES ("{self.id}")
+            """)
 
-        except IntegrityError:
-            pass
-
-        try:
-            self.cur.execute(f"""\
+        if not query.isValid():
+            query = QSqlQuery(f"""\
                 UPDATE {table_name}
                 SET "{key}"={value}
                 WHERE {id_name} == "{self.id}"
                 """)
 
-        except (OperationalError, IntegrityError) as err:
-            lg.warning(f'{str(err)} when setting {key}={value} for {self}')
+        if not query.isValid():
+            lg.warning(f'Error when setting {key}={value} for {self}\n"{query.executedQuery}"')
 
 
 class Table_with_files(Table):
 
     def list_files(self):
-        self.cur.execute(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
-        return [File(self.cur, x[0]) for x in self.cur.fetchall()]
+        query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
+        out = []
+        while query.next():
+            out.append(File(q.value('file_id')))
+        return out
 
     def add_file(self, format, path):
         path = Path(path).resolve()
@@ -289,8 +277,8 @@ class Session(Table_with_files):
     t = 'session'
     subject = None
 
-    def __init__(self, cur, id, subject=None):
-        super().__init__(cur, id)
+    def __init__(self, id, subject=None):
+        super().__init__(id)
         self.subject = subject
 
     def __str__(self):
@@ -298,17 +286,19 @@ class Session(Table_with_files):
 
     @property
     def start_time(self):
-        self.cur.execute(f"""\
+        query = QSqlQuery(f"""\
             SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id == {self.id}
             """)
-        return _datetime_out(self.cur.fetchone()[0])
+        if query.next():
+            return _datetime_out(query.value(0))
 
     @property
     def end_time(self):
-        self.cur.execute(f"""\
+        query = QSqlQuery(f"""\
             SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
             """)
-        return _datetime_out(self.cur.fetchone()[0])
+        if query.next():
+            return _datetime_out(query.value(0))
 
     def list_runs(self):
         self.cur.execute(f"""\
@@ -359,11 +349,11 @@ class Session(Table_with_files):
 class Subject(Table_with_files):
     t = 'subject'
 
-    def __init__(self, cur, code=None, id=None):
+    def __init__(self, code=None, id=None):
 
         if code is not None:
             self.code = code
-            cur.execute(f"SELECT id FROM subjects WHERE code == '{code}'")
+            query = QSqlQuery(f"SELECT id FROM subjects WHERE code == '{code}'")
             output = cur.fetchone()
             if output is None:
                 raise ValueError(f'There is no "{code}" in "subjects" table')
@@ -371,7 +361,7 @@ class Subject(Table_with_files):
             else:
                 id = output[0]
 
-        super().__init__(cur, id)
+        super().__init__(id)
 
         if code is None:
             self.code = self.__getattr__('code')  # explicit otherwise it gets ignored
@@ -380,10 +370,16 @@ class Subject(Table_with_files):
         return f'{self.t.capitalize()}(cur, code="{self.code}")'
 
     def list_sessions(self):
-        self.cur.execute(f"""\
-        SELECT sessions.id, name FROM sessions
-        WHERE sessions.subject_id ==  '{self.id}'""")
-        list_of_sessions = [Session(self.cur, x[0], subject=self) for x in self.cur.fetchall()]
+        query = QSqlQuery(f"""\
+            SELECT sessions.id, name FROM sessions
+            WHERE sessions.subject_id ==  '{self.id}'""")
+
+        list_of_sessions = []
+        while query.next():
+            list_of_sessions.append(
+                Session(
+                    id=query.value('id'),
+                    subject=self))
         return sorted(list_of_sessions, key=lambda x: x.start_time)
 
     def add_session(self, name):
@@ -400,12 +396,18 @@ class Subject(Table_with_files):
         return sess
 
     @classmethod
-    def add(cls, cur, code, date_of_birth=None, sex=None):
+    def add(cls, code, date_of_birth=None, sex=None):
 
-        cur.execute(f"""\
+        query = QSqlQuery(f"""\
             INSERT INTO subjects ("code", "date_of_birth", "sex")
             VALUES ("{code}", {_date(date_of_birth)}, {_null(sex)})""")
-        return Subject(cur, code)
+
+        id = query.lastInsertId()
+        if id is None:
+            err = query.lastError()
+            raise ValueError(f'{err.databaseText()}')
+
+        return Subject(id=id)
 
 
 def columns(t):
