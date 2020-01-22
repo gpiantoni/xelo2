@@ -39,6 +39,7 @@ def create_database(db_name, db_type='QSQLITE'):
     for table_name, v in TABLES.items():
         parse_table(db, table_name, v)
 
+    add_experimenters(db, TABLES['experimenters'])
     db.close()
 
 
@@ -86,3 +87,11 @@ def parse_table(db, table_name, v, issubtable=False):
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
     lg.debug(sql_cmd)
     assert QSqlQuery(db).exec(sql_cmd)
+
+
+def add_experimenters(cur, table_experimenters):
+
+    for experimenter in table_experimenters['name']['values']:
+        assert QSqlQuery(db).exec(f"""\
+            INSERT INTO experimenters ("name")
+            VALUES ("{experimenter}")""")
