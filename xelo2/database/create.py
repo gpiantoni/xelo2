@@ -89,7 +89,7 @@ def parse_table(db, table_name, v, issubtable=False):
     assert QSqlQuery(db).exec(sql_cmd)
 
 
-def add_experimenters(cur, table_experimenters):
+def add_experimenters(db, table_experimenters):
 
     for experimenter in table_experimenters['name']['values']:
         assert QSqlQuery(db).exec(f"""\
