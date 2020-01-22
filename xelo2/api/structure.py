@@ -3,9 +3,10 @@ from datetime import datetime
 from pathlib import Path
 from sqlite3 import OperationalError, connect, IntegrityError
 
+from ..database import TABLES
+
 lg = getLogger(__name__)
 
-from ..database import TABLES
 
 def open_database(path_to_database):
     sql = connect(str(path_to_database))

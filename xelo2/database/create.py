@@ -14,6 +14,34 @@ with SQL_TABLES.open() as f:
     TABLES = load(f)
 
 
+def open_database(db_name, db_type='QSQLITE'):
+    """Open the default database using Qt framework
+
+    Parameters
+    ----------
+    db_name : str
+        for SQLITE, path to database to create
+    db_type : str
+        one of the Qt SQL drivers (QSQLITE, QMYSQL, QPSQL)
+
+    Returns
+    -------
+    QSqlDatabase
+        default database
+    """
+    db = QSqlDatabase.addDatabase(db_type)
+    assert db.isValid()
+
+    db_name = Path(db_name).resolve()
+    db.setDatabaseName(str(db_name))
+    db.open()
+
+    assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
+    assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
+
+    return db
+
+
 def create_database(db_name, db_type='QSQLITE'):
     """Create a default database using Qt framework
 
