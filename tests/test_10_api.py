@@ -3,6 +3,7 @@ from pytest import raises
 
 from xelo2.database.create import open_database
 from xelo2.api import Subject, list_subjects
+from xelo2.api.filetype import parse_filetype
 
 from .paths import DB_PATH, TRC_PATH
 
@@ -53,6 +54,25 @@ def test_api_session():
     assert sess.date_of_explantation is None
 
 
+def test_api_protocol():
+
+    subj = list_subjects()[0]
+    protocol_1 = subj.add_protocol('14-622')
+    assert protocol_1.id == 1
+
+    protocol_2 = subj.add_protocol('16-816')
+    assert len(subj.list_protocols()) == 2
+
+    protocol_1.date_of_signature = date(2000, 1, 2)
+    assert len(subj.list_protocols()) == 2
+
+    protocol_2.date_of_signature = date(2000, 1, 1)
+    assert len(subj.list_protocols()) == 2
+
+    with raises(ValueError):
+        subj.add_protocol('xxx')
+
+
 def test_api_run():
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
@@ -99,20 +119,44 @@ def test_api_experimenters():
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
-    run.experimenters = ['Mariska', 'Gio']
+    run.experimenters = ['Mariska', 'Gio', 'xxx']
     assert run.experimenters == ['Gio', 'Mariska']
 
 
 def test_api_files():
 
     subj = list_subjects()[0]
-    file = subj.add_file('micromed', TRC_PATH)
+    file = subj.add_file(parse_filetype(TRC_PATH), TRC_PATH)
 
     assert len(subj.list_files()) == 1
     assert file.path == TRC_PATH
+    assert file.format == 'micromed'
 
     subj.delete_file(file)
     assert len(subj.list_files()) == 0
 
     with raises(ValueError):
         subj.add_file('blackrock', TRC_PATH)
+
+
+def test_api_sorting():
+    subj_2 = Subject.add('second_subject')
+    sess = subj_2.add_session('MRI')
+    sess.add_run(
+        'DTI',
+        start_time=datetime(2000, 1, 1, 1, 1),
+        end_time=datetime(2000, 1, 1, 10, 1),
+        )
+    sess.add_run(
+        'DTI',
+        start_time=datetime(2000, 1, 2, 1, 1),
+        )
+    sess.add_run('DTI')
+    sess.add_run(
+        'DTI',
+        start_time=datetime(2000, 1, 2, 1, 1),
+        )
+    assert len(sess.list_runs()) == 4
+
+    Subject.add('third_subject')
+    assert len(list_subjects()) == 3

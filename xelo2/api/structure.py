@@ -262,22 +262,35 @@ class Run(Table_with_files):
 class Protocol(Table_with_files):
     t = 'protocol'
 
-    def __init__(self, cur, id):
-        super().__init__(cur, id)
+    def __init__(self, id, subject=None):
+        super().__init__(id)
+        self.subject = subject
+
+    def __lt__(self, other):
+        """For sorting. None goes to the end
+        """
+        if other.date_of_signature is None:
+            return False
+
+        elif self.date_of_signature is None:
+            return False
+
+        else:
+            return self.date_of_signature < other.date_of_signature
 
 
 class Channels(Table):
     t = 'channel'
 
-    def __init__(self, cur, id):
-        super().__init__(cur, id)
+    def __init__(self, id):
+        super().__init__(id)
 
 
-class Electrodes(Table):
+class Electrodes(Table_with_files):
     t = 'electrode'
 
-    def __init__(self, cur, id):
-        super().__init__(cur, id)
+    def __init__(self, id):
+        super().__init__(id)
 
 
 class Session(Table_with_files):
@@ -348,31 +361,6 @@ class Session(Table_with_files):
         run = Run(run_id, session=self)
         return run
 
-    def add_protocol(self, METC, date_of_signature=None):
-
-        if isinstance(METC, str):
-            self.cur.execute(f"""\
-            INSERT INTO protocols ("METC", "date_of_signature")
-            VALUES ("{METC}", {_date(date_of_signature)})""")
-            self.cur.execute("""SELECT last_insert_rowid()""")
-            protocol_id = self.cur.fetchone()[0]
-
-        else:
-            protocol_id = METC.id
-
-        self.cur.execute(f"""\
-            INSERT INTO sessions_protocols ("session_id", "protocol_id") VALUES ({self.id}, {protocol_id})""")
-
-        protocol = Protocol(self.cur, protocol_id)
-
-        return protocol
-
-    def list_protocols(self):
-        self.cur.execute(f"""\
-        SELECT protocol_id FROM sessions_protocols
-        WHERE session_id == {self.id}""")
-        return [Protocol(self.cur, x[0]) for x in self.cur.fetchall()]
-
 
 class Subject(Table_with_files):
     t = 'subject'
@@ -410,34 +398,6 @@ class Subject(Table_with_files):
         else:
             return self_sessions[0].start_time < other_sessions[0].start_time
 
-    def list_sessions(self):
-        query = QSqlQuery(f"""\
-            SELECT sessions.id, name FROM sessions
-            WHERE sessions.subject_id ==  '{self.id}'""")
-
-        list_of_sessions = []
-        while query.next():
-            list_of_sessions.append(
-                Session(
-                    id=query.value('id'),
-                    subject=self))
-        return sorted(list_of_sessions)
-
-    def add_session(self, name):
-
-        query = QSqlQuery(f"""\
-            INSERT INTO sessions ("subject_id", "name")
-            VALUES ("{self.id}", "{name}")""")
-
-        session_id = query.lastInsertId()
-        if session_id is None:
-            err = query.lastError()
-            raise ValueError(err.databaseText())
-
-        sess = Session(session_id, subject=self)
-
-        return sess
-
     @classmethod
     def add(cls, code, date_of_birth=None, sex=None):
 
@@ -451,6 +411,57 @@ class Subject(Table_with_files):
             raise ValueError(err.databaseText())
 
         return Subject(id=id)
+
+    def add_session(self, name):
+
+        query = QSqlQuery(f"""\
+            INSERT INTO sessions ("subject_id", "name")
+            VALUES ("{self.id}", "{name}")""")
+
+        session_id = query.lastInsertId()
+        if session_id is None:
+            err = query.lastError()
+            raise ValueError(err.databaseText())
+
+        return Session(session_id, subject=self)
+
+    def list_sessions(self):
+        query = QSqlQuery(f"""\
+            SELECT sessions.id, name FROM sessions
+            WHERE sessions.subject_id ==  '{self.id}'""")
+
+        list_of_sessions = []
+        while query.next():
+            list_of_sessions.append(
+                Session(
+                    id=query.value('id'),
+                    subject=self))
+        return sorted(list_of_sessions)
+
+    def add_protocol(self, METC, date_of_signature=None):
+
+        query = QSqlQuery(f"""\
+            INSERT INTO protocols ("subject_id", "METC", "date_of_signature")
+            VALUES ("{self.id}", "{METC}", {_date(date_of_signature)})""")
+
+        protocol_id = query.lastInsertId()
+        if protocol_id is None:
+            err = query.lastError()
+            raise ValueError(err.databaseText())
+
+        return Protocol(protocol_id, subject=self)
+
+    def list_protocols(self):
+        query = QSqlQuery(f"""\
+            SELECT id FROM protocols WHERE subject_id ==  '{self.id}'""")
+
+        list_of_protocols = []
+        while query.next():
+            list_of_protocols.append(
+                Protocol(
+                    id=query.value('id'),
+                    subject=self))
+        return sorted(list_of_protocols)
 
 
 def columns(t):

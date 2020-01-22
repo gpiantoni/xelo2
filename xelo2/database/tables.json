@@ -23,6 +23,7 @@
     },
     "protocols": {
         "id": null,
+        "subject_id": null,
         "metc": {
             "name": "METC",
             "type": "TEXT NOT NULL",
