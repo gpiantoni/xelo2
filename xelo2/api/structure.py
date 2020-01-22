@@ -234,28 +234,29 @@ class Run(Table_with_files):
 
     @property
     def experimenters(self):
-        self.cur.execute(f"""\
+        query = QSqlQuery(f"""\
             SELECT name FROM experimenters
             JOIN runs_experimenters ON experimenters.id == runs_experimenters.experimenter_id
             WHERE run_id == {self.id}""")
-        return [x[0] for x in self.cur.fetchall()]
+        list_of_experimenters = []
+        while query.next():
+            list_of_experimenters.append(query.value('name'))
+        return sorted(list_of_experimenters)
 
     @experimenters.setter
     def experimenters(self, experimenters):
 
-        self.cur.execute(f'DELETE FROM runs_experimenters WHERE run_id == "{self.id}"')
+        QSqlQuery(f'DELETE FROM runs_experimenters WHERE run_id == "{self.id}"')
         for exp in experimenters:
-            self.cur.execute(f'SELECT id FROM experimenters WHERE name == "{exp}"')
-            exp_id = self.cur.fetchone()
-            if exp_id is None:
-                lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
-                continue
-            else:
-                exp_id = exp_id[0]
+            query = QSqlQuery(f'SELECT id FROM experimenters WHERE name == "{exp}"')
 
-            self.cur.execute(f"""\
-                INSERT INTO runs_experimenters ("run_id", "experimenter_id")
-                VALUES ("{self.id}", "{exp_id}")""")
+            if query.next():
+                exp_id = query.value('id')
+                QSqlQuery(f"""\
+                    INSERT INTO runs_experimenters ("run_id", "experimenter_id")
+                    VALUES ("{self.id}", "{exp_id}")""")
+            else:
+                lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
 
 class Protocol(Table_with_files):

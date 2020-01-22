@@ -68,6 +68,10 @@ def test_api_run():
 
     run.end_time = fake_time
     assert run.end_time == fake_time
+    assert sess.end_time == fake_time
+
+    with raises(ValueError):
+        sess.add_run('xxx')
 
 
 def test_api_recording():
@@ -90,6 +94,15 @@ def test_api_recording():
     assert len(run.list_recordings()) == 0
 
 
+def test_api_experimenters():
+
+    subj = list_subjects()[0]
+    sess = subj.list_sessions()[0]
+    run = sess.list_runs()[0]
+    run.experimenters = ['Mariska', 'Gio']
+    assert run.experimenters == ['Gio', 'Mariska']
+
+
 def test_api_files():
 
     subj = list_subjects()[0]
@@ -98,5 +111,8 @@ def test_api_files():
     assert len(subj.list_files()) == 1
     assert file.path == TRC_PATH
 
-    subj.delete(file)
+    subj.delete_file(file)
     assert len(subj.list_files()) == 0
+
+    with raises(ValueError):
+        subj.add_file('blackrock', TRC_PATH)
