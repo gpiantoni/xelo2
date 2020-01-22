@@ -14,6 +14,7 @@ cache:
    - $HOME/.cache/pip
 
 install: 
+  - pip install -U pip
   - pip install https://files.pythonhosted.org/packages/1e/62/e98c97c17e9a5b668a5b71f49594119d4326f4a2b2ede763868b0a6a84e5/sip-5.1.0-cp37-cp37m-manylinux2014_x86_64.whl
   - pip install https://files.pythonhosted.org/packages/ea/9d/d609aab4111d9d74857fb73067f7de4ca38fc1f7fff87ceba092681754cf/PyQt5-5.14.1-5.14.0-cp35.cp36.cp37.cp38-abi3-manylinux2014_x86_64.whl
   - pip install -U pytest pytest-cov codecov
