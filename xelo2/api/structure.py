@@ -2,14 +2,10 @@ from logging import getLogger
 from datetime import datetime
 from pathlib import Path
 from sqlite3 import OperationalError, connect, IntegrityError
-from json import load
 
 lg = getLogger(__name__)
 
-SQL_TABLES = Path(__file__).parent / 'tables.json'
-
-with SQL_TABLES.open() as f:
-    TABLES = load(f)
+from ..database import TABLES
 
 def open_database(path_to_database):
     sql = connect(str(path_to_database))

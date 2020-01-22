@@ -1,0 +1,29 @@
+language: python
+
+python:
+ - "3.7"
+
+env:
+  global:
+   - API_PATH=docs/source/api
+   - DOCTREES_PATH=docs/build/doctrees
+   - HTML_PATH=docs/build/html
+
+cache: 
+ - directories:
+   - $HOME/.cache/pip
+
+install: 
+  - pip install numpy PyQt5
+  - pip install -U pytest pytest-cov codecov
+  - pip install -U sphinx 
+  - pip install -e .
+
+script:
+  - pytest --cov=xelo2 tests/ -vv
+
+after_success:
+  - codecov
+
+notifications:
+  email: false
