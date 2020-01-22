@@ -199,9 +199,9 @@ class Run(Table_with_files):
     t = 'run'
     session = None
 
-    def __init__(self, cur, id, session=None):
+    def __init__(self, id, session=None):
         self.session = session
-        super().__init__(cur, id)
+        super().__init__(id)
 
     def __str__(self):
         return f'<{self.t} (#{self.id})>'
@@ -308,15 +308,16 @@ class Session(Table_with_files):
 
     def add_run(self, task_name, start_time=None, end_time=None):
 
-        self.cur.execute(f"""\
-        INSERT INTO runs ("session_id", "task_name", "start_time", "end_time")
-        VALUES ("{self.id}", "{task_name}", "{_datetime(start_time)}", "{_datetime(end_time)}")""")
-        self.cur.execute("""SELECT last_insert_rowid()""")
-        run_id = self.cur.fetchone()[0]
+        query = QSqlQuery(f"""\
+            INSERT INTO runs ("session_id", "task_name", "start_time", "end_time")
+            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_datetime(end_time)})""")
 
-        run = Run(self.cur, run_id)
-        run.session = self
+        run_id = query.lastInsertId()
+        if run_id is None:
+            err = query.lastError()
+            raise ValueError(f'{err.databaseText()} in query:\n{query.executedQuery()}')
 
+        run = Run(run_id, session=self)
         return run
 
     def add_protocol(self, METC, date_of_signature=None):
@@ -441,25 +442,25 @@ def _date(s):
     if s is None:
         return 'null'
     else:
-        return f'"{s:%Y-%m-%d}"'
+        return f'"{s:%Y%m%d}"'
 
 
 def _datetime(s):
     if s is None:
         return 'null'
     else:
-        return f'"{s:%Y-%m-%d %H:%M:%S}"'
+        return f'"{s:%Y-%m-%dT%H:%M:%S}"'
 
 
 def _date_out(s):
-    if s == 'null' or s is None:
+    if s == 'null' or s == '':
         return None
     else:
         return datetime.strptime(s, '%Y-%m-%d').date()
 
 
 def _datetime_out(s):
-    if s == 'null' or s is None:
+    if s == 'null' or s == '':
         return None
     else:
-        return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pytest import raises
 
 from xelo2.database.create import open_database
@@ -41,7 +42,13 @@ def test_api_run():
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
 
-    run = sess.add_run('motor')
-    assert str(run) == '<run "motor" (#1)>'
+    start_time = datetime(2000, 1, 1, 10, 0, 0)
+    run = sess.add_run('motor', start_time)
+    assert str(run) == '<run (#1)>'
     assert repr(run) == 'Run(id=1)'
     assert run.session == sess
+
+    assert run.start_time == start_time
+    assert run.end_time is None
+
+
