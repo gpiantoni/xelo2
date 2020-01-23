@@ -54,25 +54,6 @@ def test_api_session():
     assert sess.date_of_explantation is None
 
 
-def test_api_protocol():
-
-    subj = list_subjects()[0]
-    protocol_1 = subj.add_protocol('14-622')
-    assert protocol_1.id == 1
-
-    protocol_2 = subj.add_protocol('16-816')
-    assert len(subj.list_protocols()) == 2
-
-    protocol_1.date_of_signature = date(2000, 1, 2)
-    assert len(subj.list_protocols()) == 2
-
-    protocol_2.date_of_signature = date(2000, 1, 1)
-    assert len(subj.list_protocols()) == 2
-
-    with raises(ValueError):
-        subj.add_protocol('xxx')
-
-
 def test_api_run():
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
@@ -92,6 +73,37 @@ def test_api_run():
 
     with raises(ValueError):
         sess.add_run('xxx')
+
+
+def test_api_protocol():
+
+    subj = list_subjects()[0]
+    protocol_1 = subj.add_protocol('14-622')
+    assert protocol_1.id == 1
+
+    protocol_2 = subj.add_protocol('16-816')
+    assert len(subj.list_protocols()) == 2
+
+    protocol_1.date_of_signature = date(2000, 1, 2)
+    assert len(subj.list_protocols()) == 2
+
+    protocol_2.date_of_signature = date(2000, 1, 1)
+    assert len(subj.list_protocols()) == 2
+
+    with raises(ValueError):
+        subj.add_protocol('xxx')
+
+    sess = subj.list_sessions()[0]
+    run = sess.list_runs()[0]
+    run.attach_protocol(protocol_1)
+
+    with raises(ValueError):
+        run.attach_protocol(protocol_1)
+
+    assert len(run.list_protocols()) == 1
+
+    run.detach_protocol(protocol_1)
+    assert len(run.list_protocols()) == 0
 
 
 def test_api_recording():

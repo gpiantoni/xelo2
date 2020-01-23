@@ -110,10 +110,6 @@
             }
         }
     },
-    "sessions_protocols": {
-        "session_id": null,
-        "protocol_id": null
-    },
     "runs": {
         "id": null,
         "session_id": null,
@@ -325,6 +321,10 @@
                 }
             }
         }
+    },
+    "runs_protocols": {
+        "run_id": null,
+        "protocol_id": null
     },
     "events": {
         "run_id": null,

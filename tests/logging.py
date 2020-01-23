@@ -1,4 +1,4 @@
-from logging import basicConfig, DEBUG, WARNING, INFO, getLogger, StreamHandler, Formatter, FileHandler
+from logging import DEBUG, getLogger, Formatter, FileHandler
 from .paths import LOG_PATH
 
 lg = getLogger('xelo2')

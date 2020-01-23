@@ -258,6 +258,30 @@ class Run(Table_with_files):
             else:
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
+    def attach_protocol(self, protocol):
+        query = QSqlQuery(f"""\
+            INSERT INTO runs_protocols ("run_id", "protocol_id")
+            VALUES ("{self.id}", "{protocol.id}")""")
+
+        if query.lastInsertId() is None:
+            err = query.lastError()
+            raise ValueError(err.databaseText())
+
+    def detach_protocol(self, protocol):
+        QSqlQuery(f"""\
+            DELETE FROM runs_protocols
+            WHERE run_id == {self.id} AND protocol_id == {protocol.id}
+            """)
+
+    def list_protocols(self):
+        query = QSqlQuery(f"SELECT run_id FROM runs_protocols WHERE run_id == {self.id}")
+        list_of_protocols = []
+        while query.next():
+            list_of_protocols.append(
+                Protocol(query.value('protocol_id')))
+        return list_of_protocols
+
+
 
 class Protocol(Table_with_files):
     t = 'protocol'
@@ -360,20 +384,6 @@ class Session(Table_with_files):
 
         run = Run(run_id, session=self)
         return run
-
-    def add_protocol(self, protocol):
-        pass
-
-    def remove_protocol(self, protocol):
-        pass
-
-    def list_protocols(self):
-        query = QSqlQuery(f"SELECT protocol_id FROM session_protocols WHERE session_id == {self.id}")
-        list_of_protocols = []
-        while query.next():
-            list_of_protocols.append(
-                Protocol(query.value('protocol_id')))
-        return list_of_protocols
 
 
 class Subject(Table_with_files):
