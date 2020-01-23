@@ -361,6 +361,20 @@ class Session(Table_with_files):
         run = Run(run_id, session=self)
         return run
 
+    def add_protocol(self, protocol):
+        pass
+
+    def remove_protocol(self, protocol):
+        pass
+
+    def list_protocols(self):
+        query = QSqlQuery(f"SELECT protocol_id FROM session_protocols WHERE session_id == {self.id}")
+        list_of_protocols = []
+        while query.next():
+            list_of_protocols.append(
+                Protocol(query.value('protocol_id')))
+        return list_of_protocols
+
 
 class Subject(Table_with_files):
     t = 'subject'

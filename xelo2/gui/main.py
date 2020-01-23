@@ -22,9 +22,7 @@ def main():
 
     w = Interface(sqlite)
     app.exec()
-    w.sql.close()
 
 
 if __name__ == '__main__':
-
     main()

@@ -106,8 +106,8 @@ def parse_table(db, table_name, v, issubtable=False):
             list_txt = '", "'.join(col_info["values"])
             constraints.append(f'CONSTRAINT {col_name}_type CHECK ({col_name} IN ("{list_txt}"))')
 
-    if table_name == 'runs_experimenters':
-        constraints.append(f'CONSTRAINT run_experimenter_unique UNIQUE (run_id, experimenter_id)')
+    if len(v) == 2 and list(v)[0].endswith('_id') and list(v)[1].endswith('_id'):
+        constraints.append(f'CONSTRAINT {table_name}_unique UNIQUE ({list(v)[0]}, {list(v)[1]})')
 
     cmd.extend(foreign_key)
     cmd.extend(constraints)
