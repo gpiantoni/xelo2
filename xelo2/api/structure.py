@@ -340,18 +340,6 @@ class Run(Table_with_files):
     def __str__(self):
         return f'<{self.t} (#{self.id})>'
 
-    def __lt__(self, other):
-        """For sorting. None goes to the end
-        """
-        if other.start_time is None:
-            return False
-
-        elif self.start_time is None:
-            return False
-
-        else:
-            return self.start_time < other.start_time
-
     def list_recordings(self):
         query = QSqlQuery(f"""\
             SELECT recordings.id FROM recordings
@@ -363,7 +351,7 @@ class Run(Table_with_files):
                 Recording(
                     id=query.value('id'),
                     run=self))
-        return sorted(list_of_recordings)
+        return sorted(list_of_recordings, key=lambda obj: obj.modality)
 
     def add_recording(self, modality, offset=0):
 
@@ -475,19 +463,6 @@ class Protocol(Table_with_files):
         super().__init__(id)
         self.subject = subject
 
-    def __lt__(self, other):
-        """For sorting. None goes to the end
-        """
-        if other.date_of_signature is None:
-            return False
-
-        elif self.date_of_signature is None:
-            return False
-
-        else:
-            return self.date_of_signature < other.date_of_signature
-
-
 class Session(Table_with_files):
     t = 'session'
     subject = None
@@ -498,19 +473,6 @@ class Session(Table_with_files):
 
     def __str__(self):
         return f'<{self.t} {self.name} (#{self.id})>'
-
-    def __lt__(self, other):
-        """For sorting
-        None goes to the end
-        """
-        if other.start_time is None:
-            return False
-
-        elif self.start_time is None:
-            return False
-
-        else:
-            return self.start_time < other.start_time
 
     @property
     def start_time(self):
@@ -540,7 +502,7 @@ class Session(Table_with_files):
                 Run(
                     id=query.value('id'),
                     session=self))
-        return sorted(list_of_runs)
+        return sorted(list_of_runs, key=_sort_starttime)
 
     def add_run(self, task_name, start_time=None, end_time=None):
 
@@ -617,7 +579,7 @@ class Subject(Table_with_files):
                 Session(
                     id=query.value('id'),
                     subject=self))
-        return sorted(list_of_sessions)
+        return sorted(list_of_sessions, key=_sort_starttime)
 
     def add_protocol(self, METC, date_of_signature=None):
 
@@ -642,7 +604,7 @@ class Subject(Table_with_files):
                 Protocol(
                     id=query.value('id'),
                     subject=self))
-        return sorted(list_of_protocols)
+        return sorted(list_of_protocols, key=lambda obj: obj.METC)
 
 
 def columns(t):
@@ -671,6 +633,14 @@ def _sort_subjects(subj):
         return datetime.now()
     else:
         return sessions[0].start_time
+
+
+def _sort_starttime(obj):
+    if obj.start_time is None:
+        return datetime.now()
+    else:
+        return obj.start_time
+
 
 def _null(s):
     if s is None:
