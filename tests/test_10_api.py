@@ -236,3 +236,5 @@ def test_api_electrodes_channels_attach():
     recording.attach_electrodes(elec)
     assert recording.electrodes.id == elec.id
 
+    recording.detach_electrodes(elec)
+    assert recording.electrodes is None
