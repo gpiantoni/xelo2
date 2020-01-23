@@ -2,22 +2,19 @@ from json import dump
 from pathlib import Path
 from logging import getLogger
 
-from ..model.structure import open_database, list_subjects
+from ..api import list_subjects
 from .func import convert_func
 
 lg = getLogger(__name__)
 
 
-def create_bids(data_path, db=None, cur=None, deface=True, subset=None):
+def create_bids(data_path, cur=None, deface=True, subset=None):
 
     if subset is not None:
         subset_subj = set([i[0] for i in subset])
         subset_sess = set([i[1] for i in subset])
         subset_run = set([i[2] for i in subset])
         subset_rec = set([i[3] for i in subset])
-
-    if db is not None:
-        sql, cur = open_database(db)
 
     data_path = Path(data_path)
     data_path.mkdir(parents=True, exist_ok=True)

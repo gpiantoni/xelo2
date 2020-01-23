@@ -16,7 +16,7 @@ def list_subjects():
     list_of_subjects = []
     while query.next():
         list_of_subjects.append(Subject(id=query.value('id')))
-    return sorted(list_of_subjects)
+    return sorted(list_of_subjects, key=_sort_subjects)
 
 
 class Table():
@@ -579,20 +579,6 @@ class Subject(Table_with_files):
     def __repr__(self):
         return f'{self.t.capitalize()}(code="{self.code}")'
 
-    def __lt__(self, other):
-
-        self_sessions = self.list_sessions()
-        other_sessions = other.list_sessions()
-
-        if len(other_sessions) == 0 or other_sessions[0] is None:
-            return False
-
-        elif len(self_sessions) == 0 or self_sessions[0] is None:
-            return True
-
-        else:
-            return self_sessions[0].start_time < other_sessions[0].start_time
-
     @classmethod
     def add(cls, code, date_of_birth=None, sex=None):
 
@@ -678,6 +664,13 @@ def construct_subtables(t):
 
     return attr_tables
 
+
+def _sort_subjects(subj):
+    sessions = subj.list_sessions()
+    if len(sessions) == 0 or sessions[0] is None:
+        return datetime.now()
+    else:
+        return sessions[0].start_time
 
 def _null(s):
     if s is None:

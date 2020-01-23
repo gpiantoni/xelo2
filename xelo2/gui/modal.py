@@ -12,8 +12,7 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import Qt
 
-from ..model.structure import TABLES
-from ..model.filetype import parse_filetype
+from ..database import TABLES
 
 
 class NewFile(QDialog):

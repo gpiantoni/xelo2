@@ -42,7 +42,8 @@ from PyQt5.QtCore import (
     QUrl,
     )
 
-from ..model.structure import list_subjects, TABLES, open_database, Subject
+from ..api import list_subjects, Subject
+from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 
 from .actions import create_menubar, Search
@@ -214,7 +215,8 @@ class Interface(QMainWindow):
     def sql_access(self):
         """This is where you access the database
         """
-        self.sql, self.cur = open_database(self.sqlite_file)
+        self.sql = open_database(self.sqlite_file)
+        self.sql.transaction()
         self.list_subjects()
 
     def sql_commit(self):
@@ -234,7 +236,7 @@ class Interface(QMainWindow):
         for l in self.lists.values():
             l.clear()
 
-        for subj in list_subjects(self.cur):
+        for subj in list_subjects():
             item = QListWidgetItem(subj.code)
             if subj.id in self.search.subjects:
                 highlight(item)
@@ -254,7 +256,7 @@ class Interface(QMainWindow):
 
         elif item.t == 'session':
             self.list_runs(item)
-            self.show_electrodes(item)
+            # self.show_electrodes(item)
 
         elif item.t == 'protocol':
             pass
@@ -283,10 +285,9 @@ class Interface(QMainWindow):
             if sess.id in self.search.sessions:
                 highlight(item)
             self.lists['sessions'].addItem(item)
-            protocols.extend(sess.list_protocols())
         self.lists['sessions'].setCurrentRow(0)
 
-        for protocol in set(protocols):
+        for protocol in subj.list_protocols():
             item = QListWidgetItem(protocol.METC)
             item.setData(Qt.UserRole, protocol)
             self.lists['protocols'].addItem(item)
