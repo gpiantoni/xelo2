@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from pytest import raises
+from numpy import empty
 
 from xelo2.database.create import open_database
 from xelo2.api import Subject, list_subjects
@@ -133,6 +134,28 @@ def test_api_experimenters():
     run = sess.list_runs()[0]
     run.experimenters = ['Mariska', 'Gio', 'xxx']
     assert run.experimenters == ['Gio', 'Mariska']
+
+
+def test_api_events():
+
+    subj = list_subjects()[0]
+    sess = subj.list_sessions()[0]
+    run = sess.list_runs()[0]
+    events = run.events
+    assert events.shape == (0, )
+
+    # create fake events
+    events = empty(10, dtype=events.dtype)
+    events['onset'] = range(10)
+    events['duration'] = 3
+    events['trial_type'] = 'test'
+
+    run.events = events
+    events = run.events
+    assert events.shape == (10, )
+    assert events['onset'][-1] == 9
+    assert events['duration'][5] == 3
+    assert events['trial_type'][5] == 'test'
 
 
 def test_api_files():

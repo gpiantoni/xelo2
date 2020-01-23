@@ -96,7 +96,7 @@ def parse_table(db, table_name, v, issubtable=False):
             else:
                 cmd.append(f'{col_name} INTEGER')
 
-            ref_table = col_name.split('_')[0]
+            ref_table = '_'.join(col_name.split('_')[:-1])
             foreign_key.append(f'FOREIGN KEY({col_name}) REFERENCES {ref_table}s(id) ON DELETE CASCADE')
 
         else:

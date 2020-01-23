@@ -339,6 +339,10 @@
         "trial_type": {
             "name": "trial_type",
             "type": "TEXT"
+        },
+        "description": {
+            "name": "description",
+            "type": "TEXT"
         }
     },
     "recordings": {
@@ -442,8 +446,8 @@
             },
             "recordings_ieeg": {
                 "recording_id": null,
-                "channel_id": null,
-                "electrode_id": null,
+                "channel_group_id": null,
+                "electrode_group_id": null,
                 "when": {
                     "level": "recording",
                     "parameter": "modality",
@@ -490,6 +494,10 @@
             ]
         }
     },
+    "channel_groups": {
+        "id": null,
+        "channel_id": null
+    },
     "electrodes": {
         "id": null,
         "name": {
@@ -520,6 +528,10 @@
                 "titanium"
             ]
         }
+    },
+    "electrode_groups": {
+        "id": null,
+        "electrode_id": null
     },
     "experimenters": {
         "id": null,

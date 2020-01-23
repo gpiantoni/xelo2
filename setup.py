@@ -18,6 +18,7 @@ setup(
     keywords='database qt',
     packages=find_packages(),
     install_requires=[
+        'numpy',
         'PyQt5',
         ],
     entry_points={

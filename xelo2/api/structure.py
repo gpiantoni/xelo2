@@ -2,6 +2,7 @@ from logging import getLogger
 from datetime import datetime
 from pathlib import Path
 
+from numpy import array, dtype
 from PyQt5.QtSql import QSqlQuery
 
 from ..database import TABLES
@@ -83,10 +84,12 @@ class Table():
             'subject',
             'session',
             'run',
+            'events',
             '__class__',
             )
 
         if key in BUILTINS:
+            """__setattr__ comes first: https://stackoverflow.com/a/15751159"""
             super().__setattr__(key, value)
             return
 
@@ -162,6 +165,20 @@ class Table_with_files(Table):
         QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
 
 
+class Channels():
+    t = 'channel'
+
+    def __init__(self, id):
+        super().__init__(id)
+
+
+class Electrodes():
+    t = 'electrode'
+
+    def __init__(self, id):
+        super().__init__(id)
+
+
 class File(Table):
     t = 'file'
 
@@ -233,6 +250,45 @@ class Run(Table_with_files):
         return recording
 
     @property
+    def events(self):
+        events_type = TABLES['events']
+        dtypes = []
+        for k, v in events_type.items():
+            if v is None:
+                continue
+            elif v['type'] == 'TEXT':
+                dtypes.append((k, 'U4096'))
+            elif v['type'] == 'FLOAT':
+                dtypes.append((k, 'float'))
+            else:
+                assert False
+        dtypes = dtype(dtypes)
+
+        query_str = '"' + '", "'.join(dtypes.names) + '"'
+        values = []
+        query = QSqlQuery(f"""SELECT {query_str} FROM events WHERE run_id == {self.id}""")
+        while query.next():
+            values.append(
+                tuple(query.value(name) for name in dtypes.names)
+                )
+        return array(values, dtype=dtypes)
+
+    @events.setter
+    def events(self, values):
+
+        QSqlQuery(f'DELETE FROM events WHERE run_id == "{self.id}"')
+
+        if values is not None:
+            query_str = '"' + '", "'.join(values.dtype.names) + '"'
+
+            for row in values:
+                values_str = ', '.join([f'"{x}"' for x in row])
+                query = QSqlQuery(f"""\
+                    INSERT INTO events ("run_id", {query_str})
+                    VALUES ("{self.id}", {values_str})
+                    """)
+
+    @property
     def experimenters(self):
         query = QSqlQuery(f"""\
             SELECT name FROM experimenters
@@ -301,20 +357,6 @@ class Protocol(Table_with_files):
 
         else:
             return self.date_of_signature < other.date_of_signature
-
-
-class Channels(Table):
-    t = 'channel'
-
-    def __init__(self, id):
-        super().__init__(id)
-
-
-class Electrodes(Table_with_files):
-    t = 'electrode'
-
-    def __init__(self, id):
-        super().__init__(id)
 
 
 class Session(Table_with_files):
