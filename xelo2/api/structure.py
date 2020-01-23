@@ -267,6 +267,57 @@ class Recording(Table_with_files):
         self.run = run
         super().__init__(id)
 
+    @property
+    def electrodes(self):
+        return Electrodes(id=recording_get('electrode', self.id))
+
+    @property
+    def channels(self):
+        return Channels(id=recording_get('channel', self.id))
+
+    def attach_electrodes(self, electrodes):
+        """Only recording_ieeg"""
+        recording_attach('electrode', self.id, group_id=electrodes.id)
+
+    def attach_channels(self, channels):
+        """Only recording_ieeg"""
+        recording_attach('channel', self.id, group_id=channels.id)
+
+    def detach_electrodes(self):
+        """Only recording_ieeg"""
+        recording_attach('electrode', self.id, group_id=None)
+
+    def detach_channels(self):
+        """Only recording_ieeg"""
+        recording_attach('channel', self.id, group_id=None)
+
+
+def recording_get(group, recording_id):
+        query = QSqlQuery(f"""\
+            SELECT {group}_group_id FROM recordings_ieeg
+            WHERE recording_id == {recording_id}""")
+        if query.next():
+            return query.value(f'{group}_group_id')
+        else:
+            raise ValueError(query.lastError().databaseText())
+
+
+def recording_attach(group, recording_id, group_id=None):
+
+    if group_id is None:
+        group_id = 'null'
+
+    query = QSqlQuery(f"""\
+        INSERT INTO recordings_ieeg
+        ("{group}_group_id", "recording_id")
+        VALUES ({group_id}, {recording_id})""")
+
+    if query.lastInsertId() is None:
+        QSqlQuery(f"""\
+            UPDATE recordings_ieeg
+            SET "{group}_group_id"={group_id}
+            WHERE recording_id == "{recording_id}" """)
+
 
 class Run(Table_with_files):
     t = 'run'

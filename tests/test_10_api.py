@@ -219,5 +219,20 @@ def test_api_electrodes_channels():
     assert array['x'][-1] == 9
     assert array['material'][1] == 'platinum'
 
+    # TODO: unique channel name vs unique group_id
     chan = Channels()
     assert chan.Reference == 'n/a'
+
+
+def test_api_electrodes_channels_attach():
+
+    subj = Subject.add('Subj_with_ieeg')
+    sess = subj.add_session('OR')
+    run = sess.add_run('motor')
+    recording = run.add_recording('ieeg')
+
+    elec = Electrodes()
+
+    recording.attach_electrodes(elec)
+    assert recording.electrodes.id == elec.id
+
