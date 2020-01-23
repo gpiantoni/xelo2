@@ -10,6 +10,7 @@ def create_menubar(main):
     menu_db = menubar.addMenu('Database')
 
     action_connect = QAction('Connect', main)
+    action_connect.setEnabled(False)
     menu_db.addAction(action_connect)
 
     action_commit = QAction('Commit', main)
@@ -44,9 +45,11 @@ def create_menubar(main):
     menu_search = menubar.addMenu('Search')
     action_search = QAction('WHERE ...', main)
     action_search.triggered.connect(main.sql_search)
+    action_search.setEnabled(False)
     menu_search.addAction(action_search)
     action_clear = QAction('clear', main)
     action_clear.triggered.connect(main.sql_search_clear)
+    action_clear.setEnabled(False)
     menu_search.addAction(action_clear)
 
 
@@ -61,11 +64,11 @@ SEARCH_STATEMENT = """\
 
 class Search():
 
-    def __init__(self, cur=None, where=None):
+    def __init__(self, where=None):
         """TODO: where is not sanitized!!!"""
-        self.clear()
 
-        if cur is None:
+        self.clear()
+        if where is None:
             return
 
         self.previous = where

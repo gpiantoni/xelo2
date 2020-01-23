@@ -275,7 +275,6 @@ class Interface(QMainWindow):
         for l in ('sessions', 'protocols', 'runs', 'recordings'):
             self.lists[l].clear()
 
-        protocols = []
         for sess in subj.list_sessions():
             if sess.start_time is None:
                 date_str = 'unknown date'
@@ -304,21 +303,6 @@ class Interface(QMainWindow):
                 highlight(item)
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
-
-    def show_electrodes(self, sess):
-        self.cur.execute(f"""\
-            SELECT name, x, y, z, size, material FROM electrodes
-            WHERE session_id == {sess.id}
-        """)
-        val = self.cur.fetchall()
-
-        self.t_elec.clearContents()
-        self.t_elec.setRowCount(len(val))
-
-        for i_row, v in enumerate(val):
-            for i_col, name in enumerate(ELECTRODES_COLUMNS):
-                item = QTableWidgetItem(str(v[i_col]))
-                self.t_elec.setItem(i_row, i_col, item)
 
     def list_recordings(self, run):
 
@@ -562,7 +546,7 @@ class Interface(QMainWindow):
             )
 
         if ok and text != '':
-            self.search = Search(self.cur, text)
+            self.search = Search(text)
             self.list_subjects()
 
     def sql_search_clear(self):
@@ -583,7 +567,7 @@ class Interface(QMainWindow):
         data_path = QFileDialog.getExistingDirectory()
         if data_path == '':
             return
-        create_bids(Path(data_path), cur=self.cur, deface=False, subset=subset)
+        create_bids(Path(data_path), deface=False, subset=subset)
         lg.warning('export finished')
 
     def new_subject(self, checked):
@@ -595,8 +579,8 @@ class Interface(QMainWindow):
             )
 
         if ok and text != '':
-            Subject.add(self.cur, text.strip())
-            self.journal.add(f'Subject.add(cur, "{text.strip()}")')
+            Subject.add(text.strip())
+            self.journal.add(f'Subject.add("{text.strip()}")')
             self.list_subjects()
 
     def new_session(self, checked):
