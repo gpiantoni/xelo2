@@ -269,11 +269,17 @@ class Recording(Table_with_files):
 
     @property
     def electrodes(self):
-        return Electrodes(id=recording_get('electrode', self.id))
+        electrode_id = recording_get('electrode', self.id)
+        if electrode_id is None:
+            return None
+        return Electrodes(id=electrode_id)
 
     @property
     def channels(self):
-        return Channels(id=recording_get('channel', self.id))
+        channel_id = recording_get('channel', self.id)
+        if channel_id is None:
+            return None
+        return Channels(id=channel_id)
 
     def attach_electrodes(self, electrodes):
         """Only recording_ieeg"""
@@ -293,13 +299,17 @@ class Recording(Table_with_files):
 
 
 def recording_get(group, recording_id):
-        query = QSqlQuery(f"""\
-            SELECT {group}_group_id FROM recordings_ieeg
-            WHERE recording_id == {recording_id}""")
-        if query.next():
-            return query.value(f'{group}_group_id')
+    query = QSqlQuery(f"""\
+        SELECT {group}_group_id FROM recordings_ieeg
+        WHERE recording_id == {recording_id}""")
+    if query.next():
+        out = query.value(f'{group}_group_id')
+        if out == '':
+            return None
         else:
-            raise ValueError(query.lastError().databaseText())
+            return out
+    else:
+        raise ValueError(query.lastError().databaseText())
 
 
 def recording_attach(group, recording_id, group_id=None):
