@@ -466,11 +466,19 @@
             }
         }
     },
-    "channels": {
+    "channel_groups": {
         "id": null,
+        "Reference": {
+            "name": "Reference",
+            "type": "TEXT",
+            "doc": "General description of the reference scheme used and (when applicable) of location of the reference electrode in the raw recordings (e.g., 'left mastoid', 'bipolar', 'T01' for electrode with name T01, 'intracranial electrode on top of a grid, not included with data', 'upside down electrode')."
+        }
+    },
+    "channels": {
+        "channel_group_id": null,
         "name": {
             "name": "name",
-            "type": "TEXT UNIQUE"
+            "type": "TEXT"
         },
         "type": {
             "name": "type",
@@ -494,12 +502,27 @@
             ]
         }
     },
-    "channel_groups": {
+    "electrode_groups": {
         "id": null,
-        "channel_id": null
+        "CoordinateSystem": {
+            "name": "Coordinate System",
+            "type": "TEXT",
+            "values": [
+                "ACPC",
+                "Pixels"
+            ]
+        },
+        "CoordinateUnits": {
+            "name": "Coordinate Units",
+            "type": "TEXT",
+            "values": [
+                "mm",
+                "m"
+            ]
+        }
     },
     "electrodes": {
-        "id": null,
+        "electrode_group_id": null,
         "name": {
             "name": "name",
             "type": "TEXT"
@@ -528,10 +551,6 @@
                 "titanium"
             ]
         }
-    },
-    "electrode_groups": {
-        "id": null,
-        "electrode_id": null
     },
     "experimenters": {
         "id": null,

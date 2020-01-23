@@ -3,7 +3,7 @@ from pytest import raises
 from numpy import empty
 
 from xelo2.database.create import open_database
-from xelo2.api import Subject, list_subjects
+from xelo2.api import Subject, list_subjects, Electrodes, Channels
 from xelo2.api.filetype import parse_filetype
 
 from .paths import DB_PATH, TRC_PATH
@@ -195,3 +195,29 @@ def test_api_sorting():
 
     Subject.add('third_subject')
     assert len(list_subjects()) == 3
+
+
+def test_api_electrodes_channels():
+
+    elec = Electrodes()
+    assert elec.CoordinateUnits == 'mm'
+
+    array = elec.data
+    assert array.shape == (0, )
+
+    array = empty(10, dtype=array.dtype)
+    array['name'][2] = 'aa'
+    array['x'] = range(10)
+    array['material'] = 'platinum'
+
+    # TODO: unique electrode name vs unique group_id
+    elec.data = array
+    array = elec.data
+
+    assert array.shape == (10, )
+    assert array['name'][2] == 'aa'
+    assert array['x'][-1] == 9
+    assert array['material'][1] == 'platinum'
+
+    chan = Channels()
+    assert chan.Reference == 'n/a'

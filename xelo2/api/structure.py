@@ -85,6 +85,8 @@ class Table():
             'session',
             'run',
             'events',
+            'data',
+            '_tb_data',
             '__class__',
             )
 
@@ -165,17 +167,84 @@ class Table_with_files(Table):
         QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
 
 
-class Channels():
-    t = 'channel'
+class NumpyTable(Table):
+    """Note that self.id points to the ID of the group
+    """
 
     def __init__(self, id):
         super().__init__(id)
+        self._tb_data = self.t.split('_')[0] + 's'
+
+    @property
+    def data(self):
+
+        events_type = TABLES[self._tb_data]
+        dtypes = []
+        for k, v in events_type.items():
+            if v is None:
+                continue
+            elif v['type'] == 'TEXT':
+                dtypes.append((k, 'U4096'))
+            elif v['type'] == 'FLOAT':
+                dtypes.append((k, 'float'))
+            else:
+                assert False
+        dtypes = dtype(dtypes)
+
+        query_str = '"' + '", "'.join(dtypes.names) + '"'
+        values = []
+        query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id == {self.id}""")
+        while query.next():
+            values.append(
+                tuple(query.value(name) for name in dtypes.names)
+                )
+        query.clear()
+        return array(values, dtype=dtypes)
+
+    @data.setter
+    def data(self, values):
+
+        QSqlQuery(f'DELETE FROM {self._tb_data} WHERE {self.t}_id == "{self.id}"')
+
+        if values is not None:
+            query_str = '"' + '", "'.join(values.dtype.names) + '"'
+
+            for row in values:
+                values_str = ', '.join([f'"{x}"' for x in row])
+                query = QSqlQuery(f"""\
+                    INSERT INTO {self._tb_data} ("{self.t}_id", {query_str})
+                    VALUES ("{self.id}", {values_str})
+                    """)
 
 
-class Electrodes():
-    t = 'electrode'
+class Channels(NumpyTable):
+    t = 'channel_group'  # for Table.__getattr__
 
-    def __init__(self, id):
+    def __init__(self, id=None):
+        """Use ID if provided, otherwise create a new channel_group"""
+        if id is None:
+            query = QSqlQuery(f"""\
+                INSERT INTO channel_groups ("Reference")
+                VALUES ("n/a")
+                """)
+            id = query.lastInsertId()
+
+        super().__init__(id)
+
+
+class Electrodes(NumpyTable):
+    t = 'electrode_group'  # for Table.__getattr__
+
+    def __init__(self, id=None):
+        """Use ID if provided, otherwise create a new electrode_group with
+        reasonable parameters"""
+        if id is None:
+            query = QSqlQuery(f"""\
+                INSERT INTO electrode_groups ("CoordinateSystem", "CoordinateUnits")
+                VALUES ("ACPC", "mm")
+                """)
+            id = query.lastInsertId()
+
         super().__init__(id)
 
 
@@ -336,7 +405,6 @@ class Run(Table_with_files):
             list_of_protocols.append(
                 Protocol(query.value('protocol_id')))
         return list_of_protocols
-
 
 
 class Protocol(Table_with_files):
