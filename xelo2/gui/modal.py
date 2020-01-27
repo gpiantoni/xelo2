@@ -14,6 +14,7 @@ from PyQt5.QtCore import Qt
 
 from ..database import TABLES
 from .utils import LEVELS
+from ..api.filetype import parse_filetype
 
 
 class NewFile(QDialog):

@@ -518,16 +518,16 @@ class Interface(QMainWindow):
             self.list_subjects()
 
         elif item.t == 'session':
-            self.list_sessions_and_protocols(item)
+            self.list_sessions_and_protocols(item.subject)
 
         elif item.t == 'protocol':
-            self.list_sessions_and_protocols(item)
+            self.list_sessions_and_protocols(item.subject)
 
         elif item.t == 'run':
-            self.list_runs(item)
+            self.list_runs(item.session)
 
         elif item.t == 'recording':
-            self.list_recordings(item)
+            self.list_recordings(item.run)
 
         self.list_params()
         self.list_files()
