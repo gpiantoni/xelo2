@@ -322,6 +322,14 @@
             }
         }
     },
+    "intended_for": {
+        "run_id": null,
+        "target": {
+            "name": "target (run_id)",
+            "doc": "run_id should point to the original task (top_up), while the target should point to the 'intended-for' task (bold task)",
+            "type": "INTEGER"
+        }
+    },
     "runs_protocols": {
         "run_id": null,
         "protocol_id": null

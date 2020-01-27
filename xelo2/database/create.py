@@ -1,6 +1,7 @@
 from json import load
 from logging import getLogger
 from pathlib import Path
+from re import match
 
 from PyQt5.QtSql import (
     QSqlDatabase,
@@ -102,6 +103,12 @@ def parse_table(db, table_name, v, issubtable=False):
         else:
             cmd.append(f'{col_name} {col_info["type"]}')
 
+            # 'name' should end with "(run_id)" or "(subject_id)" which then points to the "runs" table or the "subjects" table
+            matching = match('.*\(([a-z]*)_id\)', col_info['name'])
+            if matching:
+                ref_table = matching.group(1)
+                foreign_key.append(f'FOREIGN KEY({col_name}) REFERENCES {ref_table}s(id) ON DELETE CASCADE')
+
         if col_info is not None and "values" in col_info:
             list_txt = '", "'.join(col_info["values"])
             constraints.append(f'CONSTRAINT {col_name}_type CHECK ({col_name} IN ("{list_txt}"))')
@@ -114,7 +121,9 @@ def parse_table(db, table_name, v, issubtable=False):
 
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
     lg.debug(sql_cmd)
-    assert QSqlQuery(db).exec(sql_cmd)
+    query = QSqlQuery(sql_cmd)
+    if not query.isActive():
+        lg.warning(query.lastError().databaseText())
 
 
 def add_experimenters(db, table_experimenters):
