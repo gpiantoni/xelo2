@@ -50,6 +50,10 @@ def create_menubar(main):
     action_clear = QAction('clear', main)
     action_clear.triggered.connect(main.sql_search_clear)
     menu_search.addAction(action_clear)
+    menu_search.addSeparator()
+    action_export = QAction('add to list to export', main)
+    action_export.triggered.connect(main.add_search_results_to_export)
+    menu_search.addAction(action_export)
 
 
 SEARCH_STATEMENT = """\

@@ -41,8 +41,9 @@ from PyQt5.QtCore import (
     QSettings,
     QUrl,
     )
+from PyQt5.QtSql import QSqlQuery
 
-from ..api import list_subjects, Subject
+from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 
@@ -449,17 +450,20 @@ class Interface(QMainWindow):
         cmd = f'{repr(obj)}.{value} = {x}'
         self.journal.add(cmd)
 
-    def exporting(self):
+    def exporting(self, checked=None, subj=None, sess=None, run=None):
+
+        if subj is None:
+            subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
+            sess = self.lists['sessions'].currentItem().data(Qt.UserRole)
+            run = self.lists['runs'].currentItem().data(Qt.UserRole)
 
         d = {}
-        subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
         d['subjects'] = subj.code
-        sess = self.lists['sessions'].currentItem().data(Qt.UserRole)
         if sess.name == 'MRI':
             d['sessions'] = f'{sess.name} ({sess.MagneticFieldStrength})'
         else:
             d['sessions'] = sess.name
-        run = self.lists['runs'].currentItem().data(Qt.UserRole)
+        d['run_id'] = run.id
         d['runs'] = f'{run.task_name}'
         d['start_time'] = f'{run.start_time:%d %b %Y %H:%M:%S}'
         self.exports.append(d)
@@ -538,16 +542,30 @@ class Interface(QMainWindow):
         self.search.clear()
         self.list_subjects()
 
-    def do_export(self):
-        recording_ids = '(' + ', '.join([str(x['recording']) for x in self.exports]) + ')'
-        self.cur.execute(f"""\
-            SELECT subjects.id, sessions.id, runs.id, recordings.id FROM recordings
-            JOIN runs ON runs.id == recordings.run_id
+    def add_search_results_to_export(self):
+
+        for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
+            self.exporting(
+                subj=Subject(id=subj_id),
+                sess=Session(id=sess_id),
+                run=Run(id=run_id),
+                )
+
+    def do_export(self, checked=None):
+
+        subset = {'subjects': [], 'sessions': [], 'runs': []}
+        run_ids = '(' + ', '.join([str(x['run_id']) for x in self.exports]) + ')'
+        query = QSqlQuery(f"""\
+            SELECT subjects.id, sessions.id, runs.id FROM runs
             JOIN sessions ON sessions.id == runs.session_id
             JOIN subjects ON subjects.id == sessions.subject_id
-            WHERE recordings.id IN {recording_ids}
+            WHERE runs.id IN {run_ids}
             """)
-        subset = self.cur.fetchall()
+
+        while query.next():
+            subset['subjects'].append(query.value(0))
+            subset['sessions'].append(query.value(1))
+            subset['runs'].append(query.value(2))
 
         data_path = QFileDialog.getExistingDirectory()
         if data_path == '':
