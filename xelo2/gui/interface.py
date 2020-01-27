@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QDoubleSpinBox,
     QSpinBox,
+    QTableView,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -42,7 +43,10 @@ from PyQt5.QtCore import (
     QSettings,
     QUrl,
     )
-from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtSql import (
+    QSqlQuery,
+    QSqlTableModel,
+    )
 
 from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
@@ -92,6 +96,10 @@ class Interface(QMainWindow):
         t_params.setColumnCount(3)
         t_params.setHorizontalHeaderLabels(['Level', 'Parameter', 'Value'])
         t_params.verticalHeader().setVisible(False)
+
+        # EVENTS: Widget
+        self.events_view = QTableView(self)
+        self.events_view.horizontalHeader().setStretchLastSection(True)
 
         # FILES: Widget
         t_files = QTableWidget()
@@ -159,6 +167,14 @@ class Interface(QMainWindow):
         dockwidget.setObjectName('dock_parameters')  # savestate
         self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
 
+        # events
+        dockwidget = QDockWidget('Events', self)
+        dockwidget.setWidget(self.events_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_events')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
         # files
         dockwidget = QDockWidget('Files', self)
         dockwidget.setWidget(t_files)
@@ -203,6 +219,12 @@ class Interface(QMainWindow):
         self.sql = open_database(self.sqlite_file)
         self.sql.transaction()
         self.list_subjects()
+
+        self.events_model = QSqlTableModel(self)
+        self.events_model.setTable('events')
+
+        self.events_view.setModel(self.events_model)
+        self.events_view.hideColumn(0)
 
     def sql_commit(self):
         self.sql.commit()
@@ -249,6 +271,7 @@ class Interface(QMainWindow):
 
         elif item.t == 'run':
             self.list_recordings(item)
+            self.show_events(item)
 
         elif item.t == 'recording':
             pass
@@ -451,6 +474,10 @@ class Interface(QMainWindow):
         setattr(obj, value, x)
         cmd = f'{repr(obj)}.{value} = {x}'
         self.journal.add(cmd)
+
+    def show_events(self, item):
+        self.events_model.setFilter(f'run_id == {item.id}')
+        self.events_model.select()
 
     def exporting(self, checked=None, subj=None, sess=None, run=None):
 
