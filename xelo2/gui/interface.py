@@ -611,6 +611,7 @@ class Interface(QMainWindow):
         data_path = QFileDialog.getExistingDirectory()
         if data_path == '':
             return
+        lg.warning(repr(subset))
         create_bids(Path(data_path), deface=False, subset=subset)
         lg.warning('export finished')
 
