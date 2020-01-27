@@ -14,7 +14,6 @@ def create_bids(data_path, deface=True, subset=None):
         subset_subj = set([i[0] for i in subset])
         subset_sess = set([i[1] for i in subset])
         subset_run = set([i[2] for i in subset])
-        subset_rec = set([i[3] for i in subset])
 
     data_path = Path(data_path)
     data_path.mkdir(parents=True, exist_ok=True)
@@ -51,8 +50,6 @@ def create_bids(data_path, deface=True, subset=None):
                 mod_path.mkdir(parents=True, exist_ok=True)
 
                 for rec in run.list_recordings():
-                    if subset is not None and rec.id not in subset_rec:
-                        continue
 
                     files = rec.list_files()
                     if len(files) == 0:

@@ -38,6 +38,7 @@ from PyQt5.QtCore import (
     Qt,
     pyqtSlot,
     QDate,
+    QDateTime,
     QSettings,
     QUrl,
     )
@@ -47,6 +48,7 @@ from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 
+from .utils import LEVELS
 from .actions import create_menubar, Search
 from .modal import NewFile, Popup_Experimenters
 from .journal import Journal
@@ -54,14 +56,6 @@ from .journal import Journal
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
-
-LEVELS = [
-    'subjects',
-    'sessions',
-    'protocols',
-    'runs',
-    'recordings',
-    ]
 
 
 class Interface(QMainWindow):
@@ -79,6 +73,10 @@ class Interface(QMainWindow):
             groups[k] = QGroupBox(k.capitalize())
             lists[k] = QListWidget()
             lists[k].currentItemChanged.connect(self.proc_all)
+            # right click
+            lists[k].setContextMenuPolicy(Qt.CustomContextMenu)
+            lists[k].customContextMenuRequested.connect(partial(self.rightclick_list, level=k))
+
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
             if k == 'runs':
@@ -231,13 +229,15 @@ class Interface(QMainWindow):
             self.lists['subjects'].addItem(item)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
-    def proc_all(self, current, previous):
+    def proc_all(self, current=None, previous=None, item=None):
+        """GUI calls current and previous. You can call item"""
 
-        # when clicking on a previously selected list, it sends a signal where current is None, but I don't understand why
-        if current is None:
-            return
+        if item is None:
+            # when clicking on a previously selected list, it sends a signal where current is None, but I don't understand why
+            if current is None:
+                return
+            item = current.data(Qt.UserRole)
 
-        item = current.data(Qt.UserRole)
         if item.t == 'subject':
             self.list_sessions_and_protocols(item)
 
@@ -440,6 +440,8 @@ class Interface(QMainWindow):
     def changed(self, obj, value, x):
         if isinstance(x, QDate):
             x = repr(x.toPyDate())
+        elif isinstance(x, QDateTime):
+            x = repr(x.toPyDateTime())
         else:
             if isinstance(x, QLineEdit):
                 x = x.text()
@@ -490,6 +492,45 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 2, item)
             item = QTableWidgetItem(l['start_time'])
             self.t_export.setItem(i, 3, item)
+
+    def rightclick_list(self, pos, level=None):
+        item = self.lists[level].itemAt(pos)
+
+        menu = QMenu(self)
+        if item is None:
+            action = QAction(f'Add {level}', self)
+            action.triggered.connect(lambda x: self.new_item(level=level))
+            menu.addAction(action)
+
+        else:
+            obj = item.data(Qt.UserRole)
+
+            action_delete = QAction('Delete', self)
+            action_delete.triggered.connect(lambda x: self.delete_item(obj))
+            menu.addAction(action_delete)
+
+        menu.popup(self.lists[level].mapToGlobal(pos))
+
+    def delete_item(self, item):
+        item.delete()
+
+        if item.t == 'subject':
+            self.list_subjects()
+
+        elif item.t == 'session':
+            self.list_sessions_and_protocols(item)
+
+        elif item.t == 'protocol':
+            self.list_sessions_and_protocols(item)
+
+        elif item.t == 'run':
+            self.list_runs(item)
+
+        elif item.t == 'recording':
+            self.list_recordings(item)
+
+        self.list_params()
+        self.list_files()
 
     def rightclick_files(self, pos):
         item = self.t_files.itemAt(pos)
@@ -573,55 +614,78 @@ class Interface(QMainWindow):
         create_bids(Path(data_path), deface=False, subset=subset)
         lg.warning('export finished')
 
-    def new_subject(self, checked):
+    def new_item(self, checked=None, level=None):
 
-        text, ok = QInputDialog.getText(
-            self,
-            'Add New Subject',
-            'Subject Code:',
-            )
+        if level == 'subjects':
+            text, ok = QInputDialog.getText(
+                self,
+                'Add New Subject',
+                'Subject Code:',
+                )
+
+        elif level == 'sessions':
+            current_subject = self.current('subjects')
+            text, ok = QInputDialog.getItem(
+                self,
+                'Add New Session for {current_subject.code}',
+                'Session Name:',
+                TABLES['sessions']['name']['values'],
+                0, False)
+
+        elif level == 'protocol':
+            current_subject = self.current('subjects')
+            text, ok = QInputDialog.getItem(
+                self,
+                'Add New Protocol for {current_subject.code}',
+                'Protocol Name:',
+                TABLES['protocols']['name']['values'],
+                0, False)
+
+        elif level == 'runs':
+            current_session = self.current('sessions')
+
+            text, ok = QInputDialog.getItem(
+                self,
+                'Add New Run for {current_session.name}',
+                'Task Name:',
+                TABLES['runs']['task_name']['values'],
+                0, False)
+
+        elif level == 'recordings':
+            current_run = self.current('runs')
+
+            text, ok = QInputDialog.getItem(
+                self,
+                'Add New Recording for {current_run.task_name}',
+                'Modality:',
+                TABLES['recordings']['modality']['values'],
+                0, False)
 
         if ok and text != '':
-            Subject.add(text.strip())
-            self.journal.add(f'Subject.add("{text.strip()}")')
-            self.list_subjects()
+            if level == 'subjects':
+                Subject.add(text.strip())
+                self.journal.add(f'Subject.add("{text.strip()}")')
+                self.list_subjects()
 
-    def new_session(self, checked):
+            elif level == 'sessions':
+                current_subject.add_session(text)
+                self.journal.add(f'{repr(current_subject)}.add_session("{text}")')
+                self.list_sessions_and_protocols(current_subject)
 
-        current_subject = self.current('subjects')
+            elif level == 'protocol':
+                current_subject.add_protocol(text)
+                self.journal.add(f'{repr(current_subject)}.add_protocol("{text}")')
+                self.list_sessions_and_protocols(current_subject)
 
-        text, ok = QInputDialog.getItem(
-            self,
-            'Add New Session for {current_subject.code}',
-            'Session Name:',
-            TABLES['sessions']['name']['values'],
-            0, False)
+            elif level == 'runs':
+                current_session.add_run(text)
+                self.journal.add(f'{repr(current_session)}.add_run("{text}")')
+                self.list_runs(current_session)
 
-        if ok and text != '':
-            current_subject.add_session(text)
-            self.journal.add(f'{repr(current_subject)}.add_session("{text}")')
-            self.list_sessions_and_protocols(current_subject)
-
-    def new_protocol(self, checked):
-        print(checked)
-
-    def new_run(self, checked):
-        current_session = self.current('sessions')
-
-        text, ok = QInputDialog.getItem(
-            self,
-            'Add New Run for {current_session.name}',
-            'Task Name:',
-            TABLES['runs']['task_name']['values'],
-            0, False)
-
-        if ok and text != '':
-            current_session.add_run(text)
-            self.journal.add(f'{repr(current_session)}.add_run("{text}")')
-            self.list_runs(current_session)
-
-    def new_recording(self, checked):
-        print(checked)
+            elif level == 'recordings':
+                current_run.add_recording(text)
+                self.journal.add(f'{repr(current_run)}.add_recording("{text}")')
+                self.list_recordings(current_run)
 
     def new_file(self, checked):
         get_new_file = NewFile(self)

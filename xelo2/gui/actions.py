@@ -1,7 +1,11 @@
+from functools import partial
 from PyQt5.QtWidgets import (
     QAction,
     )
 from PyQt5.QtSql import QSqlQuery
+
+from .utils import LEVELS
+
 
 def create_menubar(main):
     menubar = main.menuBar()
@@ -28,19 +32,15 @@ def create_menubar(main):
 
     # New
     menu_new = menubar.addMenu('Add ...')
-    NEW_ITEMS = {
-        'subject': main.new_subject,
-        'session': main.new_session,
-        'protocol': main.new_protocol,
-        'run': main.new_run,
-        'recording': main.new_recording,
-        'file': lambda x: main.new_file(main),
-        }
-
-    for name, method in NEW_ITEMS.items():
-        action = QAction(f'new {name}', main)
-        action.triggered.connect(method)
+    for level in LEVELS:
+        action = QAction(f'new {level[:-1]}', main)
+        action.triggered.connect(partial(main.new_item, level=level))
         menu_new.addAction(action)
+
+    menu_new.addSeparator()
+    action = QAction(f'new file ...', main)
+    action.triggered.connect(main.new_file)
+    menu_new.addAction(action)
 
     # search
     menu_search = menubar.addMenu('Search')

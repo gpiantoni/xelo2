@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 
 from ..database import TABLES
+from .utils import LEVELS
 
 
 class NewFile(QDialog):
@@ -22,13 +23,7 @@ class NewFile(QDialog):
         self.setWindowModality(Qt.WindowModal)
 
         self.level = QComboBox()
-        self.level.addItems([
-            'Subject',
-            'Session',
-            'Protocol',
-            'Run',
-            'Recording'
-            ])
+        self.level.addItems([level[:-1].capitalize() for level in LEVELS])
         self.filepath = QLineEdit()
         self.filepath.setFixedWidth(800)
         browse = QPushButton('Browse ...')
