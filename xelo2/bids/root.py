@@ -33,7 +33,7 @@ def create_bids(data_path, deface=True, subset=None):
             if subset is not None and sess.id not in subset_sess:
                 continue
 
-            bids_sess = 'ses-umcu' + sess.name.lower() + '01'  # TODO: fix when there are multiple sessions
+            bids_sess = 'ses-' + sess.name.lower() + '01'  # TODO: fix when there are multiple sessions
             sess_path = subj_path / bids_sess
             sess_path.mkdir(parents=True, exist_ok=True)
 
