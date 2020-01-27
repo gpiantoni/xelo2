@@ -63,8 +63,11 @@ class Table():
         if query.next():
             out = query.value(0)
 
-            if key.startswith('date_of_'):  # TODO: it should look TABLES up
-                return _date_out(out)
+            if out == 'null' or out == '':
+                return None
+
+            elif key.startswith('date_of_'):  # TODO: it should look TABLES up
+                return datetime.strptime(out, '%Y-%m-%d').date()
 
             elif key.endswith('_time'):  # TODO: it should look TABLES up
                 return _datetime_out(out)
@@ -663,15 +666,9 @@ def _datetime(s):
         return f'"{s:%Y-%m-%dT%H:%M:%S}"'
 
 
-def _date_out(s):
-    if s == 'null' or s == '':
+def _datetime_out(out):
+    if out == 'null' or out == '':
         return None
-    else:
-        return datetime.strptime(s, '%Y-%m-%d').date()
 
-
-def _datetime_out(s):
-    if s == 'null' or s == '':
-        return None
     else:
-        return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
+        return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')

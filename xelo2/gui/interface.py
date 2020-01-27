@@ -727,7 +727,11 @@ def make_float(table, value):
         w.setPalette(palette)
 
     else:
-        w.setValue(value)
+        try:
+            w.setValue(value)
+        except TypeError:
+            print(value)
+            print(type(value))
 
     return w
 
