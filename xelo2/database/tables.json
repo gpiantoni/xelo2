@@ -19,6 +19,16 @@
                 "Female",
                 "Male"
             ]
+        },
+        "handedness": {
+            "name": "Handedness",
+            "type": "TEXT",
+            "doc": "Handedness of the participant",
+            "values": [
+                "Left-handed",
+                "Right-handed",
+                "Ambidextrous"
+            ]
         }
     },
     "protocols": {
@@ -226,6 +236,7 @@
                 "visual_up_down_map",
                 "vowels",
                 "woezel_pip",
+                "NOTE",
                 "bair_finger_mapping",
                 "ct_anatomy_scan",
                 "flair_anatomy_scan",

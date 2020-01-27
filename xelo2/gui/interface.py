@@ -54,7 +54,6 @@ from .journal import Journal
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
-ELECTRODES_COLUMNS = list(TABLES['electrodes'])[1:]
 LEVELS = [
     'subjects',
     'sessions',
@@ -81,7 +80,10 @@ class Interface(QMainWindow):
             lists[k].currentItemChanged.connect(self.proc_all)
             layout = QVBoxLayout()
             layout.addWidget(lists[k])
-            # lists[k].setSortingEnabled(True)
+            if k == 'runs':
+                b = QPushButton('Add to export list')
+                b.clicked.connect(self.exporting)
+                layout.addWidget(b)
             groups[k].setLayout(layout)
 
         # PARAMETERS: Widget
@@ -103,13 +105,6 @@ class Interface(QMainWindow):
         t_files.setContextMenuPolicy(Qt.CustomContextMenu)
         t_files.customContextMenuRequested.connect(self.rightclick_files)
 
-        # ELECTRODES: Widget
-        t_elec = QTableWidget()
-        t_elec.horizontalHeader().setStretchLastSection(True)
-        t_elec.setSelectionBehavior(QAbstractItemView.SelectRows)
-        t_elec.setColumnCount(len(ELECTRODES_COLUMNS))
-        t_elec.setHorizontalHeaderLabels(ELECTRODES_COLUMNS)
-
         # EXPORT: Widget
         w_export = QWidget()
         col_export = QVBoxLayout()
@@ -118,7 +113,7 @@ class Interface(QMainWindow):
         t_export.horizontalHeader().setStretchLastSection(True)
         t_export.setSelectionBehavior(QAbstractItemView.SelectRows)
         t_export.setColumnCount(4)
-        t_export.setHorizontalHeaderLabels(['Subject', 'Session', 'Run', 'Recording'])
+        t_export.setHorizontalHeaderLabels(['Subject', 'Session', 'Run', 'Start Time'])
         t_export.verticalHeader().setVisible(False)
 
         p_clearexport = QPushButton('Clear list')
@@ -173,14 +168,6 @@ class Interface(QMainWindow):
         dockwidget.setObjectName('dock_files')  # savestate
         self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
 
-        # electrodes
-        dockwidget = QDockWidget('Electrodes', self)
-        dockwidget.setWidget(t_elec)
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_elec')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
-
         # export
         dockwidget = QDockWidget('Export', self)
         dockwidget.setWidget(w_export)
@@ -202,7 +189,6 @@ class Interface(QMainWindow):
         self.lists = lists
         self.t_params = t_params
         self.t_files = t_files
-        self.t_elec = t_elec
         self.t_export = t_export
         self.exports = []
 
@@ -256,7 +242,6 @@ class Interface(QMainWindow):
 
         elif item.t == 'session':
             self.list_runs(item)
-            # self.show_electrodes(item)
 
         elif item.t == 'protocol':
             pass
@@ -465,18 +450,18 @@ class Interface(QMainWindow):
         self.journal.add(cmd)
 
     def exporting(self):
-        """TODO"""
 
         d = {}
         subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
         d['subjects'] = subj.code
         sess = self.lists['sessions'].currentItem().data(Qt.UserRole)
-        d['sessions'] = sess.name
+        if sess.name == 'MRI':
+            d['sessions'] = f'{sess.name} ({sess.MagneticFieldStrength})'
+        else:
+            d['sessions'] = sess.name
         run = self.lists['runs'].currentItem().data(Qt.UserRole)
-        d['runs'] = f'{run.task_name} ({run.acquisition})'
-        rec = self.lists['recordings'].currentItem().data(Qt.UserRole)
-        d['recordings'] = rec.modality
-        d['recording'] = rec.id
+        d['runs'] = f'{run.task_name}'
+        d['start_time'] = f'{run.start_time:%d %b %Y %H:%M:%S}'
         self.exports.append(d)
 
         self.list_exports()
@@ -499,7 +484,7 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 1, item)
             item = QTableWidgetItem(l['runs'])
             self.t_export.setItem(i, 2, item)
-            item = QTableWidgetItem(l['recordings'])
+            item = QTableWidgetItem(l['start_time'])
             self.t_export.setItem(i, 3, item)
 
     def rightclick_files(self, pos):

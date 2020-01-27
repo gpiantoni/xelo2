@@ -8,7 +8,7 @@ from .func import convert_func
 lg = getLogger(__name__)
 
 
-def create_bids(data_path, cur=None, deface=True, subset=None):
+def create_bids(data_path, deface=True, subset=None):
 
     if subset is not None:
         subset_subj = set([i[0] for i in subset])
@@ -22,7 +22,7 @@ def create_bids(data_path, cur=None, deface=True, subset=None):
     # the dataset_description.json is used by find_root, in some subscripts
     _make_dataset_description(data_path)
 
-    for subj in list_subjects(cur):
+    for subj in list_subjects():
         if subset is not None and subj.id not in subset_subj:
             continue
 

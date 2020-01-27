@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import (
     QAction,
     )
+from PyQt5.QtSql import QSqlQuery
 
 def create_menubar(main):
     menubar = main.menuBar()
@@ -45,11 +46,9 @@ def create_menubar(main):
     menu_search = menubar.addMenu('Search')
     action_search = QAction('WHERE ...', main)
     action_search.triggered.connect(main.sql_search)
-    action_search.setEnabled(False)
     menu_search.addAction(action_search)
     action_clear = QAction('clear', main)
     action_clear.triggered.connect(main.sql_search_clear)
-    action_clear.setEnabled(False)
     menu_search.addAction(action_clear)
 
 
@@ -72,15 +71,14 @@ class Search():
             return
 
         self.previous = where
-        cur.execute(
-            SEARCH_STATEMENT
-            + where)
 
-        for val in cur.fetchall():
-            self.subjects.append(val[0])
-            self.sessions.append(val[1])
-            self.runs.append(val[2])
-            self.recordings.append(val[3])
+        query = QSqlQuery(SEARCH_STATEMENT + where)
+
+        while query.next():
+            self.subjects.append(query.value(0))
+            self.sessions.append(query.value(1))
+            self.runs.append(query.value(2))
+            self.recordings.append(query.value(3))
 
     def clear(self):
 
