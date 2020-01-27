@@ -549,7 +549,7 @@ class Interface(QMainWindow):
             url_directory = QUrl(str(file_path.parent))
 
             action_edit = QAction('Edit File', self)
-            action_edit.triggered.connect(lambda x: self.edit_file(file_obj))
+            action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
             action_openfile = QAction('Open File', self)
             action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
             action_opendirectory = QAction('Open Containing Folder', self)
@@ -692,18 +692,26 @@ class Interface(QMainWindow):
         result = get_new_file.exec()
 
         if result:
-            print(get_new_file.level.currentText())
-            print(get_new_file.filepath.text())
-            print(get_new_file.format.currentText())
+            level = get_new_file.level.currentText().lower() + 's'
+            item = self.current(level)
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            item.add_file(format, path)
 
-    def edit_file(self, file_obj):
-        get_new_file = NewFile(self, file_obj)
+        self.list_files()
+
+    def edit_file(self, level_obj, file_obj):
+        get_new_file = NewFile(self, file_obj, level_obj)
         result = get_new_file.exec()
 
         if result:
-            print(get_new_file.level.currentText())
-            print(get_new_file.filepath.text())
-            print(get_new_file.format.currentText())
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            print(path)
+            file_obj.path = path
+            file_obj.format = format
+
+        self.list_files()
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete(file_obj)

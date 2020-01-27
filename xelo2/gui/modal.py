@@ -19,12 +19,17 @@ from ..api.filetype import parse_filetype
 
 class NewFile(QDialog):
 
-    def __init__(self, parent, file_obj=None):
+    def __init__(self, parent, file_obj=None, level_obj=None):
         super().__init__(parent)
         self.setWindowModality(Qt.WindowModal)
 
         self.level = QComboBox()
         self.level.addItems([level[:-1].capitalize() for level in LEVELS])
+
+        if level_obj is not None:
+            self.level.setEnabled(False)  # do not allow changing level here
+            self.level.setCurrentText(level_obj.t.capitalize())
+
         self.filepath = QLineEdit()
         self.filepath.setFixedWidth(800)
         browse = QPushButton('Browse ...')
