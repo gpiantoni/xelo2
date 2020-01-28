@@ -505,11 +505,15 @@
             "doc": "Type of channel.",
             "type": "TEXT",
             "values": [
+                "EEG",
                 "ECOG",
                 "SEEG",
                 "EOG",
+                "ECG",
                 "EMG",
                 "TRIG",
+                "MISC",
+                "REF",
                 "OTHER"
             ]
         },

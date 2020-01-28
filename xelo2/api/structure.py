@@ -2,7 +2,14 @@ from logging import getLogger
 from datetime import datetime
 from pathlib import Path
 
-from numpy import array, dtype
+from numpy import (
+    array,
+    dtype,
+    empty,
+    floating,
+    NaN,
+    issubdtype,
+    )
 from PyQt5.QtSql import QSqlQuery
 
 from ..database import TABLES
@@ -181,19 +188,7 @@ class NumpyTable(Table):
     @property
     def data(self):
 
-        events_type = TABLES[self._tb_data]
-        dtypes = []
-        for k, v in events_type.items():
-            if v is None:
-                continue
-            elif v['type'] == 'TEXT':
-                dtypes.append((k, 'U4096'))
-            elif v['type'] == 'FLOAT':
-                dtypes.append((k, 'float'))
-            else:
-                assert False
-        dtypes = dtype(dtypes)
-
+        dtypes = _get_dtypes(TABLES[self._tb_data])
         query_str = '"' + '", "'.join(dtypes.names) + '"'
         values = []
         query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id == {self.id}""")
@@ -201,7 +196,6 @@ class NumpyTable(Table):
             values.append(
                 tuple(query.value(name) for name in dtypes.names)
                 )
-        query.clear()
         return array(values, dtype=dtypes)
 
     @data.setter
@@ -218,6 +212,21 @@ class NumpyTable(Table):
                     INSERT INTO {self._tb_data} ("{self.t}_id", {query_str})
                     VALUES ("{self.id}", {values_str})
                     """)
+            if query.lastInsertId() is None:
+                err = query.lastError()
+                raise ValueError(err.databaseText())
+
+    def empty(self, n_rows):
+        """convenience function to get an empty array with empty values if
+        necessary"""
+        dtypes = _get_dtypes(TABLES[self._tb_data])
+
+        values = empty(n_rows, dtype=dtypes)
+        for name in values.dtype.names:
+            if issubdtype(dtypes[name].type, floating):
+                values[name].fill(NaN)
+
+        return values
 
 
 class Channels(NumpyTable):
@@ -372,18 +381,7 @@ class Run(Table_with_files):
 
     @property
     def events(self):
-        events_type = TABLES['events']
-        dtypes = []
-        for k, v in events_type.items():
-            if v is None:
-                continue
-            elif v['type'] == 'TEXT':
-                dtypes.append((k, 'U4096'))
-            elif v['type'] == 'FLOAT':
-                dtypes.append((k, 'float'))
-            else:
-                assert False
-        dtypes = dtype(dtypes)
+        dtypes = _get_dtypes(TABLES['events'])
 
         query_str = '"' + '", "'.join(dtypes.names) + '"'
         values = []
@@ -628,6 +626,20 @@ def construct_subtables(t):
             attr_tables[i_v] = k
 
     return attr_tables
+
+
+def _get_dtypes(table):
+    dtypes = []
+    for k, v in table.items():
+        if v is None:
+            continue
+        elif v['type'] == 'TEXT':
+            dtypes.append((k, 'U4096'))
+        elif v['type'] == 'FLOAT':
+            dtypes.append((k, 'float'))
+        else:
+            assert False
+    return dtype(dtypes)
 
 
 def _sort_subjects(subj):
