@@ -4,9 +4,11 @@ from pathlib import Path
 
 from numpy import (
     array,
+    character,
     dtype,
     empty,
     floating,
+    isnan,
     NaN,
     issubdtype,
     )
@@ -187,15 +189,21 @@ class NumpyTable(Table):
 
     @property
     def data(self):
-
         dtypes = _get_dtypes(TABLES[self._tb_data])
         query_str = '"' + '", "'.join(dtypes.names) + '"'
         values = []
         query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id == {self.id}""")
+
         while query.next():
-            values.append(
-                tuple(query.value(name) for name in dtypes.names)
-                )
+            row = []
+            for name in dtypes.names:
+                v = query.value(name)
+                if issubdtype(dtypes[name].type, floating) and v == '':
+                    v = NaN
+                row.append(v)
+
+            values.append(tuple(row))
+
         return array(values, dtype=dtypes)
 
     @data.setter
@@ -204,17 +212,16 @@ class NumpyTable(Table):
         QSqlQuery(f'DELETE FROM {self._tb_data} WHERE {self.t}_id == "{self.id}"')
 
         if values is not None:
-            query_str = '"' + '", "'.join(values.dtype.names) + '"'
-
             for row in values:
-                values_str = ', '.join([f'"{x}"' for x in row])
+                column_str, values_str = _create_query(row)
                 query = QSqlQuery(f"""\
-                    INSERT INTO {self._tb_data} ("{self.t}_id", {query_str})
+                    INSERT INTO {self._tb_data} ("{self.t}_id", {column_str})
                     VALUES ("{self.id}", {values_str})
                     """)
-            if query.lastInsertId() is None:
-                err = query.lastError()
-                raise ValueError(err.databaseText())
+
+                if query.lastInsertId() is None:
+                    err = query.lastError()
+                    raise ValueError(err.databaseText())
 
     def empty(self, n_rows):
         """convenience function to get an empty array with empty values if
@@ -684,3 +691,28 @@ def _datetime_out(out):
 
     else:
         return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
+
+
+def _create_query(row):
+    """discard nan and create query strings"""
+    dtypes = row.dtype
+    columns = []
+    values = []
+    for name in dtypes.names:
+        if issubdtype(dtypes[name].type, floating):
+            if not isnan(row[name]):
+                columns.append(name)
+                values.append(f'"{row[name]}"')
+        elif issubdtype(dtypes[name].type, character):
+            if row[name] != '':
+                columns.append(name)
+                values.append(f'"{row[name]}"')
+        else:
+            raise ValueError(f'Unknown dtype {dtypes[name]}')
+
+        assert 'name' in columns
+
+    columns_str = ', '.join([f'"{x}"' for x in columns])
+    values_str = ', '.join(values)
+
+    return columns_str, values_str

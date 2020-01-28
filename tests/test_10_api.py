@@ -205,8 +205,9 @@ def test_api_electrodes_channels():
     array = elec.data
     assert array.shape == (0, )
 
-    array = empty(10, dtype=array.dtype)
-    array['name'][2] = 'aa'
+    array = elec.empty(10)
+
+    array['name'] = [f'chan{x}' for x in range(10)]
     array['x'] = range(10)
     array['material'] = 'platinum'
 
@@ -215,7 +216,7 @@ def test_api_electrodes_channels():
     array = elec.data
 
     assert array.shape == (10, )
-    assert array['name'][2] == 'aa'
+    assert array['name'][2] == 'chan2'
     assert array['x'][-1] == 9
     assert array['material'][1] == 'platinum'
 
