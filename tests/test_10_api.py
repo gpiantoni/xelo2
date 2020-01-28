@@ -224,6 +224,12 @@ def test_api_electrodes_channels():
     chan = Channels()
     assert chan.Reference == 'n/a'
 
+    values = chan.empty(1)
+    values['name'] = 'chan1'
+    values['type'] = 'XXX'
+    with raises(ValueError):
+        chan.data = values
+
 
 def test_api_electrodes_channels_attach():
 
