@@ -287,12 +287,13 @@
                     "type": "TEXT"
                 }
             },
-            "runs_motor": {
+            "runs_sensorimotor": {
                 "run_id": null,
                 "when": {
                     "level": "run",
                     "parameter": "task_name",
                     "value": [
+                        "somatosensory",
                         "motor"
                     ]
                 },
@@ -407,14 +408,7 @@
                 },
                 "PulseSequenceType": {
                     "name": "Pulse Sequence Type",
-                    "type": "TEXT",
-                    "values": [
-                        "Gradient-Echo EPI",
-                        "Spin-Echo EPI",
-                        "Multiband Gradient-Echo EPI",
-                        "PRESTO",
-                        "MP2RAGE"
-                    ]
+                    "type": "TEXT"
                 }
             },
             "recordings_epi": {

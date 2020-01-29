@@ -51,6 +51,7 @@ from PyQt5.QtSql import (
 from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
+from ..io.parrec import add_parrec_to_sess
 
 from .utils import LEVELS
 from .actions import create_menubar, Search
@@ -267,21 +268,32 @@ class Interface(QMainWindow):
     def sql_rollback(self):
         self.sql.rollback()
         self.journal.add('sql.rollback()')
+        self.list_subjects()
 
     def sql_close(self):
         self.sql.close()
         self.journal.add('sql.close()')
 
-    def list_subjects(self):
+    def list_subjects(self, code_to_select=None):
+        """
+        code_to_select : str
+            code of the subject to select
+        """
         for l in self.lists.values():
             l.clear()
 
+        to_select = None
         for subj in list_subjects():
             item = QListWidgetItem(subj.code)
             if subj.id in self.search.subjects:
                 highlight(item)
             item.setData(Qt.UserRole, subj)
             self.lists['subjects'].addItem(item)
+            if code_to_select is not None and code_to_select == subj.code:
+                to_select = item
+            if to_select is None:  # select first one
+                to_select = item
+        self.lists['subjects'].setCurrentItem(to_select)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
     def proc_all(self, current=None, previous=None, item=None):
@@ -318,18 +330,14 @@ class Interface(QMainWindow):
             self.lists[l].clear()
 
         for sess in subj.list_sessions():
-            if sess.start_time is None:
-                date_str = 'unknown date'
-            else:
-                date_str = f'{sess.start_time:%d %b %Y}'
-            item = QListWidgetItem_time(sess, f'{sess.name} ({date_str})')
+            item = QListWidgetItem_time(sess, _session_name(sess))
             if sess.id in self.search.sessions:
                 highlight(item)
             self.lists['sessions'].addItem(item)
         self.lists['sessions'].setCurrentRow(0)
 
         for protocol in subj.list_protocols():
-            item = QListWidgetItem(protocol.METC)
+            item = QListWidgetItem(_protocol_name(protocol))
             item.setData(Qt.UserRole, protocol)
             self.lists['protocols'].addItem(item)
         self.lists['protocols'].setCurrentRow(0)
@@ -419,8 +427,8 @@ class Interface(QMainWindow):
                 if obj.task_name == 'mario':
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
 
-                if obj.task_name == 'motor':
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_motor'], obj, self))
+                if obj.task_name in ('motor', 'somatosensory'):
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_sensorimotor'], obj, self))
 
             elif k == 'recordings':
 
@@ -761,9 +769,10 @@ class Interface(QMainWindow):
 
         if ok and text != '':
             if level == 'subjects':
-                Subject.add(text.strip())
-                self.journal.add(f'Subject.add("{text.strip()}")')
-                self.list_subjects()
+                code = text.strip()
+                Subject.add(code)
+                self.journal.add(f'Subject.add("{code}")')
+                self.list_subjects(code)
 
             elif level == 'sessions':
                 current_subject.add_session(text)
@@ -810,6 +819,19 @@ class Interface(QMainWindow):
             file_obj.format = format
 
         self.list_files()
+
+    def io_parrec(self):
+
+        sess = self.current('sessions')
+
+        par_folder = QFileDialog.getExistingDirectory()
+        if par_folder == '':
+            return
+        QGuiApplication.processEvents()
+
+        add_parrec_to_sess(sess, Path(par_folder))
+
+        self.list_runs(sess)
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete(file_obj)

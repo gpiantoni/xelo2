@@ -55,6 +55,12 @@ def create_menubar(main):
     action_export.triggered.connect(main.add_search_results_to_export)
     menu_search.addAction(action_export)
 
+    # io
+    menu_io = menubar.addMenu('Input / Output')
+    action_parrec = QAction('import PAR/REC folder', main)
+    action_parrec.triggered.connect(main.io_parrec)
+    menu_io.addAction(action_parrec)
+
 
 SEARCH_STATEMENT = """\
     SELECT subjects.id, sessions.id, runs.id, recordings.id FROM subjects
