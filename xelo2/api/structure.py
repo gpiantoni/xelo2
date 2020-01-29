@@ -135,8 +135,8 @@ class Table():
             WHERE {id_name} == "{self.id}"
             """)
 
-        if query.lastInsertId() is None:
-            err = query.lastError()
+        err = query.lastError()
+        if err.isValid():
             raise ValueError(err.databaseText())
 
 

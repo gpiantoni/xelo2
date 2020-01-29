@@ -521,16 +521,20 @@ class Interface(QMainWindow):
         self.t_files.blockSignals(False)
 
     def changed(self, obj, value, x):
+        print(x)
+        print(type(x))
         if isinstance(x, QDate):
-            x = repr(x.toPyDate())
+            x = x.toPyDate()
         elif isinstance(x, QDateTime):
-            x = repr(x.toPyDateTime())
+            x = x.toPyDateTime()
         else:
             if isinstance(x, QLineEdit):
                 x = x.text()
 
             x = f'{x}'
 
+        print(x)
+        print(type(x))
         setattr(obj, value, x)
         cmd = f'{repr(obj)}.{value} = {x}'
         self.journal.add(cmd)
