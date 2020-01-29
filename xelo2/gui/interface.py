@@ -398,25 +398,18 @@ class Interface(QMainWindow):
 
                 subj = self.current('subjects')
                 session_name = []
+
                 for sess in subj.list_sessions():
-                    if sess.start_time is None:
-                        date_str = 'unknown date'
-                    else:
-                        date_str = f'{sess.start_time:%d %b %Y}'
-                    session_name.append(f'{sess.name} ({date_str})')
+                    session_name.append(_session_name(sess))
 
                 w = QComboBox()
                 w.addItems(session_name)
-                w.setCurrentText(session_name[0])
+                w.setCurrentText(_session_name(obj.session))
                 parameters.update({'Session': w})
 
                 protocol_name = ['Request from clinic', ]
                 for protocol in subj.list_protocols():
-                    if protocol.date_of_signature is None:
-                        date_str = 'unknown date'
-                    else:
-                        date_str = f'{protocol.date_of_signature:%d %b %Y}'
-                    protocol_name.append(f'{protocol.METC} ({date_str})')
+                    protocol_name.append(_protocol_name(protocol))
 
                 w = QComboBox()
                 w.addItems(protocol_name)
@@ -521,8 +514,6 @@ class Interface(QMainWindow):
         self.t_files.blockSignals(False)
 
     def changed(self, obj, value, x):
-        print(x)
-        print(type(x))
         if isinstance(x, QDate):
             x = x.toPyDate()
         elif isinstance(x, QDateTime):
@@ -533,8 +524,6 @@ class Interface(QMainWindow):
 
             x = f'{x}'
 
-        print(x)
-        print(type(x))
         setattr(obj, value, x)
         cmd = f'{repr(obj)}.{value} = {x}'
         self.journal.add(cmd)
@@ -980,3 +969,19 @@ class QListWidgetItem_time(QListWidgetItem):
 
     def __lt__(self, other):
         return self.obj.start_time < other.obj.start_time
+
+
+def _session_name(sess):
+    if sess.start_time is None:
+        date_str = 'unknown date'
+    else:
+        date_str = f'{sess.start_time:%d %b %Y}'
+    return f'{sess.name} ({date_str})'
+
+
+def _protocol_name(protocol):
+    if protocol.date_of_signature is None:
+        date_str = 'unknown date'
+    else:
+        date_str = f'{protocol.date_of_signature:%d %b %Y}'
+    return f'{protocol.METC} ({date_str})'
