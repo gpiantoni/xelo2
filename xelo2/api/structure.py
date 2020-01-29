@@ -328,7 +328,7 @@ def recording_get(group, recording_id):
         else:
             return out
     else:
-        raise ValueError(query.lastError().databaseText())
+        return None
 
 
 def recording_attach(group, recording_id, group_id=None):

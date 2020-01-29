@@ -520,12 +520,15 @@
         },
         "units": {
             "name": "units",
-            "doc": "Physical unit of the value represented in this channel, e.g., V for Volt, specified according to the SI unit symbol and possibly prefix symbol (e.g., mV, μV).",
+            "doc": "Physical unit of the value represented in this channel, e.g., V for Volt, specified according to the SI unit symbol and possibly prefix symbol (e.g., mV, μV). Note that 'micro' can be encoded as 'CEBC' or 'C2B5' in utf-8.",
             "type": "TEXT",
             "values": [
                 "V",
                 "mV",
-                "µV"
+                "μV",
+                "µV",
+                "bpm",
+                "%"
             ]
         },
         "low_cutoff": {

@@ -101,6 +101,14 @@ class Interface(QMainWindow):
         self.events_view = QTableView(self)
         self.events_view.horizontalHeader().setStretchLastSection(True)
 
+        # CHANNELS: Widget
+        self.channels_view = QTableView(self)
+        self.channels_view.horizontalHeader().setStretchLastSection(True)
+
+        # ELECTRODES: Widget
+        self.electrodes_view = QTableView(self)
+        self.electrodes_view.horizontalHeader().setStretchLastSection(True)
+
         # FILES: Widget
         t_files = QTableWidget()
         t_files.horizontalHeader().setStretchLastSection(True)
@@ -175,6 +183,22 @@ class Interface(QMainWindow):
         dockwidget.setObjectName('dock_events')  # savestate
         self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
 
+        # channels
+        dockwidget = QDockWidget('Channels', self)
+        dockwidget.setWidget(self.channels_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_channels')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # electrodes
+        dockwidget = QDockWidget('Electrodes', self)
+        dockwidget.setWidget(self.electrodes_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName('dock_electrodes')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
         # files
         dockwidget = QDockWidget('Files', self)
         dockwidget.setWidget(t_files)
@@ -222,9 +246,18 @@ class Interface(QMainWindow):
 
         self.events_model = QSqlTableModel(self)
         self.events_model.setTable('events')
-
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
+
+        self.channels_model = QSqlTableModel(self)
+        self.channels_model.setTable('channels')
+        self.channels_view.setModel(self.channels_model)
+        self.channels_view.hideColumn(0)
+
+        self.electrodes_model = QSqlTableModel(self)
+        self.electrodes_model.setTable('electrodes')
+        self.electrodes_view.setModel(self.electrodes_model)
+        self.electrodes_view.hideColumn(0)
 
     def sql_commit(self):
         self.sql.commit()
@@ -274,7 +307,7 @@ class Interface(QMainWindow):
             self.show_events(item)
 
         elif item.t == 'recording':
-            pass
+            self.show_channels_electrodes(item)
 
         self.list_params()
         self.list_files()
@@ -478,6 +511,17 @@ class Interface(QMainWindow):
     def show_events(self, item):
         self.events_model.setFilter(f'run_id == {item.id}')
         self.events_model.select()
+
+    def show_channels_electrodes(self, item):
+        channels = item.channels
+        if channels is not None:
+            self.channels_model.setFilter(f'channel_group_id == {channels.id}')
+            self.channels_model.select()
+
+        electrodes = item.electrodes
+        if electrodes is not None:
+            self.electrodes_model.setFilter(f'electrode_group_id == {electrodes.id}')
+            self.electrodes_model.select()
 
     def exporting(self, checked=None, subj=None, sess=None, run=None):
 
