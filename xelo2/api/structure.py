@@ -651,7 +651,7 @@ def _get_dtypes(table):
 
 def _sort_subjects(subj):
     sessions = subj.list_sessions()
-    if len(sessions) == 0 or sessions[0] is None:
+    if len(sessions) == 0 or sessions[0].start_time is None:
         return datetime.now()
     else:
         return sessions[0].start_time

@@ -396,6 +396,33 @@ class Interface(QMainWindow):
                 w = Popup_Experimenters(obj, self)
                 parameters.update({'Experimenters': w})
 
+                subj = self.current('subjects')
+                session_name = []
+                for sess in subj.list_sessions():
+                    if sess.start_time is None:
+                        date_str = 'unknown date'
+                    else:
+                        date_str = f'{sess.start_time:%d %b %Y}'
+                    session_name.append(f'{sess.name} ({date_str})')
+
+                w = QComboBox()
+                w.addItems(session_name)
+                w.setCurrentText(session_name[0])
+                parameters.update({'Session': w})
+
+                protocol_name = ['Request from clinic', ]
+                for protocol in subj.list_protocols():
+                    if protocol.date_of_signature is None:
+                        date_str = 'unknown date'
+                    else:
+                        date_str = f'{protocol.date_of_signature:%d %b %Y}'
+                    protocol_name.append(f'{protocol.METC} ({date_str})')
+
+                w = QComboBox()
+                w.addItems(protocol_name)
+                w.setCurrentText(protocol_name[-1])
+                parameters.update({'Protocol': w})
+
                 if obj.task_name == 'mario':
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
 
@@ -515,13 +542,19 @@ class Interface(QMainWindow):
     def show_channels_electrodes(self, item):
         channels = item.channels
         if channels is not None:
-            self.channels_model.setFilter(f'channel_group_id == {channels.id}')
-            self.channels_model.select()
+            id = channels.id
+        else:
+            id = 0
+        self.channels_model.setFilter(f'channel_group_id == {id}')
+        self.channels_model.select()
 
         electrodes = item.electrodes
         if electrodes is not None:
-            self.electrodes_model.setFilter(f'electrode_group_id == {electrodes.id}')
-            self.electrodes_model.select()
+            id = electrodes.id
+        else:
+            id = 0
+        self.electrodes_model.setFilter(f'electrode_group_id == {id}')
+        self.electrodes_model.select()
 
     def exporting(self, checked=None, subj=None, sess=None, run=None):
 
@@ -704,13 +737,13 @@ class Interface(QMainWindow):
                 TABLES['sessions']['name']['values'],
                 0, False)
 
-        elif level == 'protocol':
+        elif level == 'protocols':
             current_subject = self.current('subjects')
             text, ok = QInputDialog.getItem(
                 self,
                 'Add New Protocol for {current_subject.code}',
                 'Protocol Name:',
-                TABLES['protocols']['name']['values'],
+                TABLES['protocols']['metc']['values'],
                 0, False)
 
         elif level == 'runs':
@@ -744,7 +777,7 @@ class Interface(QMainWindow):
                 self.journal.add(f'{repr(current_subject)}.add_session("{text}")')
                 self.list_sessions_and_protocols(current_subject)
 
-            elif level == 'protocol':
+            elif level == 'protocols':
                 current_subject.add_protocol(text)
                 self.journal.add(f'{repr(current_subject)}.add_protocol("{text}")')
                 self.list_sessions_and_protocols(current_subject)
