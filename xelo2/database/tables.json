@@ -252,9 +252,9 @@
             "name": "Start Time",
             "type": "DATETIME"
         },
-        "end_time": {
-            "name": "End Time",
-            "type": "DATETIME"
+        "duration": {
+            "name": "Duration",
+            "type": "FLOAT"
         },
         "xelo_stem": {
             "name": "Xelo xml file",

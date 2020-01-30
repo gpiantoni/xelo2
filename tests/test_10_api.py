@@ -66,11 +66,10 @@ def test_api_run():
     assert run.session == sess
 
     assert run.start_time == fake_time
-    assert run.end_time is None
+    assert run.duration is None
 
-    run.end_time = fake_time
-    assert run.end_time == fake_time
-    assert sess.end_time == fake_time
+    run.duration = 10
+    assert run.duration == 10
 
     with raises(ValueError):
         sess.add_run('xxx')
@@ -180,7 +179,7 @@ def test_api_sorting():
     sess.add_run(
         'DTI',
         start_time=datetime(2000, 1, 1, 1, 1),
-        end_time=datetime(2000, 1, 1, 10, 1),
+        duration=300,
         )
     sess.add_run(
         'DTI',

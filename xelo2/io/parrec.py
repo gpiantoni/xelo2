@@ -19,7 +19,7 @@ def add_parrec_to_sess(sess, par_file):
     exam_date = datetime.strptime(hdr['exam_date'], '%Y.%m.%d / %H:%M:%S')
     # There is no time for individual runs, so we estimate an average duration of 4 minutes
     start_time = exam_date + timedelta(seconds=4 * 60 * hdr['acq_nr'])
-    end_time = start_time + timedelta(seconds=hdr['scan_duration'])
+    duration = hdr['scan_duration']
 
     run = sess.add_run(info['task_name'], start_time, end_time)
 

@@ -490,14 +490,6 @@ class Session(Table_with_files):
         if query.next():
             return _datetime_out(query.value(0))
 
-    @property
-    def end_time(self):
-        query = QSqlQuery(f"""\
-            SELECT MAX(runs.end_time) FROM runs WHERE runs.session_id == {self.id}
-            """)
-        if query.next():
-            return _datetime_out(query.value(0))
-
     def list_runs(self):
 
         query = QSqlQuery(f"""\
@@ -512,11 +504,11 @@ class Session(Table_with_files):
                     session=self))
         return sorted(list_of_runs, key=_sort_starttime)
 
-    def add_run(self, task_name, start_time=None, end_time=None):
+    def add_run(self, task_name, start_time=None, duration=None):
 
         query = QSqlQuery(f"""\
-            INSERT INTO runs ("session_id", "task_name", "start_time", "end_time")
-            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_datetime(end_time)})""")
+            INSERT INTO runs ("session_id", "task_name", "start_time", "duration")
+            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_null(duration)})""")
 
         run_id = query.lastInsertId()
         if run_id is None:
