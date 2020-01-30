@@ -2,13 +2,15 @@ from json import dump
 from pathlib import Path
 from logging import getLogger
 
+from PyQt5.QtGui import QGuiApplication
+
 from ..api import list_subjects
 from .func import convert_func
 
 lg = getLogger(__name__)
 
 
-def create_bids(data_path, deface=True, subset=None):
+def create_bids(data_path, deface=True, subset=None, progress=None):
 
     if subset is not None:
         subset_subj = set(subset['subjects'])
@@ -21,6 +23,7 @@ def create_bids(data_path, deface=True, subset=None):
     # the dataset_description.json is used by find_root, in some subscripts
     _make_dataset_description(data_path)
 
+    i = 0
     for subj in list_subjects():
         if subset is not None and subj.id not in subset_subj:
             continue
@@ -40,6 +43,15 @@ def create_bids(data_path, deface=True, subset=None):
             for run in sess.list_runs():
                 if subset is not None and run.id not in subset_run:
                     continue
+
+                if progress is not None:
+                    progress.setValue(i)
+                    i += 1
+                    progress.setLabelText(f'Exporting "{subj.code}" / "{sess.name}" / "{run.task_name}"')
+                    QGuiApplication.processEvents()
+
+                    if progress.wasCanceled():
+                        return
 
                 acquisition = get_bids_acquisition(run)
 

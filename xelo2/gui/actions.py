@@ -9,7 +9,6 @@ from .utils import LEVELS
 
 def create_menubar(main):
     menubar = main.menuBar()
-    # menubar.clear()
 
     # FILE
     menu_db = menubar.addMenu('Database')
@@ -56,8 +55,8 @@ def create_menubar(main):
     menu_search.addAction(action_export)
 
     # io
-    menu_io = menubar.addMenu('Input / Output')
-    action_parrec = QAction('import PAR/REC folder', main)
+    menu_io = menubar.addMenu('Import ...')
+    action_parrec = QAction('PAR/REC folder', main)
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
 

@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMenu,
     QPushButton,
+    QProgressDialog,
     QDoubleSpinBox,
     QSpinBox,
     QTableView,
@@ -243,7 +244,6 @@ class Interface(QMainWindow):
         """
         self.sql = open_database(self.sqlite_file)
         self.sql.transaction()
-        self.list_subjects()
 
         self.events_model = QSqlTableModel(self)
         self.events_model.setTable('events')
@@ -259,6 +259,8 @@ class Interface(QMainWindow):
         self.electrodes_model.setTable('electrodes')
         self.electrodes_view.setModel(self.electrodes_model)
         self.electrodes_view.hideColumn(0)
+
+        self.list_subjects()
 
     def sql_commit(self):
         self.sql.commit()
@@ -717,8 +719,14 @@ class Interface(QMainWindow):
         if data_path == '':
             return
         lg.warning(repr(subset))
-        create_bids(Path(data_path), deface=False, subset=subset)
-        lg.warning('export finished')
+
+        progress = QProgressDialog('', 'Cancel', 0, len(subset['runs']), self)
+        progress.setWindowTitle('Converting to BIDS')
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
+
+        create_bids(Path(data_path), deface=False, subset=subset, progress=progress)
+        progress.setValue(len(subset['runs']))
 
     def new_item(self, checked=None, level=None):
 
@@ -827,10 +835,23 @@ class Interface(QMainWindow):
         par_folder = QFileDialog.getExistingDirectory()
         if par_folder == '':
             return
-        QGuiApplication.processEvents()
 
-        add_parrec_to_sess(sess, Path(par_folder))
+        list_parrec = list(Path(par_folder).glob('*.PAR'))
+        progress = QProgressDialog('', 'Cancel', 0, len(list_parrec), self)
+        progress.setWindowTitle(f'Importing PAR/REC files to "{sess.subject.code}"/"{sess.name}"')
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
 
+        for i, par_file in enumerate(list_parrec):
+            progress.setValue(i)
+            progress.setLabelText(f'Importing {par_file.name}')
+            QGuiApplication.processEvents()
+            add_parrec_to_sess(sess, par_file)
+
+            if progress.wasCanceled():
+                break
+
+        progress.setValue(i + 1)
         self.list_runs(sess)
 
     def delete_file(self, level_obj, file_obj):
