@@ -285,7 +285,7 @@ class Interface(QMainWindow):
             l.clear()
 
         to_select = None
-        for subj in list_subjects():
+        for subj in list_subjects(reverse=True):
             item = QListWidgetItem(subj.code)
             if subj.id in self.search.subjects:
                 highlight(item)
@@ -822,7 +822,6 @@ class Interface(QMainWindow):
         if result:
             format = get_new_file.format.currentText()
             path = get_new_file.filepath.text()
-            print(path)
             file_obj.path = path
             file_obj.format = format
 

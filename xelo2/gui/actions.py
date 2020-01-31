@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtSql import QSqlQuery
 
 from .utils import LEVELS
+from .summary import show_summary
 
 
 def create_menubar(main):
@@ -28,6 +29,12 @@ def create_menubar(main):
     action_close = QAction('Close', main)
     action_close.triggered.connect(main.sql_close)
     menu_db.addAction(action_close)
+
+    menu_db.addSeparator()
+
+    action_info = QAction('Information', main)
+    action_info.triggered.connect(lambda x: show_summary(main))
+    menu_db.addAction(action_info)
 
     # New
     menu_new = menubar.addMenu('Add ...')

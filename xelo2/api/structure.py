@@ -19,13 +19,13 @@ from ..database import TABLES
 lg = getLogger(__name__)
 
 
-def list_subjects():
+def list_subjects(reverse=False):
     query = QSqlQuery(f"SELECT id FROM subjects")
 
     list_of_subjects = []
     while query.next():
         list_of_subjects.append(Subject(id=query.value('id')))
-    return sorted(list_of_subjects, key=_sort_subjects)
+    return sorted(list_of_subjects, key=_sort_subjects, reverse=reverse)
 
 
 class Table():
@@ -644,7 +644,7 @@ def _get_dtypes(table):
 def _sort_subjects(subj):
     sessions = subj.list_sessions()
     if len(sessions) == 0 or sessions[0].start_time is None:
-        return datetime.now()
+        return datetime(1900, 1, 1, 0, 0, 0)
     else:
         return sessions[0].start_time
 
