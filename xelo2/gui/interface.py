@@ -321,10 +321,11 @@ class Interface(QMainWindow):
             self.show_events(item)
 
         elif item.t == 'recording':
-            self.show_channels_electrodes(item)
+            pass
 
         self.list_params()
         self.list_files()
+        self.show_channels_electrodes()
 
     def list_sessions_and_protocols(self, subj):
 
@@ -542,20 +543,22 @@ class Interface(QMainWindow):
         self.events_model.setFilter(f'run_id == {item.id}')
         self.events_model.select()
 
-    def show_channels_electrodes(self, item):
-        channels = item.channels
-        if channels is not None:
-            id = channels.id
-        else:
-            id = 0
+    def show_channels_electrodes(self):
+
+        item = self.current('recordings')
+        id = 0
+        if item is not None:
+            channels = item.channels
+            if channels is not None:
+                id = channels.id
         self.channels_model.setFilter(f'channel_group_id == {id}')
         self.channels_model.select()
 
-        electrodes = item.electrodes
-        if electrodes is not None:
-            id = electrodes.id
-        else:
-            id = 0
+        id = 0
+        if item is not None:
+            electrodes = item.electrodes
+            if electrodes is not None:
+                id = electrodes.id
         self.electrodes_model.setFilter(f'electrode_group_id == {id}')
         self.electrodes_model.select()
 

@@ -5,7 +5,8 @@ from logging import getLogger
 from PyQt5.QtGui import QGuiApplication
 
 from ..api import list_subjects
-from .func import convert_func
+from .mri import convert_mri
+from .ieeg import convert_ieeg
 
 lg = getLogger(__name__)
 
@@ -65,25 +66,14 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
                 for rec in run.list_recordings():
 
-                    files = rec.list_files()
-                    if len(files) == 0:
-                        lg.warning(f'No file for {rec}')
-                        continue
-                    elif len(files) > 1:
-                        lg.warning(f'Too many files for {rec}')  # TODO
-                        continue
+                    if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
+                        convert_mri(run, rec, mod_path, bids_run)
 
-                    file = files[0]
-                    if not Path(file.path).exists():
-                        lg.warning(f'{rec} does not exist')
-                        continue
-
-                    if file.format == 'parrec':
-                        lg.info(f'Converting {file}')
-                        convert_func(run, rec, file, mod_path, bids_run)
+                    elif rec.modality == 'ieeg':
+                        convert_ieeg(run, rec, mod_path, bids_run)
 
                     else:
-                        continue
+                        lg.warning(f'Unknown modality {rec.modality} for {rec}')
 
     # here the rest
     _make_README(data_path)

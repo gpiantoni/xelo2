@@ -92,7 +92,7 @@ def parse_table(db, table_name, v, issubtable=False):
             continue  # TODO
 
         elif col_name.endswith('_id'):
-            if issubtable:
+            if issubtable and not col_name.endswith('_group_id'):  # channel_group_id and electrode_group_id are not unique
                 cmd.append(f'{col_name} INTEGER UNIQUE')
             else:
                 cmd.append(f'{col_name} INTEGER')
