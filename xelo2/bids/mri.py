@@ -2,6 +2,8 @@ from shutil import move
 from logging import getLogger
 from pathlib import Path
 
+from bidso.utils import remove_underscore
+
 from .io.parrec import convert_parrec_nibabel
 from .utils import find_next_value
 
@@ -9,6 +11,7 @@ lg = getLogger(__name__)
 
 
 def convert_mri(run, rec, dest_path, stem):
+    """Return base name for this run"""
 
     file = _select_parrec(rec)
     if file is None:
@@ -20,6 +23,8 @@ def convert_mri(run, rec, dest_path, stem):
     output_nii = find_next_value(output_nii)
 
     move(input_nii, output_nii)
+
+    return remove_underscore(output_nii)
 
 
 def _select_parrec(rec):

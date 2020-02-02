@@ -67,13 +67,17 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
-                        convert_mri(run, rec, mod_path, bids_run)
+                        base_name = convert_mri(run, rec, mod_path, bids_run)
 
                     elif rec.modality == 'ieeg':
-                        convert_ieeg(run, rec, mod_path, bids_run)
+                        base_name = convert_ieeg(run, rec, mod_path, bids_run)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
+                        continue
+
+                    if acquisition in ('ieeg', 'func'):
+                        convert_events(run, base_name)
 
     # here the rest
     _make_README(data_path)
