@@ -47,6 +47,8 @@ def export_database(OUTPUT_TSV):
 
             f.write('\t'.join(values) + '\n')
 
+    sort_tsv(OUTPUT_TSV)
+
 
 def _get_all_tables():
     """return the main tables and their subtables"""
@@ -88,6 +90,25 @@ def prepare_query(all_tables):
     return '\n'.join(q)
 
 
+def sort_tsv(tsv_file):
+    with tsv_file.open() as f:
+        lines = f.readlines()
+
+    with tsv_file.open('w+') as f:
+        f.write(lines[0])
+        f.write(''.join(sorted(lines[1:])))
+
+
 def columns(T):
-    cols = [x for x in T if not x.endswith('_id') and x not in ('subtables', 'when')]
+    cols = [x for x in T if not x.endswith('id') and x not in ('subtables', 'when')]
+
+    # add id at the end for sorting
+    TO_ADD = [
+        'id',
+        'channel_group_id',
+        'electrode_group_id',
+        ]
+    for v in TO_ADD:
+        if v in T:
+            cols.append(v)
     return cols

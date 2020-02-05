@@ -53,6 +53,7 @@ from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
+from ..io.tsv import export_database
 
 from .utils import LEVELS
 from .actions import create_menubar, Search
@@ -660,6 +661,8 @@ class Interface(QMainWindow):
 
             action_edit = QAction('Edit File', self)
             action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
+            action_copy = QAction('Copy Path to File', self)
+            action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_obj.path)))
             action_openfile = QAction('Open File', self)
             action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
             action_opendirectory = QAction('Open Containing Folder', self)
@@ -669,6 +672,7 @@ class Interface(QMainWindow):
 
             menu = QMenu('File Information', self)
             menu.addAction(action_edit)
+            menu.addAction(action_copy)
             menu.addAction(action_openfile)
             menu.addAction(action_opendirectory)
             menu.addSeparator()
@@ -860,6 +864,10 @@ class Interface(QMainWindow):
         level_obj.delete(file_obj)
 
     def closeEvent(self, event):
+
+        # temporary solution to make sure we don't lose info
+        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql_exported.tsv'))
+
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())
         self.journal.close()
@@ -1025,7 +1033,9 @@ def _session_name(sess):
 
 
 def _protocol_name(protocol):
-    if protocol.date_of_signature is None:
+    if protocol.METC == 'Request from clinic':
+        return 'Request from clinic'
+    elif protocol.date_of_signature is None:
         date_str = 'unknown date'
     else:
         date_str = f'{protocol.date_of_signature:%d %b %Y}'
