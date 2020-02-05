@@ -1,11 +1,22 @@
 from numpy import empty
 from wonambi import Dataset
+from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
+from logging import getLogger
+
+lg = getLogger(__name__)
 
 
 def read_events_from_ieeg(run, rec, file):
     """Make sure that rec.offset is in the good direction"""
-    d = Dataset(file.path)
+    try:
+        d = Dataset(file.path)
+    except UnrecognizedFormat:
+        lg.warning(f'cannot parse poorly edited BCI2000 file ({file.path})')
+        return None
+    except FileNotFoundError:
+        lg.warning(f'{file.path} does not exist')
+
     markers = d.read_markers()
 
     start_t = (run.start_time - d.header['start_time']).total_seconds() + rec.offset
@@ -27,6 +38,6 @@ def find_micromed_in_run(run):
     for rec in run.list_recordings():
         if rec.Manufacturer == 'Micromed':
             for file in rec.list_files():
-                if file.format == 'micromed':
+                if file.format in ('micromed', 'bci2000', 'blackrock'):
                     return rec, file
     return None, None
