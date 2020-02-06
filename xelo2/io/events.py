@@ -34,10 +34,9 @@ def read_events_from_ieeg(run, rec, file):
     return events
 
 
-def find_micromed_in_run(run):
+def find_eegfile_in_run(run):
     for rec in run.list_recordings():
-        if rec.Manufacturer == 'Micromed':
-            for file in rec.list_files():
-                if file.format in ('micromed', 'bci2000', 'blackrock'):
-                    return rec, file
+        for file in rec.list_files():
+            if file.format in ('micromed', 'bci2000', 'blackrock'):
+                return rec, file
     return None, None
