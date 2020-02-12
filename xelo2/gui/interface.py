@@ -54,9 +54,9 @@ from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
 
-from .utils import LEVELS
+from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search
-from .modal import NewFile, Popup_Experimenters
+from .modal import NewFile, Popup_Experimenters, Popup_Protocols
 from .journal import Journal
 
 
@@ -438,6 +438,8 @@ class Interface(QMainWindow):
 
                 w = Popup_Experimenters(obj, self)
                 parameters.update({'Experimenters': w})
+                w = Popup_Protocols(obj, self)
+                parameters.update({'Protocols': w})
 
                 subj = self.current('subjects')
                 session_name = []
@@ -449,15 +451,6 @@ class Interface(QMainWindow):
                 w.addItems(session_name)
                 w.setCurrentText(_session_name(obj.session))
                 parameters.update({'Session': w})
-
-                protocol_name = ['Request from clinic', ]
-                for protocol in subj.list_protocols():
-                    protocol_name.append(_protocol_name(protocol))
-
-                w = QComboBox()
-                w.addItems(protocol_name)
-                w.setCurrentText(protocol_name[-1])
-                parameters.update({'Protocol': w})
 
                 if obj.task_name == 'mario':
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
@@ -1056,13 +1049,3 @@ def _session_name(sess):
     else:
         date_str = f'{sess.start_time:%d %b %Y}'
     return f'{sess.name} ({date_str})'
-
-
-def _protocol_name(protocol):
-    if protocol.METC == 'Request from clinic':
-        return 'Request from clinic'
-    elif protocol.date_of_signature is None:
-        date_str = 'unknown date'
-    else:
-        date_str = f'{protocol.date_of_signature:%d %b %Y}'
-    return f'{protocol.METC} ({date_str})'

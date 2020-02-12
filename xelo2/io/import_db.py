@@ -64,7 +64,6 @@ def _import_main(INPUT):
 
             run = session.add_run(d['runs.task_name'])
             _setattr(run, 'runs', d)
-            print(d['runs.id'])
             if d['runs.protocol_id'] is not None:
                 if d['runs.protocol_id'] in PROTOCOLS:
                     d_protocol = _read_protocol(TSV_PROTOCOLS, d['runs.protocol_id'])

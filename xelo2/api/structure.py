@@ -456,7 +456,7 @@ class Run(Table_with_files):
             """)
 
     def list_protocols(self):
-        query = QSqlQuery(f"SELECT run_id FROM runs_protocols WHERE run_id == {self.id}")
+        query = QSqlQuery(f"SELECT protocol_id FROM runs_protocols WHERE run_id == {self.id}")
         list_of_protocols = []
         while query.next():
             list_of_protocols.append(
@@ -470,6 +470,7 @@ class Protocol(Table_with_files):
     def __init__(self, id, subject=None):
         super().__init__(id)
         self.subject = subject
+
 
 class Session(Table_with_files):
     t = 'session'

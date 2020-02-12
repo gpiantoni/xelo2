@@ -12,8 +12,10 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import Qt
 
+from functools import partial
+
 from ..database import TABLES
-from .utils import LEVELS
+from .utils import LEVELS, _protocol_name
 from ..api.filetype import parse_filetype
 
 
@@ -78,14 +80,16 @@ class Popup_Experimenters(QPushButton):
 
     def __init__(self, run, parent):
         self.run = run
-        self.parent = parent
         super().__init__(parent)
         self.set_title()
 
         self.menu = QMenu(self)
+        current_experimenters = run.experimenters
         for name in TABLES['experimenters']['name']['values']:
             action = QAction(name, self)
             action.setCheckable(True)
+            if name in current_experimenters:
+                action.setChecked(True)
             action.toggled.connect(self.action_toggle)
             self.menu.addAction(action)
         self.setMenu(self.menu)
@@ -98,11 +102,42 @@ class Popup_Experimenters(QPushButton):
                 names.append(action.text())
 
         self.run.experimenters = names
-        names_str = ','.join([f'"{x}"' for x in names])
-        self.parent.journal.add(f'{repr(self.run)}.experimenters = {names_str}')
 
         self.set_title()
         self.showMenu()
 
     def set_title(self):
         self.setText(', '.join(self.run.experimenters))
+
+
+class Popup_Protocols(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        subject = run.session.subject
+
+        current_protocols = [metc.id for metc in run.list_protocols()]
+        self.menu = QMenu(self)
+        for metc in subject.list_protocols():
+            action = QAction(_protocol_name(metc), self)
+            action.setCheckable(True)
+            if metc.id in current_protocols:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, metc=metc))
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked, metc):
+        if checked:
+            self.run.attach_protocol(metc)
+        else:
+            self.run.detach_protocol(metc)
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(', '.join(_protocol_name(x) for x in self.run.list_protocols()))
