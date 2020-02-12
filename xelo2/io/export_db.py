@@ -1,7 +1,6 @@
 from PyQt5.QtSql import QSqlQuery
 from ..database import TABLES
 
-MAIN_TABLES = ('subjects', 'sessions', 'runs', 'recordings')
 
 # channel_groups
 # channels
@@ -15,13 +14,22 @@ MAIN_TABLES = ('subjects', 'sessions', 'runs', 'recordings')
 
 
 def export_database(OUTPUT):
+    print('it does not export protocols without runs')
+
     OUTPUT.mkdir(exist_ok=True)
-    _export_main(OUTPUT / 'main.tsv')
+    _export_main(
+        OUTPUT / 'main.tsv',
+        ('subjects', 'sessions', 'runs', 'recordings'),
+        )
+    _export_main(
+        OUTPUT / 'protocols.tsv',
+        ('protocols', ),
+        )
 
 
-def _export_main(OUTPUT_TSV):
+def _export_main(OUTPUT_TSV, tables):
 
-    all_tables = _get_all_tables()
+    all_tables = _get_all_tables(tables)
     query_str = prepare_query(all_tables)
     query = QSqlQuery(query_str)
 
@@ -65,10 +73,10 @@ def _export_main(OUTPUT_TSV):
     sort_tsv(OUTPUT_TSV)
 
 
-def _get_all_tables():
+def _get_all_tables(tables):
     """return the main tables and their subtables"""
     ALL_TABLES = []
-    for table_name in MAIN_TABLES:
+    for table_name in tables:
         ALL_TABLES.append(table_name)
         for subtable in TABLES[table_name].get('subtables', []):
             ALL_TABLES.append(subtable)

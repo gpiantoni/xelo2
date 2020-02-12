@@ -53,7 +53,6 @@ from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
-from ..io.export import export_database
 
 from .utils import LEVELS
 from .actions import create_menubar, Search

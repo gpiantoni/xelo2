@@ -109,6 +109,11 @@ def test_api_protocol():
     run.detach_protocol(protocol_1)
     assert len(run.list_protocols()) == 0
 
+    run = sess.list_runs()[0]
+    run.attach_protocol(protocol_1)
+    run = sess.add_run('mario')
+    run.attach_protocol(protocol_2)
+
 
 def test_api_recording():
 
