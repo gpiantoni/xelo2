@@ -1,7 +1,17 @@
 from PyQt5.QtSql import QSqlQuery
 from ..database import TABLES
 
-MAIN_TABLES = ('subjects', 'sessions', 'protocols', 'runs', 'recordings')
+MAIN_TABLES = ('subjects', 'sessions', 'runs', 'recordings')
+
+# channel_groups
+# channels
+# electrode_groups
+# electrodes
+# events
+# experimenters
+# files
+# intended_for
+# protocols
 
 
 def export_database(OUTPUT_TSV):
@@ -77,7 +87,7 @@ def prepare_query(all_tables):
             continue
         elif '_' in table:
             main_table = table.split('_')[0][:-1]
-        elif table in ('sessions', 'protocols'):
+        elif table in 'sessions':
             main_table = 'subject'
         elif table == 'runs':
             main_table = 'session'
@@ -105,6 +115,7 @@ def columns(T):
     # add id at the end for sorting
     TO_ADD = [
         'id',
+        'protocol_id',
         'channel_group_id',
         'electrode_group_id',
         ]

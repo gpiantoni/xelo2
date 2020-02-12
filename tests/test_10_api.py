@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from pytest import raises
+from pytest import raises, fixture
 from numpy import empty
 
 from xelo2.database.create import open_database
@@ -9,8 +9,12 @@ from xelo2.api.filetype import parse_filetype
 from .paths import DB_PATH, TRC_PATH
 
 
-def test_api_subject():
-    open_database(DB_PATH)
+@fixture(scope="module")
+def db():
+    return open_database(DB_PATH)
+
+
+def test_api_subject(db):
 
     subj = Subject.add('subject_test')
     assert subj.id == 1
@@ -230,7 +234,7 @@ def test_api_electrodes_channels():
         chan.data = values
 
 
-def test_api_electrodes_channels_attach():
+def test_api_electrodes_channels_attach(db):
 
     subj = Subject.add('Subj_with_ieeg')
     sess = subj.add_session('OR')
@@ -252,3 +256,5 @@ def test_api_electrodes_channels_attach():
 
     recording.detach_channels()
     assert recording.channels is None
+
+    db.commit()

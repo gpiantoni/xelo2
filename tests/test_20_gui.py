@@ -5,12 +5,6 @@ from xelo2.gui.interface import Interface
 from .paths import DB_PATH
 
 
-def test_setup_database():
-    create_database(DB_PATH)
-    open_database(DB_PATH)
-
-
 def test_open_interface(qtbot):
     main = Interface(DB_PATH)
     qtbot.addWidget(main)
-
