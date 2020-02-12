@@ -61,6 +61,8 @@ from .modal import NewFile, Popup_Experimenters
 from .journal import Journal
 
 
+EXTRA_LEVELS = ('channels', 'electrodes')
+
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
 
@@ -76,10 +78,14 @@ class Interface(QMainWindow):
 
         lists = {}
         groups = {}
-        for k in LEVELS:
+        for k in LEVELS + EXTRA_LEVELS:
             groups[k] = QGroupBox(k.capitalize())
             lists[k] = QListWidget()
-            lists[k].currentItemChanged.connect(self.proc_all)
+            if k in LEVELS:
+                lists[k].currentItemChanged.connect(self.proc_all)
+            elif k in EXTRA_LEVELS:
+                lists[k].currentItemChanged.connect(self.show_channels_electrodes)
+
             # right click
             lists[k].setContextMenuPolicy(Qt.CustomContextMenu)
             lists[k].customContextMenuRequested.connect(partial(self.rightclick_list, level=k))
@@ -150,12 +156,18 @@ class Interface(QMainWindow):
         col_sessmetc.addWidget(groups['sessions'])
         col_sessmetc.addWidget(groups['protocols'])
 
+        # recordings, channels and electrodes
+        col_recchanelec = QVBoxLayout()
+        col_recchanelec.addWidget(groups['recordings'])
+        col_recchanelec.addWidget(groups['channels'])
+        col_recchanelec.addWidget(groups['electrodes'])
+
         # TOP PANELS
         layout_top = QHBoxLayout()
         layout_top.addWidget(groups['subjects'])
         layout_top.addLayout(col_sessmetc)
         layout_top.addWidget(groups['runs'])
-        layout_top.addWidget(groups['recordings'])
+        layout_top.addLayout(col_recchanelec)
 
         # FULL LAYOUT
         # central widget
@@ -322,15 +334,14 @@ class Interface(QMainWindow):
             self.show_events(item)
 
         elif item.t == 'recording':
-            pass
+            self.list_channels_electrodes(item)
 
         self.list_params()
         self.list_files()
-        self.show_channels_electrodes()
 
     def list_sessions_and_protocols(self, subj):
 
-        for l in ('sessions', 'protocols', 'runs', 'recordings'):
+        for l in LEVELS[1:]:
             self.lists[l].clear()
 
         for sess in subj.list_sessions():
@@ -369,6 +380,27 @@ class Interface(QMainWindow):
                 highlight(item)
             self.lists['recordings'].addItem(item)
         self.lists['recordings'].setCurrentRow(0)
+
+    def list_channels_electrodes(self, recording):
+        self.lists['channels'].clear()
+        self.lists['electrodes'].clear()
+        self.channels_model.setFilter('channel_group_id == 0')
+        self.channels_model.select()
+        self.electrodes_model.setFilter('electrode_group_id == 0')
+        self.electrodes_model.select()
+
+        sess = self.current('sessions')
+
+        if recording.modality == 'ieeg':
+            for chan in sess.list_channels():
+                item = QListWidgetItem(str(chan))  # TODO: more informative name
+                item.setData(Qt.UserRole, chan)
+                self.lists['channels'].addItem(item)
+
+            for elec in sess.list_electrodes():
+                item = QListWidgetItem(str(elec))  # TODO: more informative name
+                item.setData(Qt.UserRole, elec)
+                self.lists['electrodes'].addItem(item)
 
     def list_params(self):
 
@@ -544,24 +576,20 @@ class Interface(QMainWindow):
         self.events_model.setFilter(f'run_id == {item.id}')
         self.events_model.select()
 
-    def show_channels_electrodes(self):
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def show_channels_electrodes(self, current=None, previous=None):
+        if current is None:
+            return
 
-        item = self.current('recordings')
-        id = 0
-        if item is not None:
-            channels = item.channels
-            if channels is not None:
-                id = channels.id
-        self.channels_model.setFilter(f'channel_group_id == {id}')
-        self.channels_model.select()
+        item = current.data(Qt.UserRole)
 
-        id = 0
-        if item is not None:
-            electrodes = item.electrodes
-            if electrodes is not None:
-                id = electrodes.id
-        self.electrodes_model.setFilter(f'electrode_group_id == {id}')
-        self.electrodes_model.select()
+        if item.t == 'channel_group':
+            self.channels_model.setFilter(f'channel_group_id == {item.id}')
+            self.channels_model.select()
+
+        elif item.t == 'electrode_group':
+            self.electrodes_model.setFilter(f'electrode_group_id == {item.id}')
+            self.electrodes_model.select()
 
     def exporting(self, checked=None, subj=None, sess=None, run=None):
 
@@ -835,7 +863,6 @@ class Interface(QMainWindow):
         self.list_files()
 
     def io_parrec(self):
-
         sess = self.current('sessions')
 
         par_folder = QFileDialog.getExistingDirectory()

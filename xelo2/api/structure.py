@@ -504,6 +504,16 @@ class Session(Table_with_files):
                     session=self))
         return sorted(list_of_runs, key=_sort_starttime)
 
+    def list_channels(self):
+
+        chan_ids = list_channels_electrodes(self.id, name='channel')
+        return [Channels(id=id_) for id_ in chan_ids]
+
+    def list_electrodes(self):
+
+        elec_ids = list_channels_electrodes(self.id, name='electrode')
+        return [Electrodes(id=id_) for id_ in elec_ids]
+
     def add_run(self, task_name, start_time=None, duration=None):
 
         query = QSqlQuery(f"""\
@@ -708,3 +718,22 @@ def _create_query(row):
     values_str = ', '.join(values)
 
     return columns_str, values_str
+
+
+def list_channels_electrodes(session_id, name='channel'):
+
+    query = QSqlQuery(f"""\
+        SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
+        JOIN recordings ON recordings_ieeg.recording_id == recordings.id
+        JOIN runs ON runs.id == recordings.run_id
+        WHERE recordings.modality == 'ieeg'
+        AND runs.session_id == {session_id}
+        ORDER BY runs.start_time""")
+
+    list_of_items = []
+    while query.next():
+        val = query.value(0)
+        if val == '':
+            continue
+        list_of_items.append(int(val))
+    return list_of_items

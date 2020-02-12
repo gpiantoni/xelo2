@@ -302,6 +302,7 @@
                     "type": "TEXT",
                     "values": [
                         "arm",
+                        "elbow",
                         "foot",
                         "hand",
                         "indexfinger",
@@ -679,6 +680,7 @@
             "values": [
                 "Flowmanager",
                 "Anna",
+                "Anouck",
                 "Dora",
                 "Efraim",
                 "Elmar",
