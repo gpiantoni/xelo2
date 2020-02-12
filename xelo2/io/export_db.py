@@ -14,7 +14,12 @@ MAIN_TABLES = ('subjects', 'sessions', 'runs', 'recordings')
 # protocols
 
 
-def export_database(OUTPUT_TSV):
+def export_database(OUTPUT):
+    OUTPUT.mkdir(exist_ok=True)
+    _export_main(OUTPUT / 'main.tsv')
+
+
+def _export_main(OUTPUT_TSV):
 
     all_tables = _get_all_tables()
     query_str = prepare_query(all_tables)

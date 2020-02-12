@@ -53,7 +53,7 @@ from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
-from ..io.tsv import export_database
+from ..io.export import export_database
 
 from .utils import LEVELS
 from .actions import create_menubar, Search
@@ -893,7 +893,7 @@ class Interface(QMainWindow):
     def closeEvent(self, event):
 
         # temporary solution to make sure we don't lose info
-        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql_exported.tsv'))
+        # export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql_exported.tsv'))
 
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())

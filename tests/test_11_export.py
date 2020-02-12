@@ -1,6 +1,28 @@
+from xelo2.database.create import open_database
+from xelo2.io.export_db import export_database
+from xelo2.io.import_db import import_database
 
-def _compare_tables():
-    with open(export_dir / 'sql_test2.tsv') as f1, open(export_dir / 'sql_test.tsv') as f0:
+from .paths import DB_PATH, EXPORT_0, EXPORT_1, EXPORT_DB
+
+
+def test_import_export():
+    open_database(DB_PATH)
+    export_database(EXPORT_0)
+
+    import_database(EXPORT_0, EXPORT_DB)
+    export_database(EXPORT_1)
+
+    _compare_tables(EXPORT_0, EXPORT_1)
+
+
+def _compare_tables(PATH_0, PATH_1):
+    for name in PATH_0.glob('*.tsv'):
+        _compare_table(name, PATH_1 / name.name)
+
+
+def _compare_table(PATH_0, PATH_1):
+
+    with PATH_0.open() as f1, PATH_1.open() as f0:
         header = f0.readline()[:-1].split('\t')
         header = f1.readline()[:-1].split('\t')
         id_codes = [i for i, h in enumerate(header) if h.endswith('id')]

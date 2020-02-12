@@ -1,14 +1,28 @@
+from pathlib import Path
+from datetime import datetime, date
 
-def import():
-    db.rollback()
-    db.transaction()
+
+from ..api.structure import Subject
+from ..database.create import create_database, open_database
+
+
+def import_database(INPUT, db_file):
+    INPUT = Path(INPUT)
+    create_database(db_file)
+    db = open_database(db_file)
+    _import_main(INPUT / 'main.tsv')
+
+    db.commit()
+
+
+def _import_main(TSV_MAIN):
 
     with TSV_MAIN.open() as f:
         header = f.readline()[:-1].split('\t')
 
         for l in f:
             values = l[:-1].split('\t')
-            values = [None if v == '' else v for v in values ]
+            values = [None if v == '' else v for v in values]
             d = {k: v for k, v in zip(header, values)}
 
             try:
