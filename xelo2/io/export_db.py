@@ -14,7 +14,6 @@ from ..database import TABLES
 
 
 def export_database(OUTPUT):
-    print('it does not export protocols without runs')
 
     OUTPUT.mkdir(exist_ok=True)
     _export_main(

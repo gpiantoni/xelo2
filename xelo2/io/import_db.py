@@ -10,20 +10,42 @@ def import_database(INPUT, db_file):
     create_database(db_file)
     db = open_database(db_file)
 
-    _import_main(INPUT)
-
-    db.commit()
-
-
-def _import_main(INPUT):
-
     IDS = {
         'subjects': {},
         'sessions': {},
         'runs': {},
         'recordings': {},
+        'protocols': {},
         }
-    TSV_MAIN = INPUT / 'main.tsv'
+
+    IDS = _import_main(
+        INPUT / 'main.tsv',
+        IDS)
+    IDS = _import_protocols(
+        INPUT / 'protocols.tsv',
+        IDS)
+
+    db.commit()
+
+
+def _import_protocols(TSV_FILE, IDS):
+
+    f = TSV_FILE.open()
+    header = f.readline()[:-1].split('\t')
+
+    for l in f:
+        values = l[:-1].split('\t')
+        values = [None if v == '' else v for v in values]
+        d = {k: v for k, v in zip(header, values)}
+
+        subj = IDS['subjects'][d['protocols.subject_id']]
+
+        protocol = subj.add_protocol(d['protocols.metc'])
+        _setattr(protocol, 'protocols', d)
+        IDS['protocols'][d['protocols.id']] = protocol
+
+
+def _import_main(TSV_MAIN):
 
     f_main = TSV_MAIN.open()
     header = f_main.readline()[:-1].split('\t')
