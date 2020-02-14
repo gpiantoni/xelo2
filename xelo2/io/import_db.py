@@ -1,13 +1,11 @@
 from pathlib import Path
 from datetime import datetime, date
 
-
 from ..api.structure import Subject
 from ..database.create import create_database, open_database
 
 
 def import_database(INPUT, db_file):
-    print('it does not import protocols without a corresponding run')
     INPUT = Path(INPUT)
     create_database(db_file)
     db = open_database(db_file)
@@ -19,9 +17,13 @@ def import_database(INPUT, db_file):
 
 def _import_main(INPUT):
 
-    PROTOCOLS = {}
+    IDS = {
+        'subjects': {},
+        'sessions': {},
+        'runs': {},
+        'recordings': {},
+        }
     TSV_MAIN = INPUT / 'main.tsv'
-    TSV_PROTOCOLS = INPUT / 'protocols.tsv'
 
     f_main = TSV_MAIN.open()
     header = f_main.readline()[:-1].split('\t')
@@ -31,72 +33,55 @@ def _import_main(INPUT):
         values = [None if v == '' else v for v in values]
         d = {k: v for k, v in zip(header, values)}
 
-        try:
-            subj = Subject(code=d['subjects.code'])
-        except ValueError:
-            subj = Subject.add(d['subjects.code'])
+        if d['subjects.id'] in IDS['subjects']:
+            subj = IDS['subjects'][d['subjects.id']]
 
-            previous_session_id = None
-            previous_session = None
+        else:
+            subj = Subject.add(d['subjects.code'])
+            IDS['subjects'][d['subjects.id']] = subj
             _setattr(subj, 'subjects', d)
 
         if d['sessions.id'] is None:
             continue
 
-        if previous_session_id is None or previous_session_id != d['sessions.id']:
-            previous_session_id = d['sessions.id']
-
-            session = subj.add_session(d['sessions.name'])
-            _setattr(session, 'sessions', d)
-            previous_session = session
-
-            previous_run_id = None
-            previous_run = None
+        elif d['sessions.id'] in IDS['sessions']:
+            session = IDS['sessions'][d['sessions.id']]
 
         else:
-            session = previous_session
+            session = subj.add_session(d['sessions.name'])
+            IDS['sessions'][d['sessions.id']] = session
+            _setattr(session, 'sessions', d)
 
         if d['runs.id'] is None:
             continue
 
-        if previous_run_id is None or previous_run_id != d['runs.id']:
-            previous_run_id = d['runs.id']
-
-            run = session.add_run(d['runs.task_name'])
-            _setattr(run, 'runs', d)
-            if d['runs.protocol_id'] is not None:
-                if d['runs.protocol_id'] in PROTOCOLS:
-                    d_protocol = _read_protocol(TSV_PROTOCOLS, d['runs.protocol_id'])
-                    PROTOCOLS[d['runs.protocol_id']] = subj.add_protocol(d_protocol['protocols.metc'])
-                    _setattr(PROTOCOLS[d['runs.protocol_id']], 'protocols', d_protocol)
-                run.attach_protocol(PROTOCOLS[d['runs.protocol_id']])
-
-            previous_run = run
-
-            previous_recording_id = None
-            previous_recording = None
+        elif d['runs.id'] in IDS['runs']:
+            run = IDS['runs'][d['runs.id']]
 
         else:
-            run = previous_run
+            run = session.add_run(d['runs.task_name'])
+            IDS['runs'][d['runs.id']] = run
+            _setattr(run, 'runs', d)
 
         if d['recordings.id'] is None:
             continue
 
-        if previous_recording_id is None or previous_recording_id != d['recordings.id']:
-            previous_recording_id = d['recordings.id']
+        elif d['recordings.id'] in IDS['recordings']:
+            recording = IDS['recordings'][d['recordings.id']]
 
-            recording = run.add_recording(d['recordings.modality'])
-            _setattr(recording, 'recordings', d)
-            previous_recording = recording
         else:
-            recording = previous_recording
+            recording = run.add_recording(d['recordings.modality'])
+            IDS['recordings'][d['recordings.id']] = recording
+            _setattr(recording, 'recordings', d)
 
     f_main.close()
+
+    return IDS
 
 
 def _setattr(item, name, d):
     for k, v in d.items():
-        if k.split('.')[1] == 'id' or v is None:
+        if k.endswith('id') or v is None:
             continue
         if k.startswith(f'{name}'):
             if k.split('.')[1].startswith('date_of_'):  # TODO: it should look TABLES up

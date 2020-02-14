@@ -123,16 +123,8 @@ def sort_tsv(tsv_file):
 
 
 def columns(T):
-    cols = [x for x in T if not x.endswith('id') and x not in ('subtables', 'when')]
+    cols = [x for x in T if x not in ('subtables', 'when')]
 
-    # add id at the end for sorting
-    TO_ADD = [
-        'id',
-        'protocol_id',
-        'channel_group_id',
-        'electrode_group_id',
-        ]
-    for v in TO_ADD:
-        if v in T:
-            cols.append(v)
+    # put ids at the end because they are the least informative when sorting tsv
+    cols.sort(key=lambda x: x.endswith('id'))
     return cols

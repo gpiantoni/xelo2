@@ -22,7 +22,14 @@ def _compare_tables(PATH_0, PATH_1):
 
 def _compare_table(PATH_0, PATH_1):
 
-    with PATH_0.open() as f1, PATH_1.open() as f0:
+    with PATH_0.open() as f:
+        n_lines_0 = sum(1 for l in f)
+
+    with PATH_1.open() as f:
+        n_lines_1 = sum(1 for l in f)
+    assert n_lines_0 == n_lines_1
+
+    with PATH_0.open() as f0, PATH_1.open() as f1:
         header = f0.readline()[:-1].split('\t')
         header = f1.readline()[:-1].split('\t')
         id_codes = [i for i, h in enumerate(header) if h.endswith('id')]
