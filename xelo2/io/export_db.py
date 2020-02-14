@@ -24,6 +24,10 @@ def export_database(OUTPUT):
         OUTPUT / 'protocols.tsv',
         ('protocols', ),
         )
+    _export_main(
+        OUTPUT / 'runs_protocols.tsv',
+        ('runs_protocols', ),
+        )
 
 
 def _export_main(OUTPUT_TSV, tables):

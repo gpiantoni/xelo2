@@ -24,8 +24,25 @@ def import_database(INPUT, db_file):
     IDS = _import_protocols(
         INPUT / 'protocols.tsv',
         IDS)
+    _import_runs_protocols(
+        INPUT / 'runs_protocols.tsv',
+        IDS)
 
     db.commit()
+
+
+def _import_runs_protocols(TSV_FILE, IDS):
+
+    f = TSV_FILE.open()
+    header = f.readline()[:-1].split('\t')
+
+    for l in f:
+        values = l[:-1].split('\t')
+        values = [None if v == '' else v for v in values]
+        d = {k: v for k, v in zip(header, values)}
+        run = IDS['runs'][d['runs_protocols.run_id']]
+        protocol = IDS['protocols'][d['runs_protocols.protocol_id']]
+        run.attach_protocol(protocol)
 
 
 def _import_protocols(TSV_FILE, IDS):
@@ -43,6 +60,8 @@ def _import_protocols(TSV_FILE, IDS):
         protocol = subj.add_protocol(d['protocols.metc'])
         _setattr(protocol, 'protocols', d)
         IDS['protocols'][d['protocols.id']] = protocol
+
+    return IDS
 
 
 def _import_main(TSV_MAIN, IDS):
