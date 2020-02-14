@@ -42,7 +42,9 @@ def _compare_tables(PATH_0, PATH_1):
 
 
 def _compare_table(PATH_0, PATH_1):
-
+    """It does not check id values (because they might differ across tables).
+    This has the side effect that you cannot see if tables are linked correctly.
+    """
     with PATH_0.open() as f:
         n_lines_0 = sum(1 for l in f)
 

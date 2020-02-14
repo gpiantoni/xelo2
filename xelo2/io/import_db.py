@@ -152,8 +152,8 @@ def _import_main(TSV_MAIN, IDS):
 
         else:
             subj = Subject.add(d['subjects.code'])
-            IDS['subjects'][d['subjects.id']] = subj
             _setattr(subj, 'subjects', d)
+            IDS['subjects'][d['subjects.id']] = subj
 
         if d['sessions.id'] is None:
             continue
@@ -163,8 +163,8 @@ def _import_main(TSV_MAIN, IDS):
 
         else:
             session = subj.add_session(d['sessions.name'])
-            IDS['sessions'][d['sessions.id']] = session
             _setattr(session, 'sessions', d)
+            IDS['sessions'][d['sessions.id']] = session
 
         if d['runs.id'] is None:
             continue
@@ -174,8 +174,8 @@ def _import_main(TSV_MAIN, IDS):
 
         else:
             run = session.add_run(d['runs.task_name'])
-            IDS['runs'][d['runs.id']] = run
             _setattr(run, 'runs', d)
+            IDS['runs'][d['runs.id']] = run
 
         if d['recordings.id'] is None:
             continue
@@ -185,8 +185,12 @@ def _import_main(TSV_MAIN, IDS):
 
         else:
             recording = run.add_recording(d['recordings.modality'])
-            IDS['recordings'][d['recordings.id']] = recording
             _setattr(recording, 'recordings', d)
+            if d['recordings_ieeg.channel_group_id'] is not None:
+                recording.attach_channels(IDS['channels'][d['recordings_ieeg.channel_group_id']])
+            if d['recordings_ieeg.electrode_group_id'] is not None:
+                recording.attach_electrodes(IDS['electrodes'][d['recordings_ieeg.electrode_group_id']])
+            IDS['recordings'][d['recordings.id']] = recording
 
     return IDS
 
