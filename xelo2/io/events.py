@@ -16,6 +16,7 @@ def read_events_from_ieeg(run, rec, file):
         return None
     except FileNotFoundError:
         lg.warning(f'{file.path} does not exist')
+        return None
 
     markers = d.read_markers()
 

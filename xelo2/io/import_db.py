@@ -13,6 +13,7 @@ def import_database(INPUT, db_file):
     INPUT = Path(INPUT)
     create_database(db_file)
     db = open_database(db_file)
+    db.transaction()
 
     IDS = {
         'subjects': {},

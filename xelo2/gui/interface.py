@@ -58,8 +58,6 @@ from ..io.export_db import export_database
 from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search
 from .modal import NewFile, Popup_Experimenters, Popup_Protocols
-from .journal import Journal
-
 
 EXTRA_LEVELS = ('channels', 'electrodes')
 
@@ -70,8 +68,9 @@ lg = getLogger(__name__)
 class Interface(QMainWindow):
 
     def __init__(self, sqlite_file):
+        self.test = False
+
         self.sqlite_file = sqlite_file
-        self.journal = Journal(sqlite_file)
 
         super().__init__()
         self.setWindowTitle(sqlite_file.stem)
@@ -277,17 +276,15 @@ class Interface(QMainWindow):
 
     def sql_commit(self):
         self.sql.commit()
-        self.journal.add('sql.commit()')
-        self.journal.flush()
+
+        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
 
     def sql_rollback(self):
         self.sql.rollback()
-        self.journal.add('sql.rollback()')
         self.list_subjects()
 
     def sql_close(self):
         self.sql.close()
-        self.journal.add('sql.close()')
 
     def list_subjects(self, code_to_select=None):
         """
@@ -563,7 +560,6 @@ class Interface(QMainWindow):
 
         setattr(obj, value, x)
         cmd = f'{repr(obj)}.{value} = {x}'
-        self.journal.add(cmd)
 
     def show_events(self, item):
         self.events_model.setFilter(f'run_id == {item.id}')
@@ -814,27 +810,22 @@ class Interface(QMainWindow):
             if level == 'subjects':
                 code = text.strip()
                 Subject.add(code)
-                self.journal.add(f'Subject.add("{code}")')
                 self.list_subjects(code)
 
             elif level == 'sessions':
                 current_subject.add_session(text)
-                self.journal.add(f'{repr(current_subject)}.add_session("{text}")')
                 self.list_sessions_and_protocols(current_subject)
 
             elif level == 'protocols':
                 current_subject.add_protocol(text)
-                self.journal.add(f'{repr(current_subject)}.add_protocol("{text}")')
                 self.list_sessions_and_protocols(current_subject)
 
             elif level == 'runs':
                 current_session.add_run(text)
-                self.journal.add(f'{repr(current_session)}.add_run("{text}")')
                 self.list_runs(current_session)
 
             elif level == 'recordings':
                 current_run.add_recording(text)
-                self.journal.add(f'{repr(current_run)}.add_recording("{text}")')
                 self.list_recordings(current_run)
 
     def new_file(self, checked):
@@ -893,11 +884,9 @@ class Interface(QMainWindow):
     def closeEvent(self, event):
 
         # temporary solution to make sure we don't lose info
-        # export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql_exported.tsv'))
 
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())
-        self.journal.close()
 
         event.accept()
 
