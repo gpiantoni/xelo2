@@ -53,6 +53,7 @@ from ..api import list_subjects, Subject, Session, Run
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
+from ..io.export_db import export_database
 
 from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search
@@ -698,6 +699,13 @@ class Interface(QMainWindow):
             menu.addSeparator()
             menu.addAction(action_delete)
             menu.popup(self.t_files.mapToGlobal(pos))
+
+    def export_tsv(self):
+
+        tsv_path = QFileDialog.getExistingDirectory()
+        if tsv_path == '':
+            return
+        export_database(Path(tsv_path))
 
     def sql_search(self):
 

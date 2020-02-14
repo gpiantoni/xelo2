@@ -60,6 +60,7 @@ def _add_experimenters(TSV_FILE, IDS):
     for run_id, experimenters in EXP.items():
         IDS['runs'][run_id].experimenters = experimenters
 
+
 def _read_tsv(TSV_FILE):
 
     with TSV_FILE.open() as f:
