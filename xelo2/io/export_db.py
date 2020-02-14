@@ -3,13 +3,8 @@ from ..database import TABLES
 from collections import defaultdict
 
 
-# channel_groups
-# channels
-# electrode_groups
-# electrodes
-# events
 # experimenters
-# intended_for
+
 
 FILE_LEVELS = ('subject', 'session', 'protocol', 'run', 'recording')
 
@@ -23,6 +18,10 @@ def export_database(OUTPUT):
         'protocols.tsv': ('protocols', ),
         'runs_protocols.tsv': ('runs_protocols', ),
         'events.tsv': ('events', ),
+        'channels.tsv': ('channels', ),
+        'channel_groups.tsv': ('channel_groups', ),
+        'electrodes.tsv': ('electrodes', ),
+        'electrode_groups.tsv': ('electrode_groups', ),
         }
 
     for file_name, list_of_tables in TABLE_INFO.items():

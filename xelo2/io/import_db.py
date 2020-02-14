@@ -1,8 +1,8 @@
 from pathlib import Path
 from datetime import datetime, date
-from numpy import loadtxt, dtype, unique
+from numpy import dtype, unique, genfromtxt
 
-from ..api.structure import Subject
+from ..api.structure import Subject, Channels, Electrodes
 from ..database.create import create_database, open_database
 
 from .export_db import FILE_LEVELS, _get_table
@@ -19,7 +19,12 @@ def import_database(INPUT, db_file):
         'runs': {},
         'recordings': {},
         'protocols': {},
+        'channels': {},
+        'electrodes': {},
         }
+
+    for chan_elec in ('channel', 'electrode'):
+        IDS[f'{chan_elec}s'] = _add_channels_electrodes(INPUT, chan_elec)
 
     IDS = _import_main(
         INPUT / 'main.tsv',
@@ -55,6 +60,31 @@ def _read_tsv(TSV_FILE):
             yield d
 
 
+def _add_channels_electrodes(INPUT, NAME):
+    TSV_GROUP_FILE = INPUT / f'{NAME}_groups.tsv'
+    TSV_DATA_FILE = INPUT / f'{NAME}s.tsv'
+
+    IDS = {}
+
+    for d in _read_tsv(TSV_GROUP_FILE):
+        if NAME == 'channel':
+            item = Channels()
+        elif NAME == 'electrode':
+            item = Electrodes()
+
+        _setattr(item, f'{NAME}_groups', d)
+        IDS[d[f'{NAME}_groups.id']] = item
+
+    DTYPE = _get_dtype(TSV_DATA_FILE)
+
+    DATA = genfromtxt(TSV_DATA_FILE, dtype=DTYPE, skip_header=1, delimiter='\t')
+    for item_id in unique(DATA[f'{NAME}_group_id']):
+        item = IDS[item_id]
+        item.data = DATA[DATA[f'{NAME}_group_id'] == item_id]
+
+    return IDS
+
+
 def _get_dtype(TSV_FILE):
     with TSV_FILE.open() as f:
         header = f.readline()[:-1].split('\t')
@@ -75,10 +105,11 @@ def _get_dtype(TSV_FILE):
 
     return dtype(DTYPE)
 
+
 def _attach_events(TSV_FILE, IDS):
     DTYPE = _get_dtype(TSV_FILE)
 
-    EVENTS = loadtxt(TSV_FILE, dtype=DTYPE, skiprows=1, delimiter='\t')
+    EVENTS = genfromtxt(TSV_FILE, dtype=DTYPE, skip_header=1, delimiter='\t')
     for run_id in unique(EVENTS['run_id']):
         run = IDS['runs'][run_id]
         run.events = EVENTS[EVENTS['run_id'] == run_id]

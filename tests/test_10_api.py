@@ -247,6 +247,10 @@ def test_api_electrodes_channels_attach(db):
     recording = run.add_recording('ieeg')
 
     elec = Electrodes()
+    data = elec.empty(5)
+    data['name'] = ['a0', 'bb', 'cc', 'dd', 'ee']
+    data['x'] = range(5)
+    elec.data = data
 
     recording.attach_electrodes(elec)
     assert recording.electrodes.id == elec.id
@@ -255,11 +259,19 @@ def test_api_electrodes_channels_attach(db):
     assert recording.electrodes is None
 
     chan = Channels()
+    data = chan.empty(5)
+    data['name'] = ['a0', 'bb', 'cc', 'dd', 'ee']
+    data['type'] = 'SEEG'
+    chan.data = data
 
     recording.attach_channels(chan)
     assert recording.channels.id == chan.id
 
     recording.detach_channels()
     assert recording.channels is None
+
+    # so that it can be tested by export / import
+    recording.attach_channels(chan)
+    recording.attach_electrodes(elec)
 
     db.commit()
