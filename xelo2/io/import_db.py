@@ -45,7 +45,7 @@ def _import_protocols(TSV_FILE, IDS):
         IDS['protocols'][d['protocols.id']] = protocol
 
 
-def _import_main(TSV_MAIN):
+def _import_main(TSV_MAIN, IDS):
 
     f_main = TSV_MAIN.open()
     header = f_main.readline()[:-1].split('\t')
