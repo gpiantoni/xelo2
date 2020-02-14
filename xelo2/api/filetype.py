@@ -27,6 +27,12 @@ def parse_filetype(file_path):
     elif suffix == '.ns3':
         data_type = 'blackrock'
 
+    elif suffix == '.pdf':
+        data_type = 'pdf'
+
+    elif suffix in ('.doc', '.docx'):
+        data_type = 'docx'
+
     elif suffix == '':
         data_type = 'dicom'
 
