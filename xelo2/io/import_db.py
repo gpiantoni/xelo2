@@ -33,14 +33,14 @@ def import_database(INPUT, db_file):
 
 def _read_tsv(TSV_FILE):
 
-    f = TSV_FILE.open()
-    header = f.readline()[:-1].split('\t')
+    with TSV_FILE.open() as f:
+        header = f.readline()[:-1].split('\t')
 
-    for l in f:
-        values = l[:-1].split('\t')
-        values = [None if v == '' else v for v in values]
-        d = {k: v for k, v in zip(header, values)}
-        yield d
+        for l in f:
+            values = l[:-1].split('\t')
+            values = [None if v == '' else v for v in values]
+            d = {k: v for k, v in zip(header, values)}
+            yield d
 
 
 def _import_runs_protocols(TSV_FILE, IDS):
@@ -53,14 +53,7 @@ def _import_runs_protocols(TSV_FILE, IDS):
 
 def _import_protocols(TSV_FILE, IDS):
 
-    f = TSV_FILE.open()
-    header = f.readline()[:-1].split('\t')
-
-    for l in f:
-        values = l[:-1].split('\t')
-        values = [None if v == '' else v for v in values]
-        d = {k: v for k, v in zip(header, values)}
-
+    for d in _read_tsv(TSV_FILE):
         subj = IDS['subjects'][d['protocols.subject_id']]
 
         protocol = subj.add_protocol(d['protocols.metc'])
@@ -72,14 +65,7 @@ def _import_protocols(TSV_FILE, IDS):
 
 def _import_main(TSV_MAIN, IDS):
 
-    f_main = TSV_MAIN.open()
-    header = f_main.readline()[:-1].split('\t')
-
-    for l in f_main:
-        values = l[:-1].split('\t')
-        values = [None if v == '' else v for v in values]
-        d = {k: v for k, v in zip(header, values)}
-
+    for d in _read_tsv(TSV_MAIN):
         if d['subjects.id'] in IDS['subjects']:
             subj = IDS['subjects'][d['subjects.id']]
 
@@ -120,8 +106,6 @@ def _import_main(TSV_MAIN, IDS):
             recording = run.add_recording(d['recordings.modality'])
             IDS['recordings'][d['recordings.id']] = recording
             _setattr(recording, 'recordings', d)
-
-    f_main.close()
 
     return IDS
 
