@@ -9,7 +9,6 @@ from collections import defaultdict
 # electrodes
 # events
 # experimenters
-# files
 # intended_for
 
 FILE_LEVELS = ('subject', 'session', 'protocol', 'run', 'recording')
@@ -23,6 +22,7 @@ def export_database(OUTPUT):
         'main.tsv': ('subjects', 'sessions', 'runs', 'recordings'),
         'protocols.tsv': ('protocols', ),
         'runs_protocols.tsv': ('runs_protocols', ),
+        'events.tsv': ('events', ),
         }
 
     for file_name, list_of_tables in TABLE_INFO.items():

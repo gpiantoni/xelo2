@@ -1,10 +1,11 @@
 from pathlib import Path
 from datetime import datetime, date
+from numpy import loadtxt, dtype, unique
 
 from ..api.structure import Subject
 from ..database.create import create_database, open_database
 
-from .export_db import FILE_LEVELS
+from .export_db import FILE_LEVELS, _get_table
 
 
 def import_database(INPUT, db_file):
@@ -32,8 +33,12 @@ def import_database(INPUT, db_file):
         INPUT / 'runs_protocols.tsv',
         IDS)
 
+    # files
     for level in FILE_LEVELS:
         _attach_files(INPUT, level, IDS)
+
+    # events
+    _attach_events(INPUT / 'events.tsv', IDS)
 
     db.commit()
 
@@ -48,6 +53,35 @@ def _read_tsv(TSV_FILE):
             values = [None if v == '' else v for v in values]
             d = {k: v for k, v in zip(header, values)}
             yield d
+
+
+def _get_dtype(TSV_FILE):
+    with TSV_FILE.open() as f:
+        header = f.readline()[:-1].split('\t')
+
+    DTYPE = []
+    for h in header:
+        table_name, column_name = h.split('.')
+        info = _get_table(table_name)[column_name]
+
+        if info is None or info['type'].startswith('TEXT'):
+            format_ = '<U4096'
+        elif info['type'] == 'FLOAT':
+            format_ = '<f8'
+        else:
+            print(info)
+
+        DTYPE.append((column_name, format_))
+
+    return dtype(DTYPE)
+
+def _attach_events(TSV_FILE, IDS):
+    DTYPE = _get_dtype(TSV_FILE)
+
+    EVENTS = loadtxt(TSV_FILE, dtype=DTYPE, skiprows=1, delimiter='\t')
+    for run_id in unique(EVENTS['run_id']):
+        run = IDS['runs'][run_id]
+        run.events = EVENTS[EVENTS['run_id'] == run_id]
 
 
 def _attach_files(INPUT, level, IDS):

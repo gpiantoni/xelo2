@@ -3,6 +3,8 @@ from xelo2.io.export_db import export_database
 from xelo2.io.import_db import import_database
 from xelo2.api import list_subjects
 
+from numpy import empty
+
 from .paths import DB_PATH, EXPORT_0, EXPORT_1, EXPORT_DB, TRC_PATH
 
 
@@ -20,8 +22,18 @@ def test_import_export():
 
 
 def _add_items():
-    subj = list_subjects()[0]
+    subj = list_subjects()[2]
     subj.add_file('micromed', TRC_PATH)
+
+    sess = subj.list_sessions()[0]
+    run = sess.list_runs()[0]
+
+    events = run.events
+    events = empty(5, dtype=events.dtype)
+    events['onset'] = range(5)
+    events['duration'] = 2
+    events['trial_type'] = 'test 2'
+    run.events = events
 
 
 def _compare_tables(PATH_0, PATH_1):
