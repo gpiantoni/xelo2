@@ -21,7 +21,7 @@ def add_parrec_to_sess(sess, par_file):
     start_time = exam_date + timedelta(seconds=4 * 60 * hdr['acq_nr'])
     duration = hdr['scan_duration']
 
-    run = sess.add_run(info['task_name'], start_time, end_time)
+    run = sess.add_run(info['task_name'], start_time, duration)
 
     if info['task_name'] == 'motor':
         run.left_right = info['left_right']
@@ -52,6 +52,8 @@ def _get_MRI_info(hdr):
     elif ('circle' in protocol) or ('motor' in protocol):
         info['task_name'] = 'motor'
         info['modality'] = 'bold'
+        info['body_part'] = None
+        info['left_right'] = None
 
         if 'tongue' in protocol:
             info['body_part'] = 'tongue'
@@ -61,6 +63,12 @@ def _get_MRI_info(hdr):
             info['left_right'] = 'left'
         elif 'motorrhand' in protocol:
             info['body_part'] = 'hand'
+            info['left_right'] = 'right'
+        elif 'motorlfeet' in protocol:
+            info['body_part'] = 'foot'
+            info['left_right'] = 'left'
+        elif 'motorrfeet' in protocol:
+            info['body_part'] = 'foot'
             info['left_right'] = 'right'
         elif 'senslhand' in protocol:
             info['body_part'] = 'hand'
