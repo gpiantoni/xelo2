@@ -4,6 +4,8 @@ from datetime import datetime, date
 from ..api.structure import Subject
 from ..database.create import create_database, open_database
 
+from .export_db import FILE_LEVELS
+
 
 def import_database(INPUT, db_file):
     INPUT = Path(INPUT)
@@ -24,9 +26,14 @@ def import_database(INPUT, db_file):
     IDS = _import_protocols(
         INPUT / 'protocols.tsv',
         IDS)
+
+    # linking tables
     _import_runs_protocols(
         INPUT / 'runs_protocols.tsv',
         IDS)
+
+    for level in FILE_LEVELS:
+        _attach_files(INPUT, level, IDS)
 
     db.commit()
 
@@ -41,6 +48,15 @@ def _read_tsv(TSV_FILE):
             values = [None if v == '' else v for v in values]
             d = {k: v for k, v in zip(header, values)}
             yield d
+
+
+def _attach_files(INPUT, level, IDS):
+    TSV_FILE = INPUT / f'{level}s_files.tsv'
+    for d in _read_tsv(TSV_FILE):
+        item = IDS[f'{level}s'][d[f'{level}s_files.{level}_id']]
+        path_ = d[f'files.path']
+        format_ = d[f'files.format']
+        item.add_file(format_, path_)
 
 
 def _import_runs_protocols(TSV_FILE, IDS):
@@ -121,16 +137,3 @@ def _setattr(item, name, d):
                 v = datetime.fromisoformat(v)
 
             setattr(item, k.split('.')[1], v)
-
-
-def _read_protocol(tsv_protocol, protocol_id):
-    with tsv_protocol.open() as f:
-        header = f.readline()[:-1].split('\t')
-
-        for l in f:
-            values = l[:-1].split('\t')
-            values = [None if v == '' else v for v in values]
-            d = {k: v for k, v in zip(header, values)}
-
-            if d['protocols.id'] == protocol_id:
-                return d

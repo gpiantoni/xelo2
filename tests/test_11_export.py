@@ -1,18 +1,27 @@
 from xelo2.database.create import open_database
 from xelo2.io.export_db import export_database
 from xelo2.io.import_db import import_database
+from xelo2.api import list_subjects
 
-from .paths import DB_PATH, EXPORT_0, EXPORT_1, EXPORT_DB
+from .paths import DB_PATH, EXPORT_0, EXPORT_1, EXPORT_DB, TRC_PATH
 
 
 def test_import_export():
-    open_database(DB_PATH)
+    db = open_database(DB_PATH)
+
+    _add_items()  # add some random elements to test import and export
+    db.commit()
     export_database(EXPORT_0)
 
     import_database(EXPORT_0, EXPORT_DB)
     export_database(EXPORT_1)
 
     _compare_tables(EXPORT_0, EXPORT_1)
+
+
+def _add_items():
+    subj = list_subjects()[0]
+    subj.add_file('micromed', TRC_PATH)
 
 
 def _compare_tables(PATH_0, PATH_1):
