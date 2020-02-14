@@ -3,9 +3,6 @@ from ..database import TABLES
 from collections import defaultdict
 
 
-# experimenters
-
-
 FILE_LEVELS = ('subject', 'session', 'protocol', 'run', 'recording')
 
 
@@ -32,6 +29,9 @@ def export_database(OUTPUT):
         query_str, columns = prepare_query_files(level)
         _export_main(OUTPUT / f'{level}s_files.tsv', query_str, columns)
 
+        query_str, columns = prepare_query_experimenters()
+        _export_main(OUTPUT / 'experimenters.tsv', query_str, columns)
+
 
 def prepare_query_files(level):
 
@@ -47,6 +47,23 @@ def prepare_query_files(level):
     query_str = f"""\
         SELECT {level}s_files.{level}_id, files.format, files.path FROM {level}s_files
         JOIN files ON files.id == {level}s_files.file_id"""
+
+    return query_str, columns
+
+
+def prepare_query_experimenters():
+
+    columns = {
+        'runs_experimenters': [
+            'run_id',
+            ],
+        'experimenters': [
+            'name',
+            ],
+        }
+    query_str = """\
+        SELECT runs_experimenters.run_id, experimenters.name FROM runs_experimenters
+        JOIN experimenters ON runs_experimenters.experimenter_id == experimenters.id"""
 
     return query_str, columns
 

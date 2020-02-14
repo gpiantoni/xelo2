@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections import defaultdict
 from datetime import datetime, date
 from numpy import dtype, unique, genfromtxt
 
@@ -45,8 +46,19 @@ def import_database(INPUT, db_file):
     # events
     _attach_events(INPUT / 'events.tsv', IDS)
 
+    _add_experimenters(INPUT / 'experimenters.tsv', IDS)
+
     db.commit()
 
+
+def _add_experimenters(TSV_FILE, IDS):
+
+    EXP = defaultdict(list)
+    for l in _read_tsv(TSV_FILE):
+        EXP[l['runs_experimenters.run_id']].append(l['experimenters.name'])
+
+    for run_id, experimenters in EXP.items():
+        IDS['runs'][run_id].experimenters = experimenters
 
 def _read_tsv(TSV_FILE):
 
