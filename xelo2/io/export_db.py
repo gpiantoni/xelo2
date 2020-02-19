@@ -120,8 +120,6 @@ def _export_main(OUTPUT_TSV, query_str, columns):
 
             f.write('\t'.join([_str(x) for x in values]) + '\n')
 
-    sort_tsv(OUTPUT_TSV)
-
 
 def _get_all_tables(tables):
     """return the main tables and their subtables"""
@@ -161,15 +159,6 @@ def prepare_query_str(all_tables):
         q.append(f'LEFT JOIN {table} ON {main_table}s.id == {table}.{main_table}_id')
 
     return '\n'.join(q)
-
-
-def sort_tsv(tsv_file):
-    with tsv_file.open() as f:
-        lines = f.readlines()
-
-    with tsv_file.open('w+') as f:
-        f.write(lines[0])
-        f.write(''.join(sorted(lines[1:])))
 
 
 def get_columns(T):

@@ -102,6 +102,10 @@ def _read_info_from_ieeg(path_to_file, dtypes):
 
 
 def _prepare_values(run, info):
+    run_duration = run.duration
+    if run_duration is None:
+        run_duration = 0
+
     VALUES = [
         [
             '',
@@ -115,7 +119,7 @@ def _prepare_values(run, info):
         ],
         [
             'Duration',
-            f'{run.duration:.3f} s',
+            f'{run_duration:.3f} s',
             f'{info["duration"]:.3f} s',
         ],
         [
