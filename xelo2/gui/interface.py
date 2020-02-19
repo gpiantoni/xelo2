@@ -340,8 +340,10 @@ class Interface(QMainWindow):
 
     def list_sessions_and_protocols(self, subj):
 
-        for l in LEVELS[1:]:
-            self.lists[l].clear()
+        for level, l in self.lists.items():
+            if level in ('subjects', ):
+                continue
+            l.clear()
 
         for sess in subj.list_sessions():
             item = QListWidgetItem_time(sess, _session_name(sess))
@@ -358,8 +360,10 @@ class Interface(QMainWindow):
 
     def list_runs(self, sess):
 
-        for l in ('runs', 'recordings'):
-            self.lists[l].clear()
+        for level, l in self.lists.items():
+            if level in ('subjects', 'sessions', 'protocols'):
+                continue
+            l.clear()
 
         for run in sess.list_runs():
             item = QListWidgetItem_time(run, f'{run.task_name}')
@@ -370,7 +374,10 @@ class Interface(QMainWindow):
 
     def list_recordings(self, run):
 
-        self.lists['recordings'].clear()
+        for level, l in self.lists.items():
+            if level in ('subjects', 'sessions', 'protocols', 'runs'):
+                continue
+            l.clear()
 
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
@@ -381,8 +388,10 @@ class Interface(QMainWindow):
         self.lists['recordings'].setCurrentRow(0)
 
     def list_channels_electrodes(self, recording):
-        self.lists['channels'].clear()
-        self.lists['electrodes'].clear()
+        for level, l in self.lists.items():
+            if level in ('channels', 'electrodes'):
+                l.clear()
+
         self.channels_model.setFilter('channel_group_id == 0')
         self.channels_model.select()
         self.electrodes_model.setFilter('electrode_group_id == 0')

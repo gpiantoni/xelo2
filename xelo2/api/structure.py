@@ -179,7 +179,7 @@ class Table_with_files(Table):
         QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
 
 
-class NumpyTable(Table):
+class NumpyTable(Table_with_files):
     """Note that self.id points to the ID of the group
     """
 
