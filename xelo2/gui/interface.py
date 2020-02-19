@@ -546,7 +546,6 @@ class Interface(QMainWindow):
         self.t_params.blockSignals(False)
 
     def current(self, level):
-        assert level in LEVELS
 
         item = self.lists[level].currentItem()
         if item is not None:
@@ -722,7 +721,7 @@ class Interface(QMainWindow):
         else:
             current.data = X
             recording = self.current('recordings')
-            self.list_channels_electrodes(self, recording=recording)
+            self.list_channels_electrodes(recording=recording)
 
         self.modified()
 

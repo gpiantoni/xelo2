@@ -13,6 +13,7 @@ def load_tsv(fname, dtypes):
 
 
 def save_tsv(fname, X):
+    """TODO: This should be changed so that NaN are not represented"""
     savetxt(
         fname,
         X,
