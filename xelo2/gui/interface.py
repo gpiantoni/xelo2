@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QDateEdit,
     QDateTimeEdit,
+    QDialog,
     QDockWidget,
     QGroupBox,
     QFileDialog,
@@ -58,7 +59,7 @@ from ..io.export_db import export_database
 
 from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search, create_shortcuts
-from .modal import NewFile, Popup_Experimenters, Popup_Protocols
+from .modal import NewFile, Popup_Experimenters, Popup_Protocols, CompareEvents
 
 EXTRA_LEVELS = ('channels', 'electrodes')
 
@@ -965,7 +966,32 @@ class Interface(QMainWindow):
 
         progress.setValue(i + 1)
         self.list_runs(sess)
+        self.list_params()
         self.modified()
+
+    def io_events(self):
+        run = self.current('runs')
+        recording = self.current('recordings')
+
+        if recording is None or recording.modality != 'ieeg':
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        compare_events = CompareEvents(self, run, ieeg_files[0].path)
+        result = compare_events.exec()
+
+        if result == QDialog.Accepted:
+            run.start_time = compare_events.info['start_time']
+            run.duration = compare_events.info['duration']
+            run.events = compare_events.info['events']
+
+            self.modified()
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete(file_obj)

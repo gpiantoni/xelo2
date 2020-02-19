@@ -69,9 +69,12 @@ def create_menubar(main):
 
     # io
     menu_io = menubar.addMenu('Import ...')
-    action_parrec = QAction('PAR/REC folder', main)
+    action_parrec = QAction('PAR/REC folder ...', main)
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
+    action_events = QAction('events from IEEG recording', main)
+    action_events.triggered.connect(main.io_events)
+    menu_io.addAction(action_events)
 
 
 def create_shortcuts(main):

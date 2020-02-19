@@ -4,15 +4,22 @@ from PyQt5.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QGridLayout,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QMenu,
     QPushButton,
+    QSizePolicy,
+    QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
     )
 from PyQt5.QtCore import Qt
 
 from functools import partial
+from wonambi import Dataset
+from numpy import issubdtype, floating, integer, empty
 
 from ..database import TABLES
 from .utils import LEVELS, _protocol_name
@@ -74,6 +81,116 @@ class NewFile(QDialog):
 
             else:
                 self.format.setCurrentText(filetype)
+
+
+def _read_info_from_ieeg(path_to_file, dtypes):
+    """This could go to xelo2/io"""
+    d = Dataset(path_to_file)
+    mrk = d.read_markers()
+
+    ev = empty(len(mrk), dtype=dtypes)
+    ev['onset'] = [x['start'] for x in mrk]
+    ev['duration'] = [x['start'] for x in mrk]
+    ev['value'] = [x['name'] for x in mrk]
+
+    info = {
+        'start_time': d.header['start_time'],
+        'duration': d.header['n_samples'] / d.header['s_freq'],
+        'events': ev
+        }
+    return info
+
+
+def _prepare_values(run, info):
+    VALUES = [
+        [
+            '',
+            'Current Values',
+            'Imported Values'
+        ],
+        [
+            'Start Time',
+            str(run.start_time),
+            str(info['start_time']),
+        ],
+        [
+            'Duration',
+            f'{run.duration:.3f} s',
+            f'{info["duration"]:.3f} s',
+        ],
+        [
+            '# Events',
+            f'{len(run.events)}',
+            f'{len(info["events"])}',
+            ],
+        ]
+
+    return VALUES
+
+
+class CompareEvents(QDialog):
+    def __init__(self, parent, run, ieeg_file):
+        super().__init__(parent)
+
+        self.info = _read_info_from_ieeg(ieeg_file, run.events.dtype)
+
+        layout = QGridLayout(self)
+
+        VALUES = _prepare_values(run, self.info)
+        for i0, vals in enumerate(VALUES):
+            for i1, value in enumerate(vals):
+                label = QLabel(value)
+                label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                layout.addWidget(label, i0, i1)
+
+        layout.addWidget(make_table(run.events), i0 + 1, 1)
+        layout.addWidget(make_table(self.info['events']), i0 + 1, 2)
+
+        self.old = QPushButton('Keep old events')
+        self.old.clicked.connect(self.reject)
+        self.new = QPushButton('Use new events')
+        self.new.clicked.connect(self.accept)
+        layout.addWidget(self.old, i0 + 2, 1)
+        layout.addWidget(self.new, i0 + 2, 2)
+
+        self.setLayout(layout)
+
+
+def make_table(ev):
+    t0 = QTableWidget()
+    t0.horizontalHeader().setStretchLastSection(True)
+    t0.setColumnCount(len(ev.dtype.names))
+    t0.setHorizontalHeaderLabels(ev.dtype.names)
+    t0.verticalHeader().setVisible(False)
+    n_rows = min(len(ev), 10)
+    t0.setRowCount(n_rows)
+
+    for i0, name in enumerate(ev.dtype.names):
+        for i1 in range(n_rows):
+            v = ev[name][i1]
+
+            if issubdtype(ev.dtype[name].type, floating):
+                v = f'{v:.3f}'
+
+            elif issubdtype(ev.dtype[name].type, integer):
+                v = f'{v}'
+
+            item = QTableWidgetItem(v)
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            t0.setItem(i1, i0, item)
+
+    table = t0
+    table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+    table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    table.resizeColumnsToContents()
+    table.setFixedSize(
+        table.horizontalHeader().length() + table.verticalHeader().width(),
+        table.verticalHeader().length() + table.horizontalHeader().height())
+
+    return t0
 
 
 class Popup_Experimenters(QPushButton):
