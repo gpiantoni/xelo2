@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
     QMainWindow,
     QMenu,
+    QMessageBox,
     QPushButton,
     QProgressDialog,
     QDoubleSpinBox,
@@ -66,9 +67,10 @@ lg = getLogger(__name__)
 
 
 class Interface(QMainWindow):
+    test = False
+    unsaved_changes = False
 
     def __init__(self, sqlite_file):
-        self.test = False
 
         self.sqlite_file = sqlite_file
 
@@ -277,14 +279,14 @@ class Interface(QMainWindow):
     def sql_commit(self):
         self.sql.commit()
 
+        self.setWindowTitle(self.sqlite_file.stem)
+        self.unsaved_changes = False
+
         export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
 
     def sql_rollback(self):
         self.sql.rollback()
         self.list_subjects()
-
-    def sql_close(self):
-        self.sql.close()
 
     def list_subjects(self, code_to_select=None):
         """
@@ -559,7 +561,7 @@ class Interface(QMainWindow):
             x = f'{x}'
 
         setattr(obj, value, x)
-        cmd = f'{repr(obj)}.{value} = {x}'
+        self.modified()
 
     def show_events(self, item):
         self.events_model.setFilter(f'run_id == {item.id}')
@@ -730,6 +732,10 @@ class Interface(QMainWindow):
                 run=Run(id=run_id),
                 )
 
+    def modified(self):
+        self.unsaved_changes = True
+        self.setWindowTitle('*' + self.windowTitle())
+
     def do_export(self, checked=None):
 
         subset = {'subjects': [], 'sessions': [], 'runs': []}
@@ -883,7 +889,17 @@ class Interface(QMainWindow):
 
     def closeEvent(self, event):
 
-        # temporary solution to make sure we don't lose info
+        if self.unsaved_changes:
+            answer = QMessageBox.question(
+                self,
+                'Confirm Closing',
+                'There are unsaved changes. Are you sure you want to exit?',
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No)
+
+            if answer == QMessageBox.No:
+                event.ignore()
+                return
 
         settings.setValue('window/geometry', self.saveGeometry())
         settings.setValue('window/state', self.saveState())

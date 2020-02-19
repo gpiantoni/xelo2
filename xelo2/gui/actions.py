@@ -30,8 +30,8 @@ def create_menubar(main):
     action_export.triggered.connect(main.export_tsv)
     menu_db.addAction(action_export)
 
-    action_close = QAction('Close', main)
-    action_close.triggered.connect(main.sql_close)
+    action_close = QAction('Quit', main)
+    action_close.triggered.connect(main.close)
     menu_db.addAction(action_close)
 
     menu_db.addSeparator()
