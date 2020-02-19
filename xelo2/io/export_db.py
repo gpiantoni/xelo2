@@ -118,7 +118,7 @@ def _export_main(OUTPUT_TSV, query_str, columns):
                     else:
                         print(TABLE_INFO[column_name]['type'])
 
-            f.write('\t'.join(values) + '\n')
+            f.write('\t'.join([_str(x) for x in values]) + '\n')
 
     sort_tsv(OUTPUT_TSV)
 
@@ -178,3 +178,10 @@ def get_columns(T):
     # put ids at the end because they are the least informative when sorting tsv
     cols.sort(key=lambda x: x.endswith('id'))
     return cols
+
+
+def _str(s):
+    if s is None:
+        return ''
+    else:
+        return s

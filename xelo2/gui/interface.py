@@ -50,14 +50,14 @@ from PyQt5.QtSql import (
     QSqlTableModel,
     )
 
-from ..api import list_subjects, Subject, Session, Run
+from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
 from ..io.export_db import export_database
 
 from .utils import LEVELS, _protocol_name
-from .actions import create_menubar, Search
+from .actions import create_menubar, Search, create_shortcuts
 from .modal import NewFile, Popup_Experimenters, Popup_Protocols
 
 EXTRA_LEVELS = ('channels', 'electrodes')
@@ -248,6 +248,7 @@ class Interface(QMainWindow):
         self.exports = []
 
         create_menubar(self)
+        create_shortcuts(self)
         self.search = Search()
 
         self.sql_access()
@@ -402,12 +403,12 @@ class Interface(QMainWindow):
 
         if recording.modality == 'ieeg':
             for chan in sess.list_channels():
-                item = QListWidgetItem(chan.name)
+                item = QListWidgetItem(_name(chan.name))
                 item.setData(Qt.UserRole, chan)
                 self.lists['channels'].addItem(item)
 
             for elec in sess.list_electrodes():
-                item = QListWidgetItem(elec.name)
+                item = QListWidgetItem(_name(elec.name))
                 item.setData(Qt.UserRole, elec)
                 self.lists['electrodes'].addItem(item)
 
@@ -473,28 +474,28 @@ class Interface(QMainWindow):
                 if obj.modality == 'ieeg':
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
 
-                sess = self.current('sessions')
-                chan_name = []
-                for chan in sess.list_channels():
-                    chan_name.append(chan.name)
+                    sess = self.current('sessions')
+                    chan_name = []
+                    for chan in sess.list_channels():
+                        chan_name.append(_name(chan.name))
 
-                w = QComboBox()
-                w.addItems(chan_name)
-                channels = obj.channels
-                if channels is not None:
-                    w.setCurrentText(channels.name)
-                parameters.update({'Recordings': w})
+                    w = QComboBox()
+                    w.addItems(chan_name)
+                    channels = obj.channels
+                    if channels is not None:
+                        w.setCurrentText(_name(channels.name))
+                    parameters.update({'Channels': w})
 
-                elec_name = []
-                for elec in sess.list_electrodes():
-                    elec_name.append(elec.name)
+                    elec_name = []
+                    for elec in sess.list_electrodes():
+                        elec_name.append(_name(elec.name))
 
-                w = QComboBox()
-                w.addItems(elec_name)
-                electrodes = obj.electrodes
-                if electrodes is not None:
-                    w.setCurrentText(electrodes.name)
-                parameters.update({'Recordings': w})
+                    w = QComboBox()
+                    w.addItems(elec_name)
+                    electrodes = obj.electrodes
+                    if electrodes is not None:
+                        w.setCurrentText(_name(electrodes.name))
+                    parameters.update({'Electrodes': w})
 
                 if obj.modality in ('bold', 'epi'):
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj, self))
@@ -668,11 +669,25 @@ class Interface(QMainWindow):
         else:
             obj = item.data(Qt.UserRole)
 
+            if obj.t in ('channel_group', 'electrode_group'):
+                action_rename = QAction('Rename', self)
+                action_rename.triggered.connect(lambda x: self.rename_item(obj))
+                menu.addAction(action_rename)
             action_delete = QAction('Delete', self)
             action_delete.triggered.connect(lambda x: self.delete_item(obj))
             menu.addAction(action_delete)
 
         menu.popup(self.lists[level].mapToGlobal(pos))
+
+    def rename_item(self, item):
+        text, ok = QInputDialog.getText(
+            self,
+            f'Rename {item.t.split("_")[0]}',
+            'New title:',
+            )
+
+        if ok and text != '':
+            item.name = text
 
     def delete_item(self, item):
         item.delete()
@@ -811,7 +826,7 @@ class Interface(QMainWindow):
             current_subject = self.current('subjects')
             text, ok = QInputDialog.getItem(
                 self,
-                'Add New Session for {current_subject.code}',
+                f'Add New Session for {current_subject.code}',
                 'Session Name:',
                 TABLES['sessions']['name']['values'],
                 0, False)
@@ -820,7 +835,7 @@ class Interface(QMainWindow):
             current_subject = self.current('subjects')
             text, ok = QInputDialog.getItem(
                 self,
-                'Add New Protocol for {current_subject.code}',
+                f'Add New Protocol for {current_subject.code}',
                 'Protocol Name:',
                 TABLES['protocols']['metc']['values'],
                 0, False)
@@ -830,7 +845,7 @@ class Interface(QMainWindow):
 
             text, ok = QInputDialog.getItem(
                 self,
-                'Add New Run for {current_session.name}',
+                f'Add New Run for {current_session.name}',
                 'Task Name:',
                 TABLES['runs']['task_name']['values'],
                 0, False)
@@ -840,10 +855,25 @@ class Interface(QMainWindow):
 
             text, ok = QInputDialog.getItem(
                 self,
-                'Add New Recording for {current_run.task_name}',
+                f'Add New Recording for {current_run.task_name}',
                 'Modality:',
                 TABLES['recordings']['modality']['values'],
                 0, False)
+
+        elif level in ('channels', 'electrodes'):
+            current_recording = self.current('recordings')
+            if current_recording is None or current_recording.modality != 'ieeg':
+                QMessageBox.warning(
+                    self,
+                    f'Cannot add {level}',
+                    'You should first select an "ieeg" recording')
+                return
+
+            text, ok = QInputDialog.getText(
+                self,
+                f'Add new {level}',
+                'Name to identify this setup:',
+                )
 
         if ok and text != '':
             if level == 'subjects':
@@ -867,6 +897,23 @@ class Interface(QMainWindow):
                 current_run.add_recording(text)
                 self.list_recordings(current_run)
 
+            elif level in ('channels', 'electrodes'):
+                if level in 'channels':
+                    chan = Channels()
+                    chan.name = text
+                    current_recording.attach_channels(chan)
+
+                elif level in 'electrodes':
+                    elec = Electrodes()
+                    elec.name = text
+                    current_recording.attach_electrodes(elec)
+
+                self.list_recordings(self.current('runs'))
+                self.list_channels_electrodes(current_recording)
+                self.list_params()
+
+            self.modified()
+
     def new_file(self, checked):
         get_new_file = NewFile(self)
         result = get_new_file.exec()
@@ -879,6 +926,7 @@ class Interface(QMainWindow):
             item.add_file(format, path)
 
         self.list_files()
+        self.modified()
 
     def edit_file(self, level_obj, file_obj):
         get_new_file = NewFile(self, file_obj, level_obj)
@@ -891,6 +939,7 @@ class Interface(QMainWindow):
             file_obj.format = format
 
         self.list_files()
+        self.modified()
 
     def io_parrec(self):
         sess = self.current('sessions')
@@ -916,9 +965,11 @@ class Interface(QMainWindow):
 
         progress.setValue(i + 1)
         self.list_runs(sess)
+        self.modified()
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete(file_obj)
+        self.modified()
 
     def closeEvent(self, event):
 
@@ -1088,6 +1139,12 @@ class QListWidgetItem_time(QListWidgetItem):
     def __lt__(self, other):
         return self.obj.start_time < other.obj.start_time
 
+
+def _name(name):
+    if name is None:
+        return '(untitled)'
+    else:
+        return name
 
 def _session_name(sess):
     if sess.start_time is None:

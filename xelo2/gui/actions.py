@@ -1,6 +1,8 @@
 from functools import partial
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
+    QShortcut,
     )
 from PyQt5.QtSql import QSqlQuery
 
@@ -70,6 +72,12 @@ def create_menubar(main):
     action_parrec = QAction('PAR/REC folder', main)
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
+
+
+def create_shortcuts(main):
+
+    shortcut = QShortcut(QKeySequence.Save, main)
+    shortcut.activated.connect(main.sql_commit)
 
 
 SEARCH_STATEMENT = """\
