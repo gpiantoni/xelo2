@@ -75,6 +75,9 @@ def create_menubar(main):
     action_events = QAction('events from IEEG recording', main)
     action_events.triggered.connect(main.io_events)
     menu_io.addAction(action_events)
+    action_elec = QAction('electrodes from ALICE', main)
+    action_elec.triggered.connect(main.io_electrodes)
+    menu_io.addAction(action_elec)
 
 
 def create_shortcuts(main):

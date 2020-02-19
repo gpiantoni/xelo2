@@ -55,6 +55,7 @@ from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
+from ..io.electrodes import import_electrodes
 from ..io.export_db import export_database
 
 from .utils import LEVELS, _protocol_name
@@ -476,25 +477,29 @@ class Interface(QMainWindow):
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
 
                     sess = self.current('sessions')
-                    chan_name = []
+                    chan_name = ['', ]
                     for chan in sess.list_channels():
                         chan_name.append(_name(chan.name))
 
-                    w = QComboBox()
+                    w = QComboBox()  # add callback here
                     w.addItems(chan_name)
                     channels = obj.channels
-                    if channels is not None:
+                    if channels is None:
+                        w.setCurrentText('')
+                    else:
                         w.setCurrentText(_name(channels.name))
                     parameters.update({'Channels': w})
 
-                    elec_name = []
+                    elec_name = ['', ]
                     for elec in sess.list_electrodes():
                         elec_name.append(_name(elec.name))
 
                     w = QComboBox()
                     w.addItems(elec_name)
                     electrodes = obj.electrodes
-                    if electrodes is not None:
+                    if electrodes is None:
+                        w.setCurrentText('')
+                    else:
                         w.setCurrentText(_name(electrodes.name))
                     parameters.update({'Electrodes': w})
 
@@ -992,6 +997,36 @@ class Interface(QMainWindow):
             run.events = compare_events.info['events']
 
             self.modified()
+
+    def io_electrodes(self):
+
+        mat_file = QFileDialog.getOpenFileName(
+            self,
+            "Open File",
+            None,
+            "Matlab (*.mat)")[0]
+
+        if mat_file == '':
+            return
+
+        rec = self.current('recordings')
+        chan = rec.channels
+        chan_data = chan.data
+        n_chan = chan_data.shape[0]
+        xyz = import_electrodes(mat_file, n_chan)
+        if xyz is None:
+            print('you need to do this manually')
+
+        elec = Electrodes()
+        elec_data = elec.empty(n_chan)
+        elec_data['name'] = chan_data['name']
+        elec_data['x'] = xyz[:, 0]
+        elec_data['y'] = xyz[:, 1]
+        elec_data['z'] = xyz[:, 2]
+        elec.data = elec_data
+        rec.attach_electrodes(elec)
+
+        self.modified()
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete(file_obj)
