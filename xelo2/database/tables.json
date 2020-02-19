@@ -496,6 +496,11 @@
     },
     "channel_groups": {
         "id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT",
+            "doc": "Arbitrary name to refer to this channel group (this information is not used in BIDS)."
+        },
         "Reference": {
             "name": "Reference",
             "type": "TEXT",
@@ -587,6 +592,11 @@
     },
     "electrode_groups": {
         "id": null,
+        "name": {
+            "name": "name",
+            "type": "TEXT",
+            "doc": "Arbitrary name to refer to this channel group (this information is not used in BIDS)."
+        },
         "CoordinateSystem": {
             "name": "Coordinate System",
             "type": "TEXT",

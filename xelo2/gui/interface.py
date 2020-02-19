@@ -402,12 +402,12 @@ class Interface(QMainWindow):
 
         if recording.modality == 'ieeg':
             for chan in sess.list_channels():
-                item = QListWidgetItem(str(chan))  # TODO: more informative name
+                item = QListWidgetItem(chan.name)
                 item.setData(Qt.UserRole, chan)
                 self.lists['channels'].addItem(item)
 
             for elec in sess.list_electrodes():
-                item = QListWidgetItem(str(elec))  # TODO: more informative name
+                item = QListWidgetItem(elec.name)
                 item.setData(Qt.UserRole, elec)
                 self.lists['electrodes'].addItem(item)
 
@@ -472,6 +472,29 @@ class Interface(QMainWindow):
 
                 if obj.modality == 'ieeg':
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
+
+                sess = self.current('sessions')
+                chan_name = []
+                for chan in sess.list_channels():
+                    chan_name.append(chan.name)
+
+                w = QComboBox()
+                w.addItems(chan_name)
+                channels = obj.channels
+                if channels is not None:
+                    w.setCurrentText(channels.name)
+                parameters.update({'Recordings': w})
+
+                elec_name = []
+                for elec in sess.list_electrodes():
+                    elec_name.append(elec.name)
+
+                w = QComboBox()
+                w.addItems(elec_name)
+                electrodes = obj.electrodes
+                if electrodes is not None:
+                    w.setCurrentText(electrodes.name)
+                parameters.update({'Recordings': w})
 
                 if obj.modality in ('bold', 'epi'):
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj, self))

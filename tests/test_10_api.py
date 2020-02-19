@@ -259,6 +259,9 @@ def test_api_electrodes_channels_attach(db):
     assert recording.electrodes is None
 
     chan = Channels()
+    chan_name = 'channels type 1'
+    chan.name = chan_name
+    assert chan.name == chan_name
     data = chan.empty(5)
     data['name'] = ['a0', 'bb', 'cc', 'dd', 'ee']
     data['type'] = 'SEEG'
