@@ -57,6 +57,7 @@ from ..bids.root import create_bids
 from ..io.parrec import add_parrec_to_sess
 from ..io.electrodes import import_electrodes
 from ..io.export_db import export_database
+from ..io.tsv import load_tsv, save_tsv
 
 from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search, create_shortcuts
@@ -687,10 +688,43 @@ class Interface(QMainWindow):
 
         menu = QMenu(self)
         action = QAction(f'Import {table} from tsv ...', self)
+        action.triggered.connect(lambda x: self.tsv_import(table=table))
         menu.addAction(action)
         action = QAction(f'Export {table} to tsv ...', self)
+        action.triggered.connect(lambda x: self.tsv_export(table=table))
         menu.addAction(action)
         menu.popup(view.mapToGlobal(pos))
+
+    def tsv_import(self, table):
+
+        tsv_file = QFileDialog.getOpenFileName(
+            self,
+            "Open File",
+            None,
+            "Tab-separated values (*.tsv)")[0]
+
+        if tsv_file == '':
+            return
+
+        if table == 'events':
+            run = self.current('runs')
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        X = load_tsv(tsv_file, X.dtype)
+
+        if table == 'events':
+            run.events = X
+            self.show_events(run)
+
+        else:
+            current.data = X
+            recording = self.current('recordings')
+            self.list_channels_electrodes(self, recording=recording)
+
+        self.modified()
 
     def rightclick_list(self, pos, level=None):
         item = self.lists[level].itemAt(pos)
