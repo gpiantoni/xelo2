@@ -112,14 +112,20 @@ class Interface(QMainWindow):
         # EVENTS: Widget
         self.events_view = QTableView(self)
         self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='events'))
 
         # CHANNELS: Widget
         self.channels_view = QTableView(self)
         self.channels_view.horizontalHeader().setStretchLastSection(True)
+        self.channels_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.channels_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='channels'))
 
         # ELECTRODES: Widget
         self.electrodes_view = QTableView(self)
         self.electrodes_view.horizontalHeader().setStretchLastSection(True)
+        self.electrodes_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.electrodes_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='electrodes'))
 
         # FILES: Widget
         t_files = QTableWidget()
@@ -316,6 +322,7 @@ class Interface(QMainWindow):
     def proc_all(self, current=None, previous=None, item=None):
         """GUI calls current and previous. You can call item"""
 
+        self.list_channels_electrodes()
         if item is None:
             # when clicking on a previously selected list, it sends a signal where current is None, but I don't understand why
             if current is None:
@@ -390,7 +397,7 @@ class Interface(QMainWindow):
             self.lists['recordings'].addItem(item)
         self.lists['recordings'].setCurrentRow(0)
 
-    def list_channels_electrodes(self, recording):
+    def list_channels_electrodes(self, recording=None):
 
         for level, l in self.lists.items():
             if level in ('channels', 'electrodes'):
@@ -398,8 +405,13 @@ class Interface(QMainWindow):
 
         self.channels_model.setFilter('channel_group_id == 0')
         self.channels_model.select()
+        self.channels_view.setEnabled(False)
         self.electrodes_model.setFilter('electrode_group_id == 0')
         self.electrodes_model.select()
+        self.electrodes_view.setEnabled(False)
+
+        if recording is None:
+            return
 
         sess = self.current('sessions')
 
@@ -615,10 +627,12 @@ class Interface(QMainWindow):
         item = current.data(Qt.UserRole)
 
         if item.t == 'channel_group':
+            self.channels_view.setEnabled(True)
             self.channels_model.setFilter(f'channel_group_id == {item.id}')
             self.channels_model.select()
 
         elif item.t == 'electrode_group':
+            self.electrodes_view.setEnabled(True)
             self.electrodes_model.setFilter(f'electrode_group_id == {item.id}')
             self.electrodes_model.select()
 
@@ -662,6 +676,21 @@ class Interface(QMainWindow):
             self.t_export.setItem(i, 2, item)
             item = QTableWidgetItem(l['start_time'])
             self.t_export.setItem(i, 3, item)
+
+    def rightclick_table(self, pos, table=None):
+        if table == 'events':
+            view = self.events_view
+        elif table == 'channels':
+            view = self.channels_view
+        elif table == 'electrodes':
+            view = self.electrodes_view
+
+        menu = QMenu(self)
+        action = QAction(f'Import {table} from tsv ...', self)
+        menu.addAction(action)
+        action = QAction(f'Export {table} to tsv ...', self)
+        menu.addAction(action)
+        menu.popup(view.mapToGlobal(pos))
 
     def rightclick_list(self, pos, level=None):
         item = self.lists[level].itemAt(pos)
