@@ -699,7 +699,7 @@ class Interface(QMainWindow):
 
         tsv_file = QFileDialog.getOpenFileName(
             self,
-            "Open File",
+            f"Import {table} from file",
             None,
             "Tab-separated values (*.tsv)")[0]
 
@@ -725,6 +725,26 @@ class Interface(QMainWindow):
             self.list_channels_electrodes(self, recording=recording)
 
         self.modified()
+
+    def tsv_export(self, table):
+
+        tsv_file = QFileDialog.getSaveFileName(
+            self,
+            f"Save {table} to file",
+            None,
+            "Tab-separated values (*.tsv)")[0]
+
+        if tsv_file == '':
+            return
+
+        if table == 'events':
+            run = self.current('runs')
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        save_tsv(tsv_file, X)
 
     def rightclick_list(self, pos, level=None):
         item = self.lists[level].itemAt(pos)
