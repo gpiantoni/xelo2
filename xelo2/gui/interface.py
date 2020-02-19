@@ -388,6 +388,7 @@ class Interface(QMainWindow):
         self.lists['recordings'].setCurrentRow(0)
 
     def list_channels_electrodes(self, recording):
+
         for level, l in self.lists.items():
             if level in ('channels', 'electrodes'):
                 l.clear()
