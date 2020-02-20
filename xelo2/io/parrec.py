@@ -93,6 +93,10 @@ def _get_MRI_info(hdr):
         info['task_name'] = 'verb'
         info['modality'] = 'bold'
 
+    elif ('syllables' in protocol):
+        info['task_name'] = 'syllables'
+        info['modality'] = 'bold'
+
     elif ('angio' in protocol):
         info['task_name'] = 'angiography_scan'
         info['modality'] = 'angio'
