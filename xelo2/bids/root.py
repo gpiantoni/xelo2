@@ -3,12 +3,31 @@ from pathlib import Path
 from logging import getLogger
 
 from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtSql import QSqlQuery
 
 from ..api import list_subjects
 from .mri import convert_mri
 from .ieeg import convert_ieeg
 
 lg = getLogger(__name__)
+
+
+def prepare_subset(where):
+
+    query = QSqlQuery(f"""\
+        SELECT subjects.id, sessions.id, runs.id FROM runs
+        JOIN sessions ON sessions.id == runs.session_id
+        JOIN subjects ON subjects.id == sessions.subject_id
+        WHERE {where}
+        """)
+
+    subset = {'subjects': [], 'sessions': [], 'runs': []}
+    while query.next():
+        subset['subjects'].append(query.value(0))
+        subset['sessions'].append(query.value(1))
+        subset['runs'].append(query.value(2))
+
+    return subset
 
 
 def create_bids(data_path, deface=True, subset=None, progress=None):
@@ -76,7 +95,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
-                    if acquisition in ('ieeg', 'func'):
+                    if acquisition in ('ieeg', 'func') and False:
                         convert_events(run, base_name)
 
     # here the rest

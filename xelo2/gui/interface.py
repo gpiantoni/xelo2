@@ -470,17 +470,6 @@ class Interface(QMainWindow):
                 w = Popup_Protocols(obj, self)
                 parameters.update({'Protocols': w})
 
-                subj = self.current('subjects')
-                session_name = []
-
-                for sess in subj.list_sessions():
-                    session_name.append(_session_name(sess))
-
-                w = QComboBox()
-                w.addItems(session_name)
-                w.setCurrentText(_session_name(obj.session))
-                parameters.update({'Session': w})
-
                 if obj.task_name == 'mario':
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
 
@@ -493,30 +482,29 @@ class Interface(QMainWindow):
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
 
                     sess = self.current('sessions')
-                    chan_name = ['', ]
-                    for chan in sess.list_channels():
-                        chan_name.append(_name(chan.name))
 
                     w = QComboBox()  # add callback here
-                    w.addItems(chan_name)
+                    w.addItem('(undefined channels)', None)
+                    for chan in sess.list_channels():
+                        w.addItem(_name(chan.name), chan)
                     channels = obj.channels
                     if channels is None:
                         w.setCurrentText('')
                     else:
                         w.setCurrentText(_name(channels.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
                     parameters.update({'Channels': w})
 
-                    elec_name = ['', ]
-                    for elec in sess.list_electrodes():
-                        elec_name.append(_name(elec.name))
-
                     w = QComboBox()
-                    w.addItems(elec_name)
+                    w.addItem('(undefined electrodes)', None)
+                    for elec in sess.list_electrodes():
+                        w.addItem(_name(elec.name), elec)
                     electrodes = obj.electrodes
                     if electrodes is None:
                         w.setCurrentText('')
                     else:
                         w.setCurrentText(_name(electrodes.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
                     parameters.update({'Electrodes': w})
 
                 if obj.modality in ('bold', 'epi'):
@@ -547,6 +535,21 @@ class Interface(QMainWindow):
             self.t_params.setCellWidget(i, 2, val['value'])
 
         self.t_params.blockSignals(False)
+
+    def combo_chanelec(self, i, widget):
+        data = widget.currentData()
+        recording = self.current('recordings')
+        if data is None:
+            if widget.currentText() == '(undefined channels)':
+                recording.detach_channels()
+            else:
+                recording.detach_electrodes()
+
+        elif data.t == 'channel_group':
+            recording.attach_channels(data)
+
+        elif data.t == 'electrode_group':
+            recording.attach_electrodes(data)
 
     def current(self, level):
 
