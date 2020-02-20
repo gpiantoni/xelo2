@@ -54,6 +54,7 @@ from PyQt5.QtSql import (
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
+from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec_to_sess
 from ..io.electrodes import import_electrodes
 from ..io.export_db import export_database
@@ -296,6 +297,8 @@ class Interface(QMainWindow):
 
     def sql_rollback(self):
         self.sql.rollback()
+        self.unsaved_changes = False
+        self.setWindowTitle(self.sqlite_file.stem)
         self.list_subjects()
 
     def list_subjects(self, code_to_select=None):
@@ -811,7 +814,6 @@ class Interface(QMainWindow):
         else:
             level_obj, file_obj = item.data(Qt.UserRole)
             file_path = file_obj.path.resolve()
-            url_file = QUrl(str(file_path))
             url_directory = QUrl(str(file_path.parent))
 
             action_edit = QAction('Edit File', self)
@@ -819,12 +821,12 @@ class Interface(QMainWindow):
             action_copy = QAction('Copy Path to File', self)
             action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_obj.path)))
             action_openfile = QAction('Open File', self)
-            action_openfile.triggered.connect(lambda x: QDesktopServices.openUrl(url_file))
+            action_openfile.triggered.connect(lambda x: self.open_file(file_path))
+
             action_opendirectory = QAction('Open Containing Folder', self)
             action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
             action_delete = QAction('Delete', self)
             action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
-
             menu = QMenu('File Information', self)
             menu.addAction(action_edit)
             menu.addAction(action_copy)
@@ -833,6 +835,15 @@ class Interface(QMainWindow):
             menu.addSeparator()
             menu.addAction(action_delete)
             menu.popup(self.t_files.mapToGlobal(pos))
+
+    def open_file(self, file_path):
+        if file_path.suffix.lower() == '.par':
+            print(f'converting {file_path}')
+            file_path = convert_parrec_nibabel(file_path)
+            print(f'converted to {file_path}')
+
+        url_file = QUrl(str(file_path))
+        QDesktopServices.openUrl(url_file)
 
     def export_tsv(self):
 

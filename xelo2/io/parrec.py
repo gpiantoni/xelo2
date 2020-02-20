@@ -37,7 +37,11 @@ def _get_MRI_info(hdr):
     info = {}
     protocol = hdr['protocol_name'].lower()
 
-    if 'mansfield' in protocol or 'anat' in protocol or 't1' in protocol:
+    if 't2s' in protocol:
+        info['task_name'] = 't2star_anatomy_scan'
+        info['modality'] = 'T2star'
+
+    elif 'mansfield' in protocol or 'anat' in protocol or 't1' in protocol:
         info['task_name'] = 't1_anatomy_scan'
         info['modality'] = 'T1w'
 
@@ -88,6 +92,14 @@ def _get_MRI_info(hdr):
     elif ('verbgen' in protocol):
         info['task_name'] = 'verb'
         info['modality'] = 'bold'
+
+    elif ('angio' in protocol):
+        info['task_name'] = 'angiography_scan'
+        info['modality'] = 'angio'
+
+    elif ('pd' in protocol):
+        info['task_name'] = 'pd_anatomy_scan'
+        info['modality'] = 'PD'
 
     elif 'fa27' in protocol:
         pass

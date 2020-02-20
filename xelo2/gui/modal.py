@@ -85,6 +85,10 @@ class NewFile(QDialog):
 
 def _read_info_from_ieeg(path_to_file, dtypes):
     """This could go to xelo2/io"""
+
+    if path_to_file.suffix == '.nev':  # ns3 has more information (f.e. n_samples when there are no triggers)
+        path_to_file = path_to_file.with_suffix('.ns3')
+
     d = Dataset(path_to_file)
     mrk = d.read_markers()
 
