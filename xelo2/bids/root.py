@@ -8,6 +8,7 @@ from PyQt5.QtSql import QSqlQuery
 from ..api import list_subjects
 from .mri import convert_mri
 from .ieeg import convert_ieeg
+from .events import convert_events
 
 lg = getLogger(__name__)
 
@@ -95,7 +96,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
-                    if acquisition in ('ieeg', 'func') and False:
+                    if acquisition in ('ieeg', 'func'):
                         convert_events(run, base_name)
 
     # here the rest

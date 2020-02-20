@@ -293,8 +293,6 @@ class Interface(QMainWindow):
         self.setWindowTitle(self.sqlite_file.stem)
         self.unsaved_changes = False
 
-        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
-
     def sql_rollback(self):
         self.sql.rollback()
         self.unsaved_changes = False
@@ -849,11 +847,14 @@ class Interface(QMainWindow):
         QDesktopServices.openUrl(url_file)
 
     def export_tsv(self):
+        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
 
+        """
         tsv_path = QFileDialog.getExistingDirectory()
         if tsv_path == '':
             return
         export_database(Path(tsv_path))
+        """
 
     def sql_search(self):
 
