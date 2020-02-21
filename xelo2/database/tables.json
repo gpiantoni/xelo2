@@ -44,7 +44,7 @@
                 "14-420",
                 "14-622",
                 "16-816",
-                "Request from clinic"
+                "19-562"
             ]
         },
         "version": {
@@ -249,7 +249,9 @@
                 "MP2RAGE",
                 "pd_anatomy_scan",
                 "pRF_alessio",
-                "top_up"
+                "top_up",
+                "vts_prf",
+                "vts_temporalpattern"
             ]
         },
         "start_time": {

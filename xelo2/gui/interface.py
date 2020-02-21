@@ -58,6 +58,7 @@ from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
+from ..io.events import read_events_from_ieeg
 from ..io.export_db import export_database
 from ..io.tsv import load_tsv, save_tsv
 
@@ -1071,6 +1072,30 @@ class Interface(QMainWindow):
         self.list_params()
         self.modified()
 
+    def io_events_only(self):
+        run = self.current('runs')
+        recording = self.current('recordings')
+
+        if recording is None or recording.modality != 'ieeg':
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        events = read_events_from_ieeg(run, recording, ieeg_files[0])
+
+        if len(events) > 0:
+            run.events = events
+            self.show_events(run)
+
+            self.modified()
+        else:
+            print('there were no events')
+
     def io_events(self):
         run = self.current('runs')
         recording = self.current('recordings')
@@ -1093,10 +1118,11 @@ class Interface(QMainWindow):
             run.duration = compare_events.info['duration']
             run.events = compare_events.info['events']
 
+            self.list_params()
+            self.show_events(run)
             self.modified()
 
     def io_channels(self):
-        run = self.current('runs')
         recording = self.current('recordings')
 
         if recording is None or recording.modality != 'ieeg':
@@ -1134,6 +1160,7 @@ class Interface(QMainWindow):
         xyz = import_electrodes(mat_file, n_chan)
         if xyz is None:
             print('you need to do this manually')
+            return
 
         elec = Electrodes()
         elec_data = elec.empty(n_chan)

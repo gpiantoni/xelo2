@@ -15,12 +15,14 @@ from .utils import rename_task
 lg = getLogger(__name__)
 
 
-def prepare_subset(where):
+def prepare_subset(where, subset=None):
 
     query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
     query = QSqlQuery(f"""{query_str} WHERE {where}""")
 
-    subset = {'subjects': [], 'sessions': [], 'runs': []}
+    if subset is None:
+        subset = {'subjects': [], 'sessions': [], 'runs': []}
+
     while query.next():
         subset['subjects'].append(query.value('subjects.id'))
         subset['sessions'].append(query.value('sessions.id'))
