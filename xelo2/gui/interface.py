@@ -815,7 +815,7 @@ class Interface(QMainWindow):
         else:
             level_obj, file_obj = item.data(Qt.UserRole)
             file_path = file_obj.path.resolve()
-            url_directory = QUrl(str(file_path.parent))
+            url_directory = QUrl.fromLocalFile(str(file_path.parent))
 
             action_edit = QAction('Edit File', self)
             action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
@@ -843,7 +843,7 @@ class Interface(QMainWindow):
             file_path = convert_parrec_nibabel(file_path)
             print(f'converted to {file_path}')
 
-        url_file = QUrl(str(file_path))
+        url_file = QUrl.fromLocalFile(str(file_path))
         QDesktopServices.openUrl(url_file)
 
     def export_tsv(self):
