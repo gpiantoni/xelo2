@@ -56,6 +56,7 @@ from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec_to_sess
+from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..io.export_db import export_database
 from ..io.tsv import load_tsv, save_tsv
@@ -1093,6 +1094,27 @@ class Interface(QMainWindow):
             run.events = compare_events.info['events']
 
             self.modified()
+
+    def io_channels(self):
+        run = self.current('runs')
+        recording = self.current('recordings')
+
+        if recording is None or recording.modality != 'ieeg':
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        chan = create_channels(ieeg_files[0].path)
+        if chan is None:
+            return
+        chan.name = '(imported)'
+        recording.attach_channels(chan)
+        self.modified()
 
     def io_electrodes(self):
 
