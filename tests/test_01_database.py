@@ -10,4 +10,4 @@ def test_create():
 
 def test_open():
     db = open_database(DB_PATH)
-    assert len(db.tables()) == 29
+    assert len(db.tables()) == 30

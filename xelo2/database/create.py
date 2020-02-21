@@ -65,11 +65,18 @@ def create_database(db_name, db_type='QSQLITE'):
     assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
     assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
+    values = {}
     for table_name, v in TABLES.items():
-        parse_table(db, table_name, v)
+        values.update(parse_table(db, table_name, v))
 
     add_experimenters(db, TABLES['experimenters'])
+
+    values.pop('experimenters')  # experimenters is not constraint by the trigger system
+    add_triggers(values)
+
     db.close()
+
+    return values
 
 
 def parse_table(db, table_name, v, issubtable=False):
@@ -77,13 +84,15 @@ def parse_table(db, table_name, v, issubtable=False):
     foreign_key = []
     constraints = []
     cmd = []
+    values = {table_name: {}}
 
     for col_name, col_info in v.items():
 
         if col_name == 'subtables':
 
             for subtable, subtable_info in col_info.items():
-                parse_table(db, subtable, subtable_info, issubtable=True)
+                sub_values = parse_table(db, subtable, subtable_info, issubtable=True)
+                values.update(sub_values)
 
         elif col_name == 'id':
             cmd.append('id INTEGER PRIMARY KEY AUTOINCREMENT')
@@ -110,8 +119,9 @@ def parse_table(db, table_name, v, issubtable=False):
                 foreign_key.append(f'FOREIGN KEY({col_name}) REFERENCES {ref_table}s(id) ON DELETE CASCADE')
 
         if col_info is not None and "values" in col_info:
-            list_txt = '", "'.join(col_info["values"])
-            constraints.append(f'CONSTRAINT {col_name}_type CHECK ({col_name} IN ("{list_txt}"))')
+            values[table_name][col_name] = []
+            for v in col_info['values']:
+                values[table_name][col_name].append(v)
 
     if len(v) == 2 and list(v)[0].endswith('_id') and list(v)[1].endswith('_id'):
         constraints.append(f'CONSTRAINT {table_name}_unique UNIQUE ({list(v)[0]}, {list(v)[1]})')
@@ -124,6 +134,45 @@ def parse_table(db, table_name, v, issubtable=False):
     query = QSqlQuery(sql_cmd)
     if not query.isActive():
         lg.warning(query.lastError().databaseText())
+
+    return values
+
+
+def add_triggers(allowed_values):
+    sql_cmd = 'CREATE TABLE allowed_values ( table_name TEXT NOT NULL, column_name TEXT NOT NULL, allowed_value TEXT NOT NULL)'
+    query = QSqlQuery(sql_cmd)
+    if not query.isActive():
+        lg.warning(query.lastError().databaseText())
+
+    for table_name, table_info in allowed_values.items():
+        for col_name, col_info in table_info.items():
+            for v in col_info:
+                query = QSqlQuery(f"""\
+                    INSERT INTO allowed_values ("table_name", "column_name", "allowed_value")
+                    VALUES ("{table_name}", "{col_name}", "{v}")""")
+
+                if not query.isActive():
+                    lg.warning(query.lastError().databaseText())
+
+            for statement in ('INSERT', 'UPDATE'):  # mysql cannot handle both in the same trigger statement
+                sql_cmd = f"""\
+                CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
+                   BEFORE {statement} ON {table_name}
+                BEGIN
+                   SELECT
+                      CASE
+                    WHEN NEW.{col_name} NOT IN  (
+                        SELECT allowed_value FROM allowed_values
+                        WHERE table_name == '{table_name}'
+                        AND column_name == '{col_name}')
+                    THEN
+                         RAISE (ABORT, 'Invalid {col_name} for {table_name}')
+                    END;
+                END;"""
+
+                query = QSqlQuery(sql_cmd)
+                if not query.isActive():
+                    lg.warning(query.lastError().databaseText())
 
 
 def add_experimenters(db, table_experimenters):
