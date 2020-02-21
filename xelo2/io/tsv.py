@@ -1,5 +1,6 @@
-from numpy import genfromtxt, savetxt
-from .utils import dtype2fmt
+from numpy import genfromtxt
+from numpy import floating, character, issubdtype, isnan
+from numpy.lib.recfunctions import rename_fields
 
 
 def load_tsv(fname, dtypes):
@@ -13,11 +14,26 @@ def load_tsv(fname, dtypes):
 
 
 def save_tsv(fname, X):
-    """TODO: This should be changed so that NaN are not represented"""
-    savetxt(
-        fname,
-        X,
-        header='\t'.join(X.dtype.names),
-        delimiter='\t',
-        fmt=dtype2fmt(X.dtype),
-        comments='')
+    # BIDS wants 'group' but it's a reserved word in SQL
+    X = rename_fields(X, {'groups': 'group'})
+    dtypes = X.dtype
+
+    with fname.open('w') as f:
+        f.write('\t'.join(dtypes.names) + '\n')
+
+        for x in X:
+            values = []
+            for name in dtypes.names:
+
+                if issubdtype(dtypes[name], floating):
+                    if isnan(x[name]):
+                        values.append('n/a')
+                    else:
+                        values.append(f'{x[name]:.3f}')
+
+                elif issubdtype(dtypes[name], character):
+                    if x[name] == '':
+                        values.append('n/a')
+                    else:
+                        values.append(x[name])
+            f.write('\t'.join(values) + '\n')

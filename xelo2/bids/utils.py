@@ -11,3 +11,14 @@ def find_next_value(path_with_regex):
             max_run = max((max_run, int(m.group(1))))
 
     return path_with_regex.parent / path_with_regex.name.replace(r'(\d)', str(max_run + 1))
+
+
+def rename_task(task_name):
+    """To be consistent with BIDS (no dashes)"""
+    if task_name.startswith('bair_'):
+        task_name = task_name[5:]
+
+    task_name = task_name.replace('_', '')
+
+    return task_name
+

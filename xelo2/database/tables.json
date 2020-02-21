@@ -47,6 +47,11 @@
                 "Request from clinic"
             ]
         },
+        "version": {
+            "name": "Version",
+            "type": "TEXT",
+            "doc": "Text to indicate version"
+        },
         "date_of_signature": {
             "name": "Date of Signature",
             "type": "DATE",
@@ -373,11 +378,6 @@
             "name": "Value",
             "doc": "Marker value associated with the event (e.g., the value of a TTL trigger that was recorded at the onset of the event).",
             "type": "TEXT"
-        },
-        "description": {
-            "name": "Description",
-            "doc": "",
-            "type": "TEXT"
         }
     },
     "recordings": {
@@ -544,14 +544,14 @@
                 "%"
             ]
         },
-        "high_cutoff": {
-            "name": "High CutOff",
-            "doc": "Frequencies used for the high pass filter applied to the channel in Hz. If no high pass filter applied, use n/a.",
-            "type": "FLOAT"
-        },
         "low_cutoff": {
             "name": "Low CutOff",
             "doc": "Frequencies used for the low pass filter applied to the channel in Hz. If no low pass filter was applied, use n/a. Note that anti-alias is a low pass filter, specify its frequencies here if applicable.",
+            "type": "FLOAT"
+        },
+        "high_cutoff": {
+            "name": "High CutOff",
+            "doc": "Frequencies used for the high pass filter applied to the channel in Hz. If no high pass filter applied, use n/a.",
             "type": "FLOAT"
         },
         "reference": {

@@ -2,9 +2,11 @@ from logging import getLogger
 from datetime import timedelta
 from wonambi import Dataset
 
-from bidso.utils import remove_underscore
+from bidso.utils import remove_underscore, add_underscore
 
 from .utils import find_next_value
+from ..io.tsv import save_tsv
+
 
 lg = getLogger(__name__)
 
@@ -28,7 +30,21 @@ def convert_ieeg(run, rec, dest_path, stem):
     output_ieeg = find_next_value(output_ieeg)
     data.export(output_ieeg, 'brainvision')
 
-    return remove_underscore(output_ieeg)
+    base_name = remove_underscore(output_ieeg)
+    _convert_chan_elec(rec, base_name)
+    return base_name
+
+
+def _convert_chan_elec(rec, base_name):
+    channels = rec.channels
+    if channels is not None:
+        channels_tsv = add_underscore(base_name, 'channels.tsv')
+        save_tsv(channels_tsv, channels.data)
+
+    electrodes = rec.electrodes
+    if electrodes is not None:
+        electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
+        save_tsv(electrodes_tsv, electrodes.data)
 
 
 def _select_ieeg(rec):

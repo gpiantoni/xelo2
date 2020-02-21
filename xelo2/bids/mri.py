@@ -1,11 +1,14 @@
 from shutil import move
 from logging import getLogger
 from pathlib import Path
+from json import dump
 
-from bidso.utils import remove_underscore
+from nibabel import save as nisave
+from nibabel import load as niload
+from bidso.utils import remove_underscore, replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import find_next_value
+from .utils import find_next_value, rename_task
 
 lg = getLogger(__name__)
 
@@ -24,7 +27,29 @@ def convert_mri(run, rec, dest_path, stem):
 
     move(input_nii, output_nii)
 
-    return remove_underscore(output_nii)
+    _fix_tr(output_nii, run.RepetitionTime)
+
+    sidecar = _convert_sidecar(run, rec)
+    sidecar_file = replace_extension(output_nii, '.json')
+
+    with sidecar_file.open('w') as f:
+        dump(sidecar, f, indent=2)
+
+    stem = remove_underscore(output_nii)
+    return stem
+
+
+def _fix_tr(nii, RepetitionTime):
+
+    img = niload(str(nii))
+
+    # this seems a bug in nibabel. It stores time in sec, not in msec
+    img.header.set_xyzt_units('mm', 'sec')
+
+    if RepetitionTime is not None:
+        img.header['pixdim'][4] = RepetitionTime
+
+    nisave(img, str(nii))
 
 
 def _select_parrec(rec):
@@ -47,3 +72,14 @@ def _select_parrec(rec):
         return None
 
     return file
+
+
+def _convert_sidecar(run, rec):
+    D = {}
+    if rec.modality == 'bold':
+        D = {
+            'RepetitionTime': rec.RepetitionTime,
+            'TaskName': rename_task(run.task_name),
+            }
+
+    return D

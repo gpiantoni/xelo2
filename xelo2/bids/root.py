@@ -9,24 +9,22 @@ from ..api import list_subjects
 from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .events import convert_events
+from ..io.export_db import prepare_query
+from .utils import rename_task
 
 lg = getLogger(__name__)
 
 
 def prepare_subset(where):
 
-    query = QSqlQuery(f"""\
-        SELECT subjects.id, sessions.id, runs.id FROM runs
-        JOIN sessions ON sessions.id == runs.session_id
-        JOIN subjects ON subjects.id == sessions.subject_id
-        WHERE {where}
-        """)
+    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
+    query = QSqlQuery(f"""{query_str} WHERE {where}""")
 
     subset = {'subjects': [], 'sessions': [], 'runs': []}
     while query.next():
-        subset['subjects'].append(query.value(0))
-        subset['sessions'].append(query.value(1))
-        subset['runs'].append(query.value(2))
+        subset['subjects'].append(query.value('subjects.id'))
+        subset['sessions'].append(query.value('sessions.id'))
+        subset['runs'].append(query.value('runs.id'))
 
     return subset
 
@@ -77,7 +75,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 acquisition = get_bids_acquisition(run)
 
                 if acquisition in ('ieeg', 'func'):
-                    task = _rename_task(run.task_name)
+                    task = rename_task(run.task_name)
                     bids_run = f'{bids_subj}_{bids_sess}_task-{task}'
                 else:
                     bids_run = f'{bids_subj}_{bids_sess}'
@@ -101,15 +99,6 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
     # here the rest
     _make_README(data_path)
-
-
-def _rename_task(task_name):
-    # TODO: make this a json file
-
-    if task_name.startswith('bair_'):
-        task_name = task_name[5:]
-
-    return task_name
 
 
 def _make_dataset_description(data_path):
