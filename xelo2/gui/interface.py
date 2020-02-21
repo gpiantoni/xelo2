@@ -512,7 +512,6 @@ class Interface(QMainWindow):
                     parameters.update(table_widget(TABLES[k]['subtables']['recordings_mri'], obj, self))
 
             for p_k, p_v in parameters.items():
-                # p_v.setEnabled(False)
                 all_params.append({
                     'level': self.groups[k].title(),
                     'parameter': p_k,
@@ -1181,7 +1180,7 @@ def table_widget(table, obj, parent=None):
                 w.currentTextChanged.connect(partial(parent.changed, obj, v))
             else:
                 w = make_edit(item, value)
-                w.returnPressed.connect(partial(parent.changed, obj, v, w))
+                w.editingFinished.connect(partial(parent.changed, obj, v, w))
 
         else:
             raise ValueError(f'unknown type "{item["type"]}"')
