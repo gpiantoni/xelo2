@@ -43,7 +43,7 @@ def add_info_to_participants(bids_path):
     with tsv_file.open() as f:
         txt = []
         hdr = f.readline()
-        txt.append(hdr[:-1] + 'site\thigh_density_grid\tvisual\tmotor\ttactile')
+        txt.append(hdr[:-1] + '\tsite\thigh_density_grid\tvisual\tmotor\ttactile\tacq_date_shift')
 
         for l in f:
             subj = l.split('\t')[0]
@@ -57,6 +57,7 @@ def add_info_to_participants(bids_path):
                 + _find_task_type(bids_path / subj, 'motor')
                 + '\t'
                 + _find_task_type(bids_path / subj, 'tactile')
+                + '\t0'
                 )
 
     with tsv_file.open('w') as f:

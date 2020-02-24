@@ -56,5 +56,8 @@
             "yes": "Patient did tactile task",
             "no": "Patient did not do tactile task"
         }
+    },
+    "acq_date_shift": {
+        "Description": "Offset in date"
     }
 }
