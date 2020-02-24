@@ -1,0 +1,60 @@
+{
+    "participant_id": {
+        "Description": "Unique participant identifier"
+    },
+    "age": {
+        "Description": "Age of the participant at time of testing",
+        "Units": "years"
+    },
+    "sex": {
+        "Description": "Biological sex of the participant",
+        "Levels": {
+            "F": "female",
+            "M": "male"
+        }
+    },
+    "site": {
+        "Description": "Institute where acquisition took place",
+        "Levels": {
+            "UMCU": "University Medical Center Utrecht",
+            "NYU": "New York University"
+        }
+    },
+    "group": {
+        "LongName": "Participant type",
+        "Description": "Type of participant",
+        "Levels": {
+            "healthy": "Healthy participant",
+            "patient": "Patient participant"
+        }
+    },
+    "high_density_grid": {
+        "Description": "Whether this patient had recordings with a high-density grid",
+        "Levels": {
+            "yes": "Patient had some of the measurements with HD grid",
+            "no": "No HD recordings for this patient",
+            "n/a": "Does not apply, this is not a patient"
+        }
+    },
+    "visual": {
+        "Description": "Whether this patient did a visual task",
+        "Levels": {
+            "yes": "Patient did visual task",
+            "no": "Patient did not do visual task"
+        }
+    },
+    "motor": {
+        "Description": "Whether this patient did a motor task",
+        "Levels": {
+            "yes": "Patient did motor task",
+            "no": "Patient did not do motor task"
+        }
+    },
+    "tactile": {
+        "Description": "Whether this patient did a tactile task",
+        "Levels": {
+            "yes": "Patient did tactile task",
+            "no": "Patient did not do tactile task"
+        }
+    }
+}

@@ -15,7 +15,10 @@ from .ieeg import convert_ieeg
 from .events import convert_events
 from ..io.export_db import prepare_query
 from .utils import rename_task
-from .templates import JSON_SESSIONS
+from .templates import (
+    JSON_PARTICIPANTS,
+    JSON_SESSIONS,
+    )
 
 lg = getLogger(__name__)
 
@@ -146,6 +149,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
     _make_README(data_path)
     tsv_file = data_path / 'participants.tsv'
     _list_scans(tsv_file, participants)
+    json_participants = tsv_file.with_suffix('.json')
+    copy(JSON_PARTICIPANTS, json_participants)
 
 
 def _list_scans(tsv_file, scans):
