@@ -717,7 +717,7 @@ class Interface(QMainWindow):
             current = self.current(table)
             X = current.data
 
-        X = load_tsv(tsv_file, X.dtype)
+        X = load_tsv(Path(tsv_file), X.dtype)
 
         if table == 'events':
             run.events = X
@@ -748,7 +748,7 @@ class Interface(QMainWindow):
             current = self.current(table)
             X = current.data
 
-        save_tsv(tsv_file, X)
+        save_tsv(Path(tsv_file), X)
 
     def rightclick_list(self, pos, level=None):
         item = self.lists[level].itemAt(pos)

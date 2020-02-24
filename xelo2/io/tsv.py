@@ -1,15 +1,22 @@
-from numpy import genfromtxt
-from numpy import floating, character, issubdtype, isnan
+from collections import defaultdict
+from numpy import floating, character, issubdtype, isnan, empty, NaN
 from numpy.lib.recfunctions import rename_fields
 
 
 def load_tsv(fname, dtypes):
-    X = genfromtxt(
-        fname,
-        dtype=dtypes,
-        skip_header=1,
-        delimiter='\t'
-        )
+    with fname.open() as f:
+        header = f.readline().strip().split('\t')
+        d = defaultdict(list)
+        for l in f:
+            values = l.strip().split('\t')
+            for h, v in zip(header, values):
+                if v == 'n/a' and issubdtype(dtypes[h], floating):
+                    v = NaN
+                d[h].append(v)
+
+    X = empty(len(d[header[0]]), dtype=dtypes)
+    for h in header:
+        X[h] = d[h]
     return X
 
 
