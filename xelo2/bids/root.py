@@ -62,7 +62,13 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         subj_path = data_path / bids_subj
         subj_path.mkdir(parents=True, exist_ok=True)
 
-        participants
+        age = (date_of_signature - subj.date_of_birth).days // 365.2425
+        participants.append({
+            'participant_id': bids_subj,
+            'sex': subj.sex,
+            'age': f'{age:.0f}',
+            'group': 'patient',
+            })
 
         sess_files = []
         for sess in subj.list_sessions():
@@ -138,6 +144,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
     # here the rest
     _make_README(data_path)
+    tsv_file = data_path / 'participants.tsv'
+    _list_scans(tsv_file, participants)
 
 
 def _list_scans(tsv_file, scans):
