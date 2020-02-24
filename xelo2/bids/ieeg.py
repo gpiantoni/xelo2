@@ -28,11 +28,11 @@ def convert_ieeg(run, rec, dest_path, stem):
 
     output_ieeg = dest_path / fr'{stem}_run-(\d)_{rec.modality}.eeg'
     output_ieeg = find_next_value(output_ieeg)
-    data.export(output_ieeg, 'brainvision')
+    data.export(output_ieeg, 'brainvision', anonymize=True)
 
     base_name = remove_underscore(output_ieeg)
     _convert_chan_elec(rec, base_name)
-    return base_name
+    return output_ieeg
 
 
 def _convert_chan_elec(rec, base_name):

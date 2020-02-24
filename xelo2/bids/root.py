@@ -1,9 +1,13 @@
 from json import dump
 from pathlib import Path
 from logging import getLogger
+from datetime import date, datetime
+from shutil import copy
 
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtSql import QSqlQuery
+
+from bidso.utils import remove_underscore
 
 from ..api import list_subjects
 from .mri import convert_mri
@@ -11,6 +15,7 @@ from .ieeg import convert_ieeg
 from .events import convert_events
 from ..io.export_db import prepare_query
 from .utils import rename_task
+from .templates import JSON_SESSIONS
 
 lg = getLogger(__name__)
 
@@ -45,14 +50,21 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
     _make_dataset_description(data_path)
 
     i = 0
+    participants = []
     for subj in list_subjects():
         if subset is not None and subj.id not in subset_subj:
             continue
+
+        # use relative date based on date_of_signature
+        date_of_signature = min([p.date_of_signature for p in subj.list_protocols()])
 
         bids_subj = 'sub-' + subj.code
         subj_path = data_path / bids_subj
         subj_path.mkdir(parents=True, exist_ok=True)
 
+        participants
+
+        sess_files = []
         for sess in subj.list_sessions():
             if subset is not None and sess.id not in subset_sess:
                 continue
@@ -61,6 +73,16 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             sess_path = subj_path / bids_sess
             sess_path.mkdir(parents=True, exist_ok=True)
 
+            sess_files.append({
+                'session_id': bids_sess,
+                'resection': 'n/a',
+                'implantation': 'no',
+                'breathing_challenge': 'no',
+                })
+            if sess.name in ('IEMU', 'OR', 'CT'):
+                sess_files[-1]['implantation'] = 'yes'
+
+            run_files = []
             for run in sess.list_runs():
                 if subset is not None and run.id not in subset_run:
                     continue
@@ -87,20 +109,42 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
-                        base_name = convert_mri(run, rec, mod_path, bids_run)
+                        data_name = convert_mri(run, rec, mod_path, bids_run)
 
                     elif rec.modality == 'ieeg':
-                        base_name = convert_ieeg(run, rec, mod_path, bids_run)
+                        data_name = convert_ieeg(run, rec, mod_path, bids_run)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
                     if acquisition in ('ieeg', 'func'):
+                        base_name = remove_underscore(data_name)
                         convert_events(run, base_name)
+
+                run_files.append({
+                    'filename': str(data_name.relative_to(data_path)),
+                    'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
+                    })
+
+            tsv_file = sess_path / (bids_subj + '_' + bids_sess + '_scans.tsv')
+            _list_scans(tsv_file, run_files)
+
+        tsv_file = subj_path / (bids_subj + '_sessions.tsv')
+        _list_scans(tsv_file, sess_files)
+
+        json_sessions = tsv_file.with_suffix('.json')
+        copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
 
     # here the rest
     _make_README(data_path)
+
+
+def _list_scans(tsv_file, scans):
+    with tsv_file.open('w') as f:
+        f.write('\t'.join(scans[0].keys()) + '\n')
+        for scan in scans:
+            f.write('\t'.join(scan.values()) + '\n')
 
 
 def _make_dataset_description(data_path):
@@ -155,3 +199,9 @@ def _make_README(data_path):
 
     with (data_path / 'README').open('w') as f:
         f.write('Converted with xelo2')
+
+
+def _set_date_to_1900(base_date, datetime_of_interest):
+    return datetime.combine(
+        date(1900, 1, 1) + (datetime_of_interest.date() - base_date),
+        datetime_of_interest.time())

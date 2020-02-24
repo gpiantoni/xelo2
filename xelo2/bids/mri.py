@@ -5,7 +5,7 @@ from json import dump
 
 from nibabel import save as nisave
 from nibabel import load as niload
-from bidso.utils import remove_underscore, replace_extension
+from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
 from .utils import find_next_value, rename_task
@@ -35,8 +35,7 @@ def convert_mri(run, rec, dest_path, stem):
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
-    stem = remove_underscore(output_nii)
-    return stem
+    return output_nii
 
 
 def _fix_tr(nii, RepetitionTime):
