@@ -1,10 +1,11 @@
 from logging import getLogger
 from datetime import timedelta
 from wonambi import Dataset
+from json import dump
 
 from bidso.utils import remove_underscore, add_underscore
 
-from .utils import find_next_value
+from .utils import find_next_value, rename_task
 from ..io.tsv import save_tsv
 
 
@@ -29,6 +30,11 @@ def convert_ieeg(run, rec, dest_path, stem):
     output_ieeg = dest_path / fr'{stem}_run-(\d)_{rec.modality}.eeg'
     output_ieeg = find_next_value(output_ieeg)
     data.export(output_ieeg, 'brainvision', anonymize=True)
+
+    sidecar = _convert_sidecar(run, rec, d)
+    sidecar_file = output_ieeg.with_suffix('.json')
+    with sidecar_file.open('w') as f:
+        dump(sidecar, f, indent=2)
 
     base_name = remove_underscore(output_ieeg)
     _convert_chan_elec(rec, base_name)
@@ -67,3 +73,24 @@ def _select_ieeg(rec):
         return None
 
     return file
+
+
+def _convert_sidecar(run, rec, d):
+    chans = rec.channels.data
+    D = {
+        'InstitutionName': 'University Medical Center Utrecht',
+        'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
+        'Manufacturer': rec.Manufacturer,
+        'TaskName': rename_task(run.task_name),
+        'SamplingFrequency': int(d.header['s_freq']),
+        'iEEGReference': 'n/a',
+        'PowerLineFrequency': 50,
+        'SoftwareFilters': 'n/a',
+        }
+    for chan_type in ('ECOG', 'SEEG', 'EEG', 'EOG', 'ECG', 'EMG', 'Misc', 'Trigger'):
+        D[f'{chan_type}ChannelCount'] = int(sum(chans['type'] == chan_type))
+    D['RecordingDuration'] = int(run.duration)
+    D['RecordingType'] = 'continuous'
+    D['ElectricalStimulation'] = False
+
+    return D

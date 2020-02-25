@@ -488,10 +488,16 @@
                 "Manufacturer": {
                     "name": "Manufacturer",
                     "type": "TEXT",
+                    "doc": "Manufacturer of the amplifier system (e.g., 'TDT, Blackrock')",
                     "values": [
                         "BlackRock",
                         "Micromed"
                     ]
+                },
+                "Reference": {
+                    "name": "Reference",
+                    "type": "TEXT",
+                    "doc": "General description of the reference scheme used and (when applicable) of location of the reference electrode in the raw recordings (e.g., 'left mastoid', 'bipolar', 'T01' for electrode with name T01, 'intracranial electrode on top of a grid, not included with data', 'upside down electrode')."
                 }
             }
         }

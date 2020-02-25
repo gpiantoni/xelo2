@@ -1,7 +1,10 @@
-from shutil import move
 from logging import getLogger
-from pathlib import Path
 from json import dump
+from os import environ
+from pathlib import Path
+from shutil import move
+from subprocess import run, DEVNULL
+from tempfile import mkstemp, gettempdir
 
 from nibabel import save as nisave
 from nibabel import load as niload
@@ -13,7 +16,7 @@ from .utils import find_next_value, rename_task
 lg = getLogger(__name__)
 
 
-def convert_mri(run, rec, dest_path, stem):
+def convert_mri(run, rec, dest_path, stem, deface=True):
     """Return base name for this run"""
 
     file = _select_parrec(rec)
@@ -26,6 +29,9 @@ def convert_mri(run, rec, dest_path, stem):
     output_nii = find_next_value(output_nii)
 
     move(input_nii, output_nii)
+
+    if deface:
+        run_deface(output_nii)
 
     _fix_tr(output_nii, run.RepetitionTime)
 
@@ -74,7 +80,10 @@ def _select_parrec(rec):
 
 
 def _convert_sidecar(run, rec):
-    D = {}
+    D = {
+        'InstitutionName': 'University Medical Center Utrecht',
+        'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
+        }
     if rec.modality == 'bold':
         D = {
             'RepetitionTime': rec.RepetitionTime,
@@ -82,3 +91,28 @@ def _convert_sidecar(run, rec):
             }
 
     return D
+
+
+def run_deface(nii):
+    lg.info(f'Defacing {nii.name}, it might take a while')
+    path_avg = Path(environ['FREESURFER_HOME']) / 'average'
+
+    # generate a unique file name in the same folder
+    if nii.name.endswith('.nii.gz'):
+        suffix = '.nii.gz'
+    elif nii.name.endswith('.nii'):
+        suffix = '.nii'
+    nii_tmp = Path(mkstemp(dir=nii.parent, suffix=suffix)[1])
+    nii_tmp.unlink()
+
+    run([
+        'mri_deface',  # from freesurfer
+        nii,
+        path_avg / 'talairach_mixed_with_skull.gca',
+        path_avg / 'face.gca',
+        nii_tmp],
+        stdout=DEVNULL, stderr=DEVNULL,
+        cwd=gettempdir(),
+        )
+
+    nii_tmp.rename(nii)

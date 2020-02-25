@@ -78,7 +78,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             if subset is not None and sess.id not in subset_sess:
                 continue
 
-            bids_sess = 'ses-' + sess.name.lower() + '01'  # TODO: fix when there are multiple sessions
+            bids_sess = _make_sess_name(sess)
+
             sess_path = subj_path / bids_sess
             sess_path.mkdir(parents=True, exist_ok=True)
 
@@ -118,7 +119,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
-                        data_name = convert_mri(run, rec, mod_path, bids_run)
+                        data_name = convert_mri(run, rec, mod_path, bids_run, deface)
 
                     elif rec.modality == 'ieeg':
                         data_name = convert_ieeg(run, rec, mod_path, bids_run)
@@ -218,3 +219,12 @@ def _set_date_to_1900(base_date, datetime_of_interest):
     return datetime.combine(
         date(1900, 1, 1) + (datetime_of_interest.date() - base_date),
         datetime_of_interest.time())
+
+
+def _make_sess_name(sess):
+
+    if sess.name == 'MRI':
+        sess_name = sess.MagneticFieldStrength.lower()
+    else:
+        sess_name = sess.name.lower()
+    return 'ses-' + sess_name + '01'  # TODO: fix when there are multiple sessions
