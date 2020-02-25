@@ -1174,7 +1174,8 @@ class Interface(QMainWindow):
         self.modified()
 
     def delete_file(self, level_obj, file_obj):
-        level_obj.delete(file_obj)
+        level_obj.delete_file(file_obj)
+        self.list_files()
         self.modified()
 
     def closeEvent(self, event):
@@ -1250,7 +1251,7 @@ def make_edit(table, value):
 
 def make_integer(table, value):
     w = QSpinBox()
-    w.setRange(-500, 500)
+    w.setRange(-2e7, 2e7)
 
     if value is None:
         w.setValue(0)
@@ -1266,7 +1267,8 @@ def make_integer(table, value):
 
 def make_float(table, value):
     w = QDoubleSpinBox()
-    w.setRange(-500, 500)
+    w.setDecimals(3)
+    w.setRange(-1e8, 1e8)
 
     if value is None:
         w.setValue(0)

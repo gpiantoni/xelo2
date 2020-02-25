@@ -10,8 +10,12 @@ def load_tsv(fname, dtypes):
         for l in f:
             values = l.strip().split('\t')
             for h, v in zip(header, values):
-                if v == 'n/a' and issubdtype(dtypes[h], floating):
-                    v = NaN
+                if v == 'n/a':
+                    if issubdtype(dtypes[h], floating):
+                        v = NaN
+                    else:
+                        v = ''
+
                 d[h].append(v)
 
     X = empty(len(d[header[0]]), dtype=dtypes)

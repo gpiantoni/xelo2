@@ -83,7 +83,7 @@ def _convert_sidecar(run, rec, d):
         'Manufacturer': rec.Manufacturer,
         'TaskName': rename_task(run.task_name),
         'SamplingFrequency': int(d.header['s_freq']),
-        'iEEGReference': 'n/a',
+        'iEEGReference': rec.Reference,
         'PowerLineFrequency': 50,
         'SoftwareFilters': 'n/a',
         }
