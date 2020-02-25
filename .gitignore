@@ -1,0 +1,7 @@
+tests/data/
+
+.ipynb_checkpoints/
+*.ipynb
+
+.coverage
+htmlcov/

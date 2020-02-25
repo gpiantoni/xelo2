@@ -15,3 +15,7 @@ EXPORTED_DIR.mkdir(exist_ok=True)
 EXPORT_0 = EXPORTED_DIR / 'export_0'
 EXPORT_DB = EXPORTED_DIR / 'imported.db'
 EXPORT_1 = EXPORTED_DIR / 'export_1'
+
+IO_DIR = GENERATED_DIR / 'io'
+IO_DIR.mkdir(exist_ok=True)
+TSV_PATH = IO_DIR / 'exported_events.tsv'
