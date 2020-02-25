@@ -1,15 +1,8 @@
 from datetime import timedelta, datetime
 from nibabel.parrec import parse_PAR_header
 
-"""
-subj = Subject.add('echten')
-sess = subj.add_session('MRI')
-sess.MagneticFieldStrength = '3T'
-"""
-
 
 def add_parrec_to_sess(sess, par_file):
-    print(f'Parsing {par_file}')
     hdr, image = parse_PAR_header(par_file.open())
 
     info = _get_MRI_info(hdr)
