@@ -155,9 +155,13 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
 
 def _list_scans(tsv_file, scans):
+
     with tsv_file.open('w') as f:
         f.write('\t'.join(scans[0].keys()) + '\n')
         for scan in scans:
+            for k, v in scan.items():
+                if v is None:
+                    scan[k] = 'n/a'
             f.write('\t'.join(scan.values()) + '\n')
 
 

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from xelo2.api.structure import Subject
 from xelo2.io.tsv import save_tsv, load_tsv
 from xelo2.io.parrec import add_parrec_to_sess
@@ -20,12 +22,11 @@ def test_export_events():
 
 def test_import_parrec(db):
     subj = Subject('subject_test')
+    subj.date_of_birth = datetime(1950, 1, 1)
     sess = subj.list_sessions()[0]
 
     n_runs = len(sess.list_runs())
-    run = add_parrec_to_sess(sess, T1_PATH)
+    add_parrec_to_sess(sess, T1_PATH)
     assert len(sess.list_runs()) == n_runs + 1
-
-    run.attach_protocol(subj.list_protocols()[0])
 
     db.commit()
