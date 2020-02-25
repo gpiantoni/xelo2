@@ -1,17 +1,12 @@
 from datetime import datetime, date
-from pytest import raises, fixture
+from pytest import raises
 from numpy import empty
 
-from xelo2.database.create import open_database
 from xelo2.api import Subject, list_subjects, Electrodes, Channels
 from xelo2.api.filetype import parse_filetype
 
-from .paths import DB_PATH, TRC_PATH
-
-
-@fixture(scope="module")
-def db():
-    return open_database(DB_PATH)
+from .paths import TRC_PATH
+from .utils import db
 
 
 def test_api_subject(db):
