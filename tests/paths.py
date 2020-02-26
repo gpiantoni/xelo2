@@ -1,15 +1,5 @@
 from pathlib import Path
-from os import getrandom
-from numpy import prod, sum
-from nibabel.parrec import parse_PAR_header
-
-
-def create_random_rec(par_file):
-    hdr, image = parse_PAR_header(par_file.open())
-    n_bytes = sum(prod(image['recon resolution'], axis=1) * image['image pixel size'] / 8)
-
-    with par_file.with_suffix('.REC').open('wb') as f:
-        f.write(getrandom(int(n_bytes)))
+from .utils import create_random_rec
 
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -19,14 +9,17 @@ GENERATED_DIR.mkdir(exist_ok=True, parents=True)
 
 DB_PATH = GENERATED_DIR / 'sqlite.db'
 LOG_PATH = GENERATED_DIR / 'log_file.txt'
-TRC_PATH = DATA_DIR / 'empty.TRC'
 
 EXAMPLE_DIR = DATA_DIR / 'example'
 EXAMPLE_DIR.mkdir(exist_ok=True)
+
 PARREC_DIR = EXAMPLE_DIR / 'parrec'
 
 T1_PATH = PARREC_DIR / 'T1.PAR'
 create_random_rec(T1_PATH)
+
+IEEG_DIR = EXAMPLE_DIR / 'ieeg'
+TRC_PATH = IEEG_DIR / 'micromed.TRC'
 
 EXPORTED_DIR = GENERATED_DIR / 'export'
 EXPORTED_DIR.mkdir(exist_ok=True)

@@ -4,12 +4,13 @@ from numpy import empty
 
 from xelo2.api import Subject, list_subjects, Electrodes, Channels
 from xelo2.api.filetype import parse_filetype
+from xelo2.database.create import open_database
 
-from .paths import TRC_PATH
-from .utils import db
+from .paths import TRC_PATH, DB_PATH
 
 
-def test_api_subject(db):
+def test_api_subject():
+    db = open_database(DB_PATH)
 
     subj = Subject.add('subject_test')
     assert subj.id == 1
@@ -29,6 +30,7 @@ def test_api_subject(db):
 
 
 def test_api_session():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     sess = subj.add_session('MRI')
@@ -55,6 +57,7 @@ def test_api_session():
 
 
 def test_api_run():
+    db = open_database(DB_PATH)
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
 
@@ -75,6 +78,7 @@ def test_api_run():
 
 
 def test_api_protocol():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     protocol_1 = subj.add_protocol('14-622')
@@ -111,6 +115,7 @@ def test_api_protocol():
 
 
 def test_api_recording():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
@@ -131,6 +136,7 @@ def test_api_recording():
 
 
 def test_api_experimenters():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
@@ -140,6 +146,7 @@ def test_api_experimenters():
 
 
 def test_api_events():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     sess = subj.list_sessions()[0]
@@ -162,6 +169,7 @@ def test_api_events():
 
 
 def test_api_files():
+    db = open_database(DB_PATH)
 
     subj = list_subjects()[0]
     file = subj.add_file(parse_filetype(TRC_PATH), TRC_PATH)
@@ -178,6 +186,8 @@ def test_api_files():
 
 
 def test_api_sorting():
+    db = open_database(DB_PATH)
+
     subj_2 = Subject.add('second_subject')
     sess = subj_2.add_session('MRI')
     sess.add_run(
@@ -201,6 +211,7 @@ def test_api_sorting():
 
 
 def test_api_electrodes_channels():
+    db = open_database(DB_PATH)
 
     elec = Electrodes()
     assert elec.CoordinateUnits == 'mm'
@@ -234,7 +245,8 @@ def test_api_electrodes_channels():
         chan.data = values
 
 
-def test_api_electrodes_channels_attach(db):
+def test_api_electrodes_channels_attach():
+    db = open_database(DB_PATH)
 
     subj = Subject.add('Subj_with_ieeg')
     sess = subj.add_session('OR')

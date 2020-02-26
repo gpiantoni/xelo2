@@ -3,9 +3,9 @@ from datetime import datetime
 from xelo2.api.structure import Subject
 from xelo2.io.tsv import save_tsv, load_tsv
 from xelo2.io.parrec import add_parrec_to_sess
+from xelo2.database.create import open_database
 
-from .paths import TSV_PATH, T1_PATH
-from .utils import db
+from .paths import TSV_PATH, T1_PATH, DB_PATH
 
 
 def test_export_events():
@@ -20,7 +20,10 @@ def test_export_events():
     load_tsv(TSV_PATH, X.dtype)
 
 
-def test_import_parrec(db):
+def test_import_parrec():
+    db = open_database(DB_PATH)
+    db.transaction()
+
     subj = Subject('subject_test')
     subj.date_of_birth = datetime(1950, 1, 1)
     sess = subj.list_sessions()[0]
@@ -29,4 +32,4 @@ def test_import_parrec(db):
     add_parrec_to_sess(sess, T1_PATH)
     assert len(sess.list_runs()) == n_runs + 1
 
-    db.commit()
+    assert db.commit()
