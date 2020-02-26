@@ -7,6 +7,7 @@ from bidso.utils import remove_underscore, add_underscore
 
 from .utils import find_next_value, rename_task
 from ..io.tsv import save_tsv
+from ..io.ieeg import localize_blackrock
 
 
 lg = getLogger(__name__)
@@ -24,7 +25,7 @@ def convert_ieeg(run, rec, dest_path, stem):
     if file_path.suffix == '.nev':
         file_path = file_path.with_suffix('.ns3')
 
-    d = Dataset(file_path)
+    d = localize_blackrock(Dataset(file_path))
     data = d.read_data(begtime=start_time, endtime=end_time)
 
     output_ieeg = dest_path / fr'{stem}_run-(\d)_{rec.modality}.eeg'

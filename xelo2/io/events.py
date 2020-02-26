@@ -3,6 +3,7 @@ from wonambi import Dataset
 from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
 from logging import getLogger
+from .ieeg import localize_blackrock
 
 lg = getLogger(__name__)
 
@@ -10,7 +11,7 @@ lg = getLogger(__name__)
 def read_events_from_ieeg(run, rec, file):
     """Make sure that rec.offset is in the good direction"""
     try:
-        d = Dataset(file.path)
+        d = localize_blackrock(Dataset(file.path))
     except UnrecognizedFormat:
         lg.warning(f'cannot parse poorly edited BCI2000 file ({file.path})')
         return None

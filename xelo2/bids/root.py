@@ -100,7 +100,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                     continue
 
                 if len(run.list_recordings()) == 0:
-                    lg.warning(f'Not recordings for {run.task_name}')
+                    lg.warning(f'No recordings for {subj.code}/{run.task_name}')
                     continue
 
                 if progress is not None:
@@ -128,6 +128,9 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         data_name = convert_mri(run, rec, mod_path, bids_run, deface)
 
                     elif rec.modality == 'ieeg':
+                        if run.duration is None:
+                            lg.warning(f'You need to specify duration for {subj.code}/{run.task_name}')
+
                         data_name = convert_ieeg(run, rec, mod_path, bids_run)
 
                     else:
