@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from xelo2.database.create import create_database, open_database
+from xelo2.database.create import open_database
 from xelo2.api.structure import Subject, Channels
 from xelo2.gui.interface import Interface
 
@@ -12,7 +12,7 @@ def test_add_items():
     db = open_database(DB_PATH)
     db.transaction()
 
-    subj = Subject(code='Subj_with_ieeg')
+    subj = Subject(code='Subjwithieeg')
     sess = subj.list_sessions()[0]
     fake_time = datetime(2000, 3, 1, 10, 0, 0)
     run = sess.add_run('picnam', fake_time)

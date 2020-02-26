@@ -11,22 +11,24 @@ from .paths import TRC_PATH, DB_PATH
 
 def test_api_subject():
     db = open_database(DB_PATH)
+    db.transaction()
 
-    subj = Subject.add('subject_test')
+    subj = Subject.add('subjecttest')
     assert subj.id == 1
     assert str(subj) == '<subject (#1)>'
-    assert repr(subj) == 'Subject(code="subject_test")'
+    assert repr(subj) == 'Subject(code="subjecttest")'
 
     with raises(ValueError):
-        Subject.add('subject_test')
+        Subject.add('subjecttest')
 
     with raises(ValueError):
         Subject('does_not_exist')
 
-    subj_copy = Subject('subject_test')
+    subj_copy = Subject('subjecttest')
 
     assert subj == subj_copy
     assert len({subj, subj_copy}) == 1
+    db.commit()
 
 
 def test_api_session():
@@ -188,7 +190,7 @@ def test_api_files():
 def test_api_sorting():
     db = open_database(DB_PATH)
 
-    subj_2 = Subject.add('second_subject')
+    subj_2 = Subject.add('secondsubject')
     sess = subj_2.add_session('MRI')
     sess.add_run(
         'DTI',
@@ -206,7 +208,7 @@ def test_api_sorting():
         )
     assert len(sess.list_runs()) == 4
 
-    Subject.add('third_subject')
+    Subject.add('thirdsubject')
     assert len(list_subjects()) == 3
 
 
@@ -248,7 +250,7 @@ def test_api_electrodes_channels():
 def test_api_electrodes_channels_attach():
     db = open_database(DB_PATH)
 
-    subj = Subject.add('Subj_with_ieeg')
+    subj = Subject.add('Subjwithieeg')
     sess = subj.add_session('OR')
     run = sess.add_run('motor')
     recording = run.add_recording('ieeg')

@@ -18,12 +18,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 
 from functools import partial
-from wonambi import Dataset
-from numpy import issubdtype, floating, integer, empty
+from numpy import issubdtype, floating, integer
 
 from ..database import TABLES
 from .utils import LEVELS, _protocol_name
 from ..api.filetype import parse_filetype
+from ..io.ieeg import read_info_from_ieeg
 
 
 class NewFile(QDialog):
@@ -83,28 +83,6 @@ class NewFile(QDialog):
                 self.format.setCurrentText(filetype)
 
 
-def _read_info_from_ieeg(path_to_file, dtypes):
-    """This could go to xelo2/io"""
-
-    if path_to_file.suffix == '.nev':  # ns3 has more information (f.e. n_samples when there are no triggers)
-        path_to_file = path_to_file.with_suffix('.ns3')
-
-    d = Dataset(path_to_file)
-    mrk = d.read_markers()
-
-    ev = empty(len(mrk), dtype=dtypes)
-    ev['onset'] = [x['start'] for x in mrk]
-    ev['duration'] = [x['start'] for x in mrk]
-    ev['value'] = [x['name'] for x in mrk]
-
-    info = {
-        'start_time': d.header['start_time'],
-        'duration': d.header['n_samples'] / d.header['s_freq'],
-        'events': ev
-        }
-    return info
-
-
 def _prepare_values(run, info):
     run_duration = run.duration
     if run_duration is None:
@@ -140,7 +118,7 @@ class CompareEvents(QDialog):
     def __init__(self, parent, run, ieeg_file):
         super().__init__(parent)
 
-        self.info = _read_info_from_ieeg(ieeg_file, run.events.dtype)
+        self.info = read_info_from_ieeg(ieeg_file)
 
         layout = QGridLayout(self)
 

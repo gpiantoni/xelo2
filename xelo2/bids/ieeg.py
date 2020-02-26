@@ -76,7 +76,6 @@ def _select_ieeg(rec):
 
 
 def _convert_sidecar(run, rec, d):
-    chans = rec.channels.data
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
@@ -87,8 +86,11 @@ def _convert_sidecar(run, rec, d):
         'PowerLineFrequency': 50,
         'SoftwareFilters': 'n/a',
         }
-    for chan_type in ('ECOG', 'SEEG', 'EEG', 'EOG', 'ECG', 'EMG', 'Misc', 'Trigger'):
-        D[f'{chan_type}ChannelCount'] = int(sum(chans['type'] == chan_type))
+    channels = rec.channels
+    if channels is not None:
+        chans = channels.data
+        for chan_type in ('ECOG', 'SEEG', 'EEG', 'EOG', 'ECG', 'EMG', 'Misc', 'Trigger'):
+            D[f'{chan_type}ChannelCount'] = int(sum(chans['type'] == chan_type))
     D['RecordingDuration'] = int(run.duration)
     D['RecordingType'] = 'continuous'
     D['ElectricalStimulation'] = False

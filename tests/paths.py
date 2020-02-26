@@ -1,4 +1,5 @@
 from pathlib import Path
+from shutil import rmtree
 from .utils import create_random_rec
 
 
@@ -33,3 +34,4 @@ IO_DIR.mkdir(exist_ok=True)
 TSV_PATH = IO_DIR / 'exported_events.tsv'
 
 BIDS_DIR = GENERATED_DIR / 'bids'
+rmtree(BIDS_DIR)

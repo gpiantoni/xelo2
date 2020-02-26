@@ -97,6 +97,10 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 if subset is not None and run.id not in subset_run:
                     continue
 
+                if len(run.list_recordings()) == 0:
+                    lg.warning(f'Not recordings for {run.task_name}')
+                    continue
+
                 if progress is not None:
                     progress.setValue(i)
                     i += 1
