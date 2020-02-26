@@ -47,6 +47,7 @@ def read_info_from_ieeg(path_to_file):
 
 def localize_blackrock(d):
     if d.IOClass == BlackRock:
-        d.header['start_time'] = d.header['start_time'].astimezone(timezone('Europe/Amsterdam'))
+        start_time = d.header['start_time'].astimezone(timezone('Europe/Amsterdam'))
+        d.header['start_time'] = start_time.replace(tzinfo=None)
 
     return d

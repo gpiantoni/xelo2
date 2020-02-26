@@ -2,6 +2,7 @@ from logging import getLogger
 from pathlib import Path
 from datetime import date, datetime
 from functools import partial
+from numpy import isin
 
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -1156,7 +1157,10 @@ class Interface(QMainWindow):
         rec = self.current('recordings')
         chan = rec.channels
         chan_data = chan.data
-        n_chan = chan_data.shape[0]
+        idx = isin(chan_data['type'], ('ECOG', 'SEEG'))
+        n_chan = idx.sum()
+        lg.warning(f'# of ECOG/SEEG channels for this recording: {n_chan}')
+
         xyz = import_electrodes(mat_file, n_chan)
         if xyz is None:
             print('you need to do this manually')
@@ -1164,7 +1168,7 @@ class Interface(QMainWindow):
 
         elec = Electrodes()
         elec_data = elec.empty(n_chan)
-        elec_data['name'] = chan_data['name']
+        elec_data['name'] = chan_data['name'][idx]
         elec_data['x'] = xyz[:, 0]
         elec_data['y'] = xyz[:, 1]
         elec_data['z'] = xyz[:, 2]
