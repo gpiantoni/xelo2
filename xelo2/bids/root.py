@@ -60,6 +60,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
         # use relative date based on date_of_signature
         date_of_signature = min([p.date_of_signature for p in subj.list_protocols()])
+        if date_of_signature is None:
+            lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
 
         bids_subj = 'sub-' + subj.code
         subj_path = data_path / bids_subj

@@ -1,3 +1,5 @@
+from logging import getLogger
+from pathlib import Path
 from PyQt5.QtWidgets import (
     QAction,
     QComboBox,
@@ -25,6 +27,8 @@ from .utils import LEVELS, _protocol_name
 from ..api.filetype import parse_filetype
 from ..io.ieeg import read_info_from_ieeg
 
+lg = getLogger(__name__)
+
 
 class NewFile(QDialog):
 
@@ -41,6 +45,7 @@ class NewFile(QDialog):
 
         self.filepath = QLineEdit()
         self.filepath.setFixedWidth(800)
+        self.filepath.editingFinished.connect(self.set_filetype)
         browse = QPushButton('Browse ...')
         browse.clicked.connect(self.browse)
         self.format = QComboBox()
@@ -72,16 +77,20 @@ class NewFile(QDialog):
 
         if filename:
             self.filepath.setText(filename)
+            self.set_filetype(filename)
 
-            try:
-                filetype = parse_filetype(filename)
+    def set_filetype(self, filename=None):
+        if filename is None:
+            filename = Path(self.filepath.text()).resolve()
 
-            except ValueError as err:
-                print(err)
+        try:
+            filetype = parse_filetype(filename)
 
-            else:
-                self.format.setCurrentText(filetype)
+        except ValueError as err:
+            lg.debug(err)
 
+        else:
+            self.format.setCurrentText(filetype)
 
 def _prepare_values(run, info):
     run_duration = run.duration
