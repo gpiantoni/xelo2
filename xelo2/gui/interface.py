@@ -57,6 +57,7 @@ from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec_to_sess
+from ..io.ieeg import add_ieeg_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ieeg
@@ -1069,6 +1070,23 @@ class Interface(QMainWindow):
                 break
 
         progress.setValue(i + 1)
+        self.list_runs(sess)
+        self.list_params()
+        self.modified()
+
+    def io_ieeg(self):
+        sess = self.current('sessions')
+
+        ieeg_file = QFileDialog.getOpenFileName(
+            self,
+            "Select File",
+            None)[0]
+
+        if ieeg_file == '':
+            return
+
+        add_ieeg_to_sess(sess, Path(ieeg_file))
+
         self.list_runs(sess)
         self.list_params()
         self.modified()

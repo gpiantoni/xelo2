@@ -43,7 +43,7 @@ def create_menubar(main):
     menu_db.addAction(action_info)
 
     # New
-    menu_new = menubar.addMenu('Add ...')
+    menu_new = menubar.addMenu('Add')
     for level in LEVELS:
         action = QAction(f'new {level[:-1]}', main)
         action.triggered.connect(partial(main.new_item, level=level))
@@ -68,13 +68,14 @@ def create_menubar(main):
     menu_search.addAction(action_export)
 
     # io
-    menu_io = menubar.addMenu('Import ...')
+    menu_io = menubar.addMenu('Import')
     action_parrec = QAction('PAR/REC folder ...', main)
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
-    action_events = QAction('only events from IEEG recording', main)
-    action_events.triggered.connect(main.io_events_only)
-    menu_io.addAction(action_events)
+    menu_io.addSeparator()
+    action_ieeg = QAction('iEEG file ...', main)
+    action_ieeg.triggered.connect(main.io_ieeg)
+    menu_io.addAction(action_ieeg)
     action_events = QAction('info and events from IEEG recording', main)
     action_events.triggered.connect(main.io_events)
     menu_io.addAction(action_events)
@@ -84,6 +85,10 @@ def create_menubar(main):
     action_elec = QAction('electrodes from ALICE ...', main)
     action_elec.triggered.connect(main.io_electrodes)
     menu_io.addAction(action_elec)
+    menu_io.addSeparator()
+    action_events = QAction('only events from IEEG recording (deprecated)', main)
+    action_events.triggered.connect(main.io_events_only)
+    menu_io.addAction(action_events)
 
 
 def create_shortcuts(main):
