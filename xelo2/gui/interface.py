@@ -65,7 +65,7 @@ from ..io.export_db import export_database
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import LEVELS, _protocol_name
-from .actions import create_menubar, Search, create_shortcuts
+from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import NewFile, Popup_Experimenters, Popup_Protocols, CompareEvents
 
 EXTRA_LEVELS = ('channels', 'electrodes')
@@ -134,7 +134,7 @@ class Interface(QMainWindow):
         self.electrodes_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='electrodes'))
 
         # FILES: Widget
-        t_files = QTableWidget()
+        t_files = FilesWidget(self)
         t_files.horizontalHeader().setStretchLastSection(True)
         t_files.setSelectionBehavior(QAbstractItemView.SelectRows)
         t_files.setColumnCount(3)
@@ -1020,8 +1020,8 @@ class Interface(QMainWindow):
 
             self.modified()
 
-    def new_file(self, checked):
-        get_new_file = NewFile(self)
+    def new_file(self, checked=None, filename=None):
+        get_new_file = NewFile(self, filename=filename)
         result = get_new_file.exec()
 
         if result:
@@ -1031,8 +1031,8 @@ class Interface(QMainWindow):
             path = get_new_file.filepath.text()
             item.add_file(format, path)
 
-        self.list_files()
-        self.modified()
+            self.list_files()
+            self.modified()
 
     def edit_file(self, level_obj, file_obj):
         get_new_file = NewFile(self, file_obj, level_obj)

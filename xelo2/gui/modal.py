@@ -32,7 +32,7 @@ lg = getLogger(__name__)
 
 class NewFile(QDialog):
 
-    def __init__(self, parent, file_obj=None, level_obj=None):
+    def __init__(self, parent, file_obj=None, level_obj=None, filename=None):
         super().__init__(parent)
         self.setWindowModality(Qt.WindowModal)
 
@@ -72,6 +72,12 @@ class NewFile(QDialog):
             self.filepath.setText(str(file_obj.path))
             self.format.setCurrentText(file_obj.format)
 
+        if filename is not None:
+            self.filepath.setText(filename)
+            self.set_filetype()
+            self.filepath.setEnabled(False)
+            self.set_filetype(filename)
+
     def browse(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Select File')
 
@@ -88,6 +94,7 @@ class NewFile(QDialog):
 
         except ValueError as err:
             lg.debug(err)
+            print(err)
 
         else:
             self.format.setCurrentText(filetype)

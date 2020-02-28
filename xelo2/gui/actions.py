@@ -3,7 +3,9 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
     QShortcut,
+    QTableWidget,
     )
+from PyQt5.QtCore import QUrl
 from PyQt5.QtSql import QSqlQuery
 
 from .utils import LEVELS
@@ -133,3 +135,22 @@ class Search():
         self.recordings = []
 
         self.previous = ''
+
+
+class FilesWidget(QTableWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.setAcceptDrops(True)
+        self.parent = parent
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        # this one is also necessary for QTableWidget
+        event.accept()
+
+    def dropEvent(self, event):
+        file_text = event.mimeData().text()
+        file_path = QUrl(file_text).toLocalFile().strip()
+        self.parent.new_file(filename=file_path)
