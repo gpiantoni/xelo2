@@ -47,11 +47,24 @@ def _convert_chan_elec(rec, base_name):
     if channels is not None:
         channels_tsv = add_underscore(base_name, 'channels.tsv')
         save_tsv(channels_tsv, channels.data)
+        replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
         save_tsv(electrodes_tsv, electrodes.data)
+
+
+def replace_micro(channels_tsv):
+    """delete this when the PR is accepted
+    https://github.com/bids-standard/bids-validator/pull/923"""
+    with channels_tsv.open() as f:
+        x = f.read()
+
+    x = x.replace('μ', 'µ')  # 'GREEK SMALL LETTER MU' -> 'MICRO SIGN'
+
+    with channels_tsv.open('w') as f:
+        f.write(x)
 
 
 def _select_ieeg(rec):
