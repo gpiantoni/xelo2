@@ -34,7 +34,7 @@ def read_info_from_ieeg(path_to_file):
 
     ev = empty(len(mrk), dtype=DTYPES)
     ev['onset'] = [x['start'] for x in mrk]
-    ev['duration'] = [x['start'] for x in mrk]
+    ev['duration'] = [x['end'] - x['start'] for x in mrk]
     ev['value'] = [x['name'] for x in mrk]
 
     info = {

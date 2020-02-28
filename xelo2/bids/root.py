@@ -62,16 +62,23 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         date_of_signature = min([p.date_of_signature for p in subj.list_protocols()])
         if date_of_signature is None:
             lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
+            continue
 
         bids_subj = 'sub-' + subj.code
         subj_path = data_path / bids_subj
         subj_path.mkdir(parents=True, exist_ok=True)
 
-        age = (date_of_signature - subj.date_of_birth).days // 365.2425
+        if subj.date_of_birth is None:
+            lg.warning(f'You need to add date_of_birth to {subj.code}')
+            age = 'n/a'
+        else:
+            age = (date_of_signature - subj.date_of_birth).days // 365.2425
+            age = f'{age:.0f}'
+
         participants.append({
             'participant_id': bids_subj,
             'sex': subj.sex,
-            'age': f'{age:.0f}',
+            'age': age,
             'group': 'patient',
             })
 
@@ -130,6 +137,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                     elif rec.modality == 'ieeg':
                         if run.duration is None:
                             lg.warning(f'You need to specify duration for {subj.code}/{run.task_name}')
+                            continue
 
                         data_name = convert_ieeg(run, rec, mod_path, bids_run)
 

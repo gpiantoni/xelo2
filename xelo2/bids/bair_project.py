@@ -1,3 +1,6 @@
+from itertools import chain
+
+
 TASK_TYPES = {
     'visual': [],
     'motor': [],
@@ -16,7 +19,13 @@ def make_bair_compatible(bids_dir):
 
 def add_umcu_to_sub_ses(bids_dir):
 
-    for tsv_file in bids_dir.glob('**/*.tsv'):
+    TEXT_FILES = chain(
+        bids_dir.glob('**/*.tsv'),
+        bids_dir.glob('**/*.vhdr'),
+        bids_dir.glob('**/*.vmrk'),
+        )
+
+    for tsv_file in TEXT_FILES:
         with tsv_file.open() as f:
             txt = f.read()
         txt = txt.replace('sub-', 'sub-umcu')

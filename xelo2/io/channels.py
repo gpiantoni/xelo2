@@ -33,6 +33,7 @@ def create_channels_trc(trc_path):
     channels['low_cutoff'] = low_cutoff
     channels['reference'] = [ch['ground'] for ch in trc_chans]  # it's called ground but I'm pretty sure it's the reference
     channels['groups'] = chan_groups
+    channels['status'] = 'good'
 
     chan.data = channels
 
@@ -56,6 +57,7 @@ def create_channels_blackrock(blackrock_path):
     channels['high_cutoff'] = [ch['HighFreqCorner'] / 1000 for ch in b_chans]
     channels['low_cutoff'] = [ch['LowFreqCorner'] / 1000 for ch in b_chans]
     channels['groups'] = 'HD'
+    channels['status'] = 'good'
 
     chan.data = channels
 
