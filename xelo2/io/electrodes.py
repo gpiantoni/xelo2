@@ -11,10 +11,9 @@ def import_electrodes(mat_file, n_chan):
 
     try:
         mat_all = loadmat(mat_file)
-        for varname in f:
+        for varname, mat in mat_all.items():
             if varname.startswith('__'):
                 continue
-            mat = mat_all[varname]
             elec = _find_electrodes(mat, n_chan)
             if elec is not None:
                 return elec
@@ -39,7 +38,6 @@ def _find_electrodes(mat, n_chan):
 
     has_nan = isnan(mat).all(axis=1)
     mat = mat[~has_nan, :3]
-    print(mat.shape)
 
     if mat.shape[0] == n_chan:
         return mat
