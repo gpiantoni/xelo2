@@ -10,6 +10,8 @@ def load_tsv(fname, dtypes):
         for l in f:
             values = l.strip().split('\t')
             for h, v in zip(header, values):
+                if h == 'group':
+                    h = 'groups'
                 if v == 'n/a':
                     if issubdtype(dtypes[h], floating):
                         v = NaN
@@ -20,6 +22,8 @@ def load_tsv(fname, dtypes):
 
     X = empty(len(d[header[0]]), dtype=dtypes)
     for h in header:
+        if h == 'group':
+            h = 'groups'
         X[h] = d[h]
     return X
 

@@ -1,18 +1,45 @@
-from numpy import isnan
+from numpy import isnan, transpose
 from scipy.io import loadmat
+
+try:
+    from h5py import File
+except ImportError:
+    File = None
 
 
 def import_electrodes(mat_file, n_chan):
 
-    mat_all = loadmat(mat_file)
-    varname = [x for x in mat_all if x[:2] != '__'][0]
-    mat = mat_all[varname]
+    try:
+        mat_all = loadmat(mat_file)
+        for varname in f:
+            if varname.startswith('__'):
+                continue
+            mat = mat_all[varname]
+            elec = _find_electrodes(mat, n_chan)
+            if elec is not None:
+                return elec
 
+    except NotImplementedError:
+        if File is None:
+            raise ImportError('You need to install h5py to open this file')
+
+        with File(mat_file, 'r') as f:
+            for varname in f:
+                mat = transpose(f[varname][()])
+                elec = _find_electrodes(mat, n_chan)
+                if elec is not None:
+                    return elec
+
+    return None
+
+
+def _find_electrodes(mat, n_chan):
     if mat.shape[0] == n_chan:
         return mat
 
     has_nan = isnan(mat).all(axis=1)
     mat = mat[~has_nan, :3]
+    print(mat.shape)
 
     if mat.shape[0] == n_chan:
         return mat
