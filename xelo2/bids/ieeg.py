@@ -28,7 +28,14 @@ def convert_ieeg(run, rec, dest_path, stem):
     d = localize_blackrock(Dataset(file_path))
     data = d.read_data(begtime=start_time, endtime=end_time)
 
-    output_ieeg = dest_path / fr'{stem}_run-(\d)_{rec.modality}.eeg'
+    # get acq from manufacturer. It might be better to use channels.name but
+    # I am not sure
+    if rec.Manufacturer is None:
+        lg.warning(f'Please specify Manufacturer for {run} / {rec}')
+        acq = 'none'
+    else:
+        acq = rec.Manufacturer.lower()
+    output_ieeg = dest_path / fr'{stem}_acq-{acq}_run-(\d)_{rec.modality}.eeg'
     output_ieeg = find_next_value(output_ieeg)
     data.export(output_ieeg, 'brainvision', anonymize=True)
 
@@ -53,6 +60,8 @@ def _convert_chan_elec(rec, base_name):
     if electrodes is not None:
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
         save_tsv(electrodes_tsv, electrodes.data)
+        electrodes_json = add_underscore(base_name, '_coordsystem.json')
+        save_coordsystem(electrodes_tsv, electrodes)
 
 
 def replace_micro(channels_tsv):

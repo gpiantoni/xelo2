@@ -1,4 +1,6 @@
 from itertools import chain
+from bidso.utils import replace_underscore
+from json import dump
 
 
 TASK_TYPES = {
@@ -15,6 +17,7 @@ def make_bair_compatible(bids_dir):
 
     add_umcu_to_sub_ses(bids_dir)
     add_info_to_participants(bids_dir)
+    add_electrodes(bids_dir)
 
 
 def add_umcu_to_sub_ses(bids_dir):
@@ -71,6 +74,42 @@ def add_info_to_participants(bids_path):
 
     with tsv_file.open('w') as f:
         f.write('\n'.join(txt))
+
+
+def add_electrodes(bids_dir):
+
+    for bids_ieeg in bids_dir.glob('**/*_ieeg.eeg'):
+        _add_empty_elec(bids_ieeg)
+        _add_coordsystem(bids_ieeg)
+
+def _add_empty_elec(bids_ieeg):
+    elec_file = replace_underscore(bids_ieeg, 'electrodes.tsv')
+    if not elec_file.exists():
+        with elec_file.open('w') as f:
+            f.write('name\tx\ty\tz\tsize\tmaterial\tmanufacturer\tgroup\themisphere\ttype\timpedance\tdimension')
+
+
+def _add_coordsystem(bids_ieeg):
+    D = {
+        "iEEGCoordinateSystem": "other",
+        "iEEGCoordinateSystemDescription": "native T1w",
+        "iEEGCoordinateUnits": "mm",
+        "iEEGCoordinateProcessingDescription": "surface_projection",
+        "iEEGCoordinateProcessingReference": "PMID: 19836416"
+        }
+
+    anat_dir = bids_ieeg.parents[2] / 'ses-umcu3t01' / 'anat'
+    anat_t1w = list(anat_dir.glob('*_run-1_T1w.nii.gz'))
+    if len(anat_t1w) != 1:
+        print(f'{len(anat_t1w)} T1w images found in {anat_dir}')
+
+    else:
+        anat_t1w = anat_t1w[0]
+        D['IntendedFor'] = str(anat_t1w.relative_to(anat_t1w.parents[3]))
+
+    coordsys_file = replace_underscore(bids_ieeg, 'coordsystem.json')
+    with coordsys_file.open('w') as f:
+        dump(D, f, indent=2)
 
 
 def _find_task_type(subj_path, task_type):
