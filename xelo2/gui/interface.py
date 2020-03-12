@@ -314,6 +314,8 @@ class Interface(QMainWindow):
         to_select = None
         for subj in list_subjects(reverse=True):
             item = QListWidgetItem(subj.code)
+            if subj.complete == 'yes':
+                done(item)
             if subj.id in self.search.subjects:
                 highlight(item)
             item.setData(Qt.UserRole, subj)
@@ -363,6 +365,8 @@ class Interface(QMainWindow):
 
         for sess in subj.list_sessions():
             item = QListWidgetItem_time(sess, _session_name(sess))
+            if sess.complete == 'yes':
+                done(item)
             if sess.id in self.search.sessions:
                 highlight(item)
             self.lists['sessions'].addItem(item)
@@ -371,6 +375,8 @@ class Interface(QMainWindow):
         for protocol in subj.list_protocols():
             item = QListWidgetItem(_protocol_name(protocol))
             item.setData(Qt.UserRole, protocol)
+            if protocol.complete == 'yes':
+                done(item)
             self.lists['protocols'].addItem(item)
         self.lists['protocols'].setCurrentRow(0)
 
@@ -383,6 +389,8 @@ class Interface(QMainWindow):
 
         for run in sess.list_runs():
             item = QListWidgetItem_time(run, f'{run.task_name}')
+            if run.complete == 'yes':
+                done(item)
             if run.id in self.search.runs:
                 highlight(item)
             self.lists['runs'].addItem(item)
@@ -398,6 +406,8 @@ class Interface(QMainWindow):
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
+            if recording.complete == 'yes':
+                done(item)
             if recording.id in self.search.recordings:
                 highlight(item)
             self.lists['recordings'].addItem(item)
@@ -1358,6 +1368,10 @@ def highlight(item):
     font = item.font()
     font.setBold(True)
     item.setFont(font)
+
+
+def done(item):
+    item.setForeground(Qt.green)
 
 
 class QListWidgetItem_time(QListWidgetItem):
