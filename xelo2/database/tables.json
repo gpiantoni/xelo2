@@ -29,6 +29,15 @@
                 "Right-handed",
                 "Ambidextrous"
             ]
+        },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this subject is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
+            ]
         }
     },
     "protocols": {
@@ -56,6 +65,15 @@
             "name": "Date of Signature",
             "type": "DATE",
             "doc": "Date when the first protocol was signed"
+        },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this protocol is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
+            ]
         }
     },
     "sessions": {
@@ -69,6 +87,15 @@
                 "OR",
                 "MRI",
                 "CT"
+            ]
+        },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this session is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
             ]
         },
         "subtables": {
@@ -278,6 +305,15 @@
             "name": "Acquisition",
             "type": "TEXT"
         },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this run is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
+            ]
+        },
         "subtables": {
             "runs_mario": {
                 "run_id": null,
@@ -413,6 +449,15 @@
             "name": "duration",
             "doc": "Duration of the recording in s",
             "type": "FLOAT"
+        },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this recording is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
+            ]
         },
         "subtables": {
             "recordings_mri": {
