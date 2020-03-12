@@ -1,4 +1,3 @@
-from json import load
 from logging import getLogger
 from pathlib import Path
 from re import match
@@ -8,11 +7,11 @@ from PyQt5.QtSql import (
     QSqlQuery,
     )
 
-lg = getLogger(__name__)
-SQL_TABLES = Path(__file__).parent / 'tables.json'
+from .tables import TABLES
+from ..io.export_db import prepare_query
 
-with SQL_TABLES.open() as f:
-    TABLES = load(f)
+
+lg = getLogger(__name__)
 
 
 def open_database(db_name, db_type='QSQLITE'):
@@ -73,6 +72,8 @@ def create_database(db_name, db_type='QSQLITE'):
 
     values.pop('experimenters')  # experimenters is not constraint by the trigger system
     add_triggers(values)
+
+    add_views()
 
     db.close()
 
@@ -181,3 +182,12 @@ def add_experimenters(db, table_experimenters):
         assert QSqlQuery(db).exec(f"""\
             INSERT INTO experimenters ("name")
             VALUES ("{experimenter}")""")
+
+
+def add_views():
+    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
+    sql_cmd = 'CREATE VIEW all_recordings AS \n' + query_str
+    query = QSqlQuery(sql_cmd)
+
+    if not query.isActive():
+        lg.warning(query.lastError().databaseText())

@@ -15,6 +15,8 @@ from .utils import find_next_value, rename_task
 
 lg = getLogger(__name__)
 
+TOUCH = True
+
 
 def convert_mri(run, rec, dest_path, stem, deface=True):
     """Return base name for this run"""
@@ -23,17 +25,19 @@ def convert_mri(run, rec, dest_path, stem, deface=True):
     if file is None:
         return None
 
-    input_nii = convert_parrec_nibabel(file.path)
-
     output_nii = dest_path / fr'{stem}_run-(\d)_{rec.modality}.nii.gz'
     output_nii = find_next_value(output_nii)
 
-    move(input_nii, output_nii)
+    if TOUCH:
+        output_nii.touch()
 
-    if deface:
-        run_deface(output_nii)
+    else:
+        input_nii = convert_parrec_nibabel(file.path)
+        move(input_nii, output_nii)
+        _fix_tr(output_nii, run.RepetitionTime)
 
-    _fix_tr(output_nii, run.RepetitionTime)
+        if deface:
+            run_deface(output_nii)
 
     sidecar = _convert_sidecar(run, rec)
     sidecar_file = replace_extension(output_nii, '.json')
