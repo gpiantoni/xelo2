@@ -14,8 +14,14 @@ lg = getLogger(__name__)
 
 
 def convert_ieeg(run, rec, dest_path, stem):
-    start_time = run.start_time + timedelta(seconds=rec.offset)
-    end_time = start_time + timedelta(seconds=run.duration)
+    start_time = run.start_time + timedelta(seconds=rec.onset)
+
+    # use rec duration if possible, otherwise use run duration
+    if rec.duration is not None:
+        duration = rec.duration
+    else:
+        duration = run.duration
+    end_time = start_time + timedelta(seconds=duration)
 
     file = _select_ieeg(rec)
     if file is None:
