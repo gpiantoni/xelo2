@@ -135,6 +135,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
 
+                data_name = None
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):

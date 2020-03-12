@@ -9,7 +9,7 @@ lg = getLogger(__name__)
 
 
 def read_events_from_ieeg(run, rec, file):
-    """Make sure that rec.offset is in the good direction"""
+    """Make sure that rec.onset is in the good direction"""
     try:
         d = localize_blackrock(Dataset(file.path))
     except UnrecognizedFormat:
@@ -21,7 +21,7 @@ def read_events_from_ieeg(run, rec, file):
 
     markers = d.read_markers()
 
-    start_t = (run.start_time - d.header['start_time']).total_seconds() + rec.offset
+    start_t = (run.start_time - d.header['start_time']).total_seconds() + rec.onset
     if run.duration is not None:
         end_t = start_t + run.duration
     else:
