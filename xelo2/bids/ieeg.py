@@ -61,7 +61,7 @@ def _convert_chan_elec(rec, base_name):
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
         save_tsv(electrodes_tsv, electrodes.data)
         electrodes_json = add_underscore(base_name, '_coordsystem.json')
-        save_coordsystem(electrodes_tsv, electrodes)
+        save_coordsystem(electrodes_json, electrodes)
 
 
 def replace_micro(channels_tsv):
@@ -119,3 +119,16 @@ def _convert_sidecar(run, rec, d):
     D['ElectricalStimulation'] = False
 
     return D
+
+
+def save_coordsystem(electrodes_json, electrodes):
+    D = {
+        "iEEGCoordinateSystem": "other",
+        "iEEGCoordinateSystemDescription": "native T1w",
+        "iEEGCoordinateUnits": "mm",
+        "iEEGCoordinateProcessingDescription": "surface_projection",
+        "iEEGCoordinateProcessingReference": "PMID: 19836416",
+        }
+
+    with electrodes_json.open('w') as f:
+        dump(D, f, indent=2)

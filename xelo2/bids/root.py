@@ -59,7 +59,13 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             continue
 
         # use relative date based on date_of_signature
-        date_of_signature = min([p.date_of_signature for p in subj.list_protocols()])
+
+        protocols = [p.date_of_signature for p in subj.list_protocols()]
+        if len(protocols) == 0:
+            lg.warning(f'You need to add at least one research protocol for {subj.code}')
+            continue
+
+        date_of_signature = min(protocols)
         if date_of_signature is None:
             lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
             continue
@@ -149,11 +155,16 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         base_name = remove_underscore(data_name)
                         convert_events(run, base_name)
 
+                if data_name is None:
+                    continue
+
                 run_files.append({
                     'filename': str(data_name.relative_to(data_path)),
                     'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
                     })
 
+            if len(run_files) == 0:
+                continue
             tsv_file = sess_path / (bids_subj + '_' + bids_sess + '_scans.tsv')
             _list_scans(tsv_file, run_files)
 
