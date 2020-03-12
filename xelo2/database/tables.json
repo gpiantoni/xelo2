@@ -404,8 +404,14 @@
                 "stim"
             ]
         },
-        "offset": {
-            "name": "offset",
+        "onset": {
+            "name": "onset",
+            "doc": "Start of the recording in s, relative to the start of the run. To read the data, it will use the run.start_time + recording.onset to find the start time in the recorded file. So, this onset would also take into account the time difference between recording system.",
+            "type": "FLOAT"
+        },
+        "duration": {
+            "name": "duration",
+            "doc": "Duration of the recording in s",
             "type": "FLOAT"
         },
         "subtables": {

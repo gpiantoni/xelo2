@@ -372,11 +372,11 @@ class Run(Table_with_files):
                     run=self))
         return sorted(list_of_recordings, key=lambda obj: obj.modality)
 
-    def add_recording(self, modality, offset=0):
+    def add_recording(self, modality, onset=0):
 
         query = QSqlQuery(f"""\
-            INSERT INTO recordings ("run_id", "modality", "offset")
-            VALUES ("{self.id}", "{modality}", "{offset}")""")
+            INSERT INTO recordings ("run_id", "modality", "onset")
+            VALUES ("{self.id}", "{modality}", "{onset}")""")
 
         recording_id = query.lastInsertId()
         if recording_id is None:
