@@ -14,7 +14,7 @@ from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .events import convert_events
 from ..io.export_db import prepare_query
-from .utils import rename_task
+from .utils import find_next_value, rename_task
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -93,10 +93,9 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             if subset is not None and sess.id not in subset_sess:
                 continue
 
-            bids_sess = _make_sess_name(sess)
-
-            sess_path = subj_path / bids_sess
+            sess_path = _make_sess_name(subj_path, sess)
             sess_path.mkdir(parents=True, exist_ok=True)
+            bids_sess = sess_path.name
 
             sess_files.append({
                 'session_id': bids_sess,
@@ -254,10 +253,11 @@ def _set_date_to_1900(base_date, datetime_of_interest):
         datetime_of_interest.time())
 
 
-def _make_sess_name(sess):
+def _make_sess_name(subj_path, sess):
 
     if sess.name == 'MRI':
         sess_name = sess.MagneticFieldStrength.lower()
     else:
         sess_name = sess.name.lower()
-    return 'ses-' + sess_name + '01'  # TODO: fix when there are multiple sessions
+    sess_path = subj_path / ('ses-' + sess_name + r'(\d)')
+    return find_next_value(sess_path)
