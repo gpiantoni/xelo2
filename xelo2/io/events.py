@@ -3,7 +3,7 @@ from wonambi import Dataset
 from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
 from logging import getLogger
-from .ieeg import localize_blackrock
+from .utils import localize_blackrock
 
 lg = getLogger(__name__)
 

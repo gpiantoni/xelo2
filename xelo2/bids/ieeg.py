@@ -66,7 +66,7 @@ def _convert_chan_elec(rec, base_name):
     if electrodes is not None:
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
         save_tsv(electrodes_tsv, electrodes.data)
-        electrodes_json = add_underscore(base_name, '_coordsystem.json')
+        electrodes_json = add_underscore(base_name, 'coordsystem.json')
         save_coordsystem(electrodes_json, electrodes)
 
 

@@ -1,9 +1,9 @@
 from wonambi import Dataset
-from wonambi.ioeeg import BlackRock
-from pytz import timezone
 
 from numpy import empty
 
+from .utils import localize_blackrock
+from .events import read_events_from_ieeg
 from ..api.structure import _get_dtypes
 from ..database import TABLES
 from ..api.filetype import parse_filetype
@@ -20,8 +20,16 @@ def add_ieeg_to_sess(sess, ieeg_file):
     # default task is REST
     run = sess.add_run('rest', info['start_time'], info['duration'])
     rec = run.add_recording('ieeg')
+    rec.duration = info['duration']
+    rec.Manufacturer = info['manufacturer']
     filetype = parse_filetype(ieeg_file)
-    rec.add_file(filetype, ieeg_file)
+    file = rec.add_file(filetype, ieeg_file)
+
+    events = read_events_from_ieeg(run, rec, file)
+    if len(events) > 0:
+        run.events = events
+
+    return run
 
 
 def read_info_from_ieeg(path_to_file):
@@ -37,17 +45,15 @@ def read_info_from_ieeg(path_to_file):
     ev['duration'] = [x['end'] - x['start'] for x in mrk]
     ev['value'] = [x['name'] for x in mrk]
 
+    if path_to_file.suffix[:3] == '.ns':
+        manufacturer = 'BlackRock'
+    elif path_to_file.suffix.lower() in ('.trc', '.dat'):
+        manufacturer = 'Micromed'
+
     info = {
         'start_time': d.header['start_time'],
         'duration': d.header['n_samples'] / d.header['s_freq'],
-        'events': ev
+        'events': ev,
+        'manufacturer': manufacturer,
         }
     return info
-
-
-def localize_blackrock(d):
-    if d.IOClass == BlackRock:
-        start_time = d.header['start_time'].astimezone(timezone('Europe/Amsterdam'))
-        d.header['start_time'] = start_time.replace(tzinfo=None)
-
-    return d
