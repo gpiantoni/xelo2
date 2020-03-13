@@ -671,6 +671,11 @@
                 "mm",
                 "m"
             ]
+        },
+        "IntendedFor": {
+            "name": "IntendedFor (run_id)",
+            "doc": "this should point to the T1w used for this electrodes",
+            "type": "INTEGER"
         }
     },
     "electrodes": {
