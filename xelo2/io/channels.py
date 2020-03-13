@@ -3,6 +3,8 @@ from xelo2.api import Channels
 from numpy import nan
 from re import match
 
+ECOG_PATTERN = r'([A-Za-z ]+)\d+'
+
 
 def create_channels(ieeg_path):
     if ieeg_path.suffix.lower() == '.trc':
@@ -64,7 +66,7 @@ def create_channels_blackrock(blackrock_path):
     return chan
 
 
-def def_chan_type(label, elec_type='ECOG'):
+def def_chan_type(label):
     if label == '':
         return 'OTHER'
 
@@ -97,10 +99,10 @@ def def_chan_type(label, elec_type='ECOG'):
     if label.startswith('D'):
         return 'SEEG'
 
-    if elec_type == 'depth':
-        return 'SEEG'
-    else:
+    if match(ECOG_PATTERN, label):
         return 'ECOG'
+    else:
+        return 'OTHER'
 
 
 def def_groups(labels, chan_types):
@@ -110,7 +112,7 @@ def def_groups(labels, chan_types):
     return [_choose_group(label, groups) for label in labels]
 
 
-select_letters = lambda label: match('([A-Za-z ]+)\d+', label).group(1)
+select_letters = lambda label: match(ECOG_PATTERN, label).group(1)
 
 
 def _make_groups(labels, chan_types):
