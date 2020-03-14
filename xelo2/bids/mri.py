@@ -15,7 +15,7 @@ from .utils import find_next_value, rename_task
 
 lg = getLogger(__name__)
 
-TOUCH = False
+TOUCH = True
 
 
 def convert_mri(run, rec, dest_path, stem, deface=True):

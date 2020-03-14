@@ -9,7 +9,7 @@ from PyQt5.QtSql import QSqlQuery
 
 from bidso.utils import remove_underscore
 
-from ..api import list_subjects
+from ..api import list_subjects, Run
 from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .events import convert_events
@@ -42,6 +42,8 @@ def prepare_subset(where, subset=None):
 def create_bids(data_path, deface=True, subset=None, progress=None):
 
     if subset is not None:
+        subset = add_intended_for(subset)
+
         subset_subj = set(subset['subjects'])
         subset_sess = set(subset['sessions'])
         subset_run = set(subset['runs'])
@@ -239,6 +241,31 @@ def get_bids_acquisition(run):
             return 'ct'
 
     raise ValueError(f'I cannot determine BIDS folder for {repr(run)}')
+
+
+def add_intended_for(subset):
+    """Electrodes also need the reference T1w images, so we add it here"""
+
+    reference_t1w = []
+    for run_id in subset['runs']:
+        run = Run(id=run_id)
+        for rec in run.list_recordings():
+            electrodes = rec.electrodes
+            if electrodes is not None:
+                t1w_id = electrodes.IntendedFor
+                if t1w_id is not None:
+                    reference_t1w.append(t1w_id)
+
+    if len(reference_t1w) == 0:
+        return subset
+
+    elif len(reference_t1w) == 1:
+        run_id_sql = f'runs.id == {reference_t1w[0]}'
+
+    else:
+        run_id_sql = 'runs.id IN (' + ', '.join(str(x) for x in reference_t1w) + ')'
+
+    return prepare_subset(run_id_sql, subset)
 
 
 def _make_README(data_path):
