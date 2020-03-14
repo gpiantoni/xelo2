@@ -54,6 +54,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
     # the dataset_description.json is used by find_root, in some subscripts
     _make_dataset_description(data_path)
 
+    intendedfor = {}
+
     i = 0
     participants = []
     for subj in list_subjects():
@@ -147,7 +149,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                             lg.warning(f'You need to specify duration for {subj.code}/{run.task_name}')
                             continue
 
-                        data_name = convert_ieeg(run, rec, mod_path, bids_run)
+                        data_name = convert_ieeg(run, rec, mod_path, bids_run, intendedfor)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
@@ -160,8 +162,10 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 if data_name is None:
                     continue
 
+                relative_filename = str(data_name.relative_to(data_path))
+                intendedfor[run.id] = relative_filename
                 run_files.append({
-                    'filename': str(data_name.relative_to(data_path)),
+                    'filename': relative_filename,
                     'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
                     })
 

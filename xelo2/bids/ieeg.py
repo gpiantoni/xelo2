@@ -13,7 +13,7 @@ from ..io.ieeg import localize_blackrock
 lg = getLogger(__name__)
 
 
-def convert_ieeg(run, rec, dest_path, stem):
+def convert_ieeg(run, rec, dest_path, stem, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.onset)
 
     # use rec duration if possible, otherwise use run duration
@@ -51,11 +51,11 @@ def convert_ieeg(run, rec, dest_path, stem):
         dump(sidecar, f, indent=2)
 
     base_name = remove_underscore(output_ieeg)
-    _convert_chan_elec(rec, base_name)
+    _convert_chan_elec(rec, base_name, intendedfor)
     return output_ieeg
 
 
-def _convert_chan_elec(rec, base_name):
+def _convert_chan_elec(rec, base_name, intendedfor):
     channels = rec.channels
     if channels is not None:
         channels_tsv = add_underscore(base_name, 'channels.tsv')
@@ -67,7 +67,7 @@ def _convert_chan_elec(rec, base_name):
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
         save_tsv(electrodes_tsv, electrodes.data)
         electrodes_json = add_underscore(base_name, 'coordsystem.json')
-        save_coordsystem(electrodes_json, electrodes)
+        save_coordsystem(electrodes_json, electrodes, intendedfor)
 
 
 def replace_micro(channels_tsv):
@@ -127,7 +127,7 @@ def _convert_sidecar(run, rec, d):
     return D
 
 
-def save_coordsystem(electrodes_json, electrodes):
+def save_coordsystem(electrodes_json, electrodes, intendedfor):
     D = {
         "iEEGCoordinateSystem": "other",
         "iEEGCoordinateSystemDescription": "native T1w",
@@ -135,6 +135,12 @@ def save_coordsystem(electrodes_json, electrodes):
         "iEEGCoordinateProcessingDescription": "surface_projection",
         "iEEGCoordinateProcessingReference": "PMID: 19836416",
         }
+
+    if electrodes.IntendedFor is not None:
+        if electrodes.IntendedFor in intendedfor:
+            D['IntendedFor'] = intendedfor[electrodes.IntendedFor]
+        else:
+            print(f'Could not find the intended-for t1w for electrodes {electrodes}')
 
     with electrodes_json.open('w') as f:
         dump(D, f, indent=2)
