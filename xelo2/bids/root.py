@@ -12,6 +12,7 @@ from bidso.utils import remove_underscore
 from ..api import list_subjects, Run
 from .mri import convert_mri
 from .ieeg import convert_ieeg
+from .physio import convert_physio
 from .events import convert_events
 from ..io.export_db import prepare_query
 from .utils import find_next_value, rename_task
@@ -150,6 +151,9 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                             continue
 
                         data_name = convert_ieeg(run, rec, mod_path, bids_run, intendedfor)
+
+                    elif rec.modality == 'physio':
+                        convert_physio(rec, data_name)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
