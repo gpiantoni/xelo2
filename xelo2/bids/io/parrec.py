@@ -16,7 +16,6 @@ def convert_parrec_nibabel(par_file):
 
     parser = get_opt_parser()
     (opts, infiles) = parser.parse_args([
-        '--verbose',
         '--output-dir=' + tmp_dir,
         '--compressed',
         '--permit-truncated',
