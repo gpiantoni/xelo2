@@ -15,7 +15,7 @@ def convert_physio(rec, data_name):
             rec_name = 'dataglove'
             tsv, hdr = parse_dataglove_log(file.path)
 
-        elif file.format == 'scanphysiolog':
+        elif file.format == 'scanphyslog':
             rec_name = 'resp'
             tsv, hdr = parse_scanner_physio(file.path)
 
