@@ -127,6 +127,14 @@ class Interface(QMainWindow):
         self.channels_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.channels_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='channels'))
 
+        # ELECTRODES: Form
+        self.elec_form = QTableWidget()
+        self.elec_form.horizontalHeader().setStretchLastSection(True)
+        self.elec_form.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.elec_form.setColumnCount(2)
+        self.elec_form.setHorizontalHeaderLabels(['Parameter', 'Value'])
+        self.elec_form.verticalHeader().setVisible(False)
+
         # ELECTRODES: Widget
         self.electrodes_view = QTableView(self)
         self.electrodes_view.horizontalHeader().setStretchLastSection(True)
@@ -223,7 +231,12 @@ class Interface(QMainWindow):
 
         # electrodes
         dockwidget = QDockWidget('Electrodes', self)
-        dockwidget.setWidget(self.electrodes_view)
+        temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
+        elec_layout = QVBoxLayout(temp_widget)
+        elec_layout.addWidget(self.elec_form)
+        elec_layout.addWidget(self.electrodes_view)
+        dockwidget.setWidget(temp_widget)
+
         dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
         dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         dockwidget.setObjectName('dock_electrodes')  # savestate
@@ -649,6 +662,17 @@ class Interface(QMainWindow):
             self.channels_model.select()
 
         elif item.t == 'electrode_group':
+            self.elec_form.blockSignals(True)
+
+            parameters = table_widget(TABLES['electrode_groups'], item, self)
+            self.elec_form.setRowCount(len(parameters))
+            for i, kv in enumerate(parameters.items()):
+                k, v = kv
+                table_item = QTableWidgetItem(k)
+                self.elec_form.setItem(i, 0, table_item)
+                self.elec_form.setCellWidget(i, 1, v)
+            self.elec_form.blockSignals(False)
+
             self.electrodes_view.setEnabled(True)
             self.electrodes_model.setFilter(f'electrode_group_id == {item.id}')
             self.electrodes_model.select()
