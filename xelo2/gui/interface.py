@@ -455,7 +455,20 @@ class Interface(QMainWindow):
                 item.setData(Qt.UserRole, elec)
                 self.lists['electrodes'].addItem(item)
 
+    def statusbar_selected(self):
+
+        statusbar = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            statusbar.append(repr(obj))
+
+        self.statusBar().showMessage('\t'.join(statusbar))
+
     def list_params(self):
+        self.statusbar_selected()
 
         self.t_params.blockSignals(True)
         self.t_params.clearContents()
@@ -653,6 +666,8 @@ class Interface(QMainWindow):
     def show_channels_electrodes(self, current=None, previous=None):
         if current is None:
             return
+
+        self.statusbar_selected()
 
         item = current.data(Qt.UserRole)
 
