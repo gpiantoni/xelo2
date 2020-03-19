@@ -13,6 +13,10 @@ cache:
  - directories:
    - $HOME/.cache/pip
 
+before_install:
+ # create display with large resolution
+ - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16"
+
 install: 
   - pip install -U pip
   - pip install -U numpy
