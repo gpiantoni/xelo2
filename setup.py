@@ -22,6 +22,7 @@ setup(
         'PyQt5',
         'pandas',
         'nibabel',
+        'wonambi',
         ],
     entry_points={
         'console_scripts': [
