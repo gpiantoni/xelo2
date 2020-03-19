@@ -23,6 +23,7 @@ setup(
         'pandas',
         'nibabel',
         'wonambi',
+        'bidso',
         ],
     entry_points={
         'console_scripts': [
