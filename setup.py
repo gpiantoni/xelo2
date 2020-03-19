@@ -20,6 +20,8 @@ setup(
     install_requires=[
         'numpy',
         'PyQt5',
+        'pandas',
+        'nibabel',
         ],
     entry_points={
         'console_scripts': [
