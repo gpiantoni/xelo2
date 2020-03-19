@@ -34,4 +34,7 @@ IO_DIR.mkdir(exist_ok=True)
 TSV_PATH = IO_DIR / 'exported_events.tsv'
 
 BIDS_DIR = GENERATED_DIR / 'bids'
-rmtree(BIDS_DIR)
+try:
+    rmtree(BIDS_DIR)
+except FileNotFoundError:
+    pass
