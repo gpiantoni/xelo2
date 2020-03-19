@@ -16,7 +16,7 @@ cache:
 install: 
   - pip install -U pip
   - pip install -U numpy
-  - pip install PyQt5 nibabel pandas wonambi bidso
+  - pip install PyQt5==5.12 nibabel pandas wonambi bidso
   - pip install -U pytest pytest-cov pytest-qt codecov 
   - pip install -e .
 
