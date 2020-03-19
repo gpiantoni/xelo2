@@ -55,7 +55,8 @@ def _compare_table(PATH_0, PATH_1):
     with PATH_0.open() as f0, PATH_1.open() as f1:
         header = f0.readline()[:-1].split('\t')
         header = f1.readline()[:-1].split('\t')
-        id_codes = [i for i, h in enumerate(header) if h.endswith('id')]
+        print(header)
+        id_codes = [i for i, h in enumerate(header) if h.endswith('id') or h == 'electrode_groups.IntendedFor']
 
         for l0, l1 in zip(f0, f1):
             l0 = l0[:-1].split('\t')

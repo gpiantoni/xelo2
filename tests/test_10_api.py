@@ -6,7 +6,7 @@ from xelo2.api import Subject, list_subjects, Electrodes, Channels
 from xelo2.api.filetype import parse_filetype
 from xelo2.database.create import open_database
 
-from .paths import TRC_PATH, DB_PATH
+from .paths import TRC_PATH, DB_PATH, T1_PATH
 
 
 def test_api_subject():
@@ -281,6 +281,13 @@ def test_api_electrodes_channels_attach():
 
     recording.detach_channels()
     assert recording.channels is None
+
+    # add MR to test IntendedFor
+    sess = subj.add_session('MRI')
+    run = sess.add_run('t1_anatomy_scan')
+    recording = run.add_recording('T1w')
+    recording.add_file('parrec', T1_PATH)
+    elec.IntendedFor = run.id
 
     # so that it can be tested by export / import
     recording.attach_channels(chan)

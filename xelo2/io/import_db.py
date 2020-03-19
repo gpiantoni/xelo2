@@ -40,6 +40,10 @@ def import_database(INPUT, db_file):
         INPUT / 'runs_protocols.tsv',
         IDS)
 
+    _add_intendedfor_elec(
+        INPUT / 'electrode_groups.tsv',
+        IDS)
+
     # files
     for level in FILE_LEVELS:
         _attach_files(INPUT, level, IDS)
@@ -146,6 +150,16 @@ def _import_runs_protocols(TSV_FILE, IDS):
         run.attach_protocol(protocol)
 
 
+def _add_intendedfor_elec(TSV_GROUP_FILE, IDS):
+
+    for d in _read_tsv(TSV_GROUP_FILE):
+        if d['electrode_groups.IntendedFor'] is None:
+            continue
+        elec = IDS['electrodes'][d['electrode_groups.id']]
+        t1_run = IDS['runs'][d['electrode_groups.IntendedFor']]
+        elec.IntendedFor = t1_run.id
+
+
 def _import_protocols(TSV_FILE, IDS):
 
     for d in _read_tsv(TSV_FILE):
@@ -211,8 +225,13 @@ def _import_main(TSV_MAIN, IDS):
 
 def _setattr(item, name, d):
     for k, v in d.items():
+
         if k.endswith('id') or v is None:
             continue
+
+        if k == 'electrode_groups.IntendedFor':  # this points to an existing run, so we need to do after the runs have been created
+            continue
+
         if k.startswith(f'{name}'):
             if k.split('.')[1].startswith('date_of_'):  # TODO: it should look TABLES up
                 v = date.fromisoformat(v)
