@@ -75,6 +75,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
             continue
 
+        lg.info(f'Adding {subj.code}')
         bids_subj = 'sub-' + subj.code
         subj_path = data_path / bids_subj
         subj_path.mkdir(parents=True, exist_ok=True)
@@ -101,6 +102,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             sess_path = _make_sess_name(subj_path, sess)
             sess_path.mkdir(parents=True, exist_ok=True)
             bids_sess = sess_path.name
+            lg.info(f'Adding {subj.code} / {bids_sess}')
 
             sess_files.append({
                 'session_id': bids_sess,
@@ -138,6 +140,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                     bids_run = f'{bids_subj}_{bids_sess}'
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
+                lg.info(f'Adding {subj.code} / {bids_sess} / {bids_run}')
 
                 data_name = None
                 for rec in run.list_recordings():

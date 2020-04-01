@@ -140,7 +140,7 @@ def save_coordsystem(electrodes_json, electrodes, intendedfor):
         if electrodes.IntendedFor in intendedfor:
             D['IntendedFor'] = intendedfor[electrodes.IntendedFor]
         else:
-            print(f'Could not find the intended-for t1w for electrodes {electrodes}')
+            lg.warning(f'Could not find the intended-for t1w for electrodes {electrodes}')
 
     with electrodes_json.open('w') as f:
         dump(D, f, indent=2)
