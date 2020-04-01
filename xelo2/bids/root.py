@@ -2,7 +2,7 @@ from json import dump
 from pathlib import Path
 from logging import getLogger
 from datetime import date, datetime
-from shutil import copy
+from shutil import copy, rmtree
 
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtSql import QSqlQuery
@@ -50,6 +50,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         subset_run = set(subset['runs'])
 
     data_path = Path(data_path)
+    if data_path.exists():
+        rmtree(data_path, ignore_errors=True)
     data_path.mkdir(parents=True, exist_ok=True)
 
     # the dataset_description.json is used by find_root, in some subscripts
