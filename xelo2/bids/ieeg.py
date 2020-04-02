@@ -27,11 +27,7 @@ def convert_ieeg(run, rec, dest_path, stem, intendedfor):
     if file is None:
         return
 
-    file_path = file.path
-    if file_path.suffix == '.nev':
-        file_path = file_path.with_suffix('.ns3')
-
-    d = localize_blackrock(Dataset(file_path))
+    d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)
 
     # get acq from manufacturer. It might be better to use channels.name but

@@ -11,7 +11,7 @@ lg = getLogger(__name__)
 def read_events_from_ieeg(run, rec, file):
     """Make sure that rec.onset is in the good direction"""
     try:
-        d = localize_blackrock(Dataset(file.path))
+        d = localize_blackrock(file.path)
     except UnrecognizedFormat:
         lg.warning(f'cannot parse poorly edited BCI2000 file ({file.path})')
         return None

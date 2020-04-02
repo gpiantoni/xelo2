@@ -1,5 +1,4 @@
-from wonambi import Dataset
-
+from wonambi.ioeeg import BlackRock
 from numpy import empty
 
 from .utils import localize_blackrock
@@ -34,10 +33,7 @@ def add_ieeg_to_sess(sess, ieeg_file):
 
 def read_info_from_ieeg(path_to_file):
 
-    if path_to_file.suffix == '.nev':  # ns3 has more information (f.e. n_samples when there are no triggers)
-        path_to_file = path_to_file.with_suffix('.ns3')
-
-    d = localize_blackrock(Dataset(path_to_file))
+    d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
 
     ev = empty(len(mrk), dtype=DTYPES)
@@ -45,9 +41,9 @@ def read_info_from_ieeg(path_to_file):
     ev['duration'] = [x['end'] - x['start'] for x in mrk]
     ev['value'] = [x['name'] for x in mrk]
 
-    if path_to_file.suffix[:3] == '.ns':
+    if d.IOClass == BlackRock:
         manufacturer = 'BlackRock'
-    elif path_to_file.suffix.lower() in ('.trc', '.dat'):
+    else:
         manufacturer = 'Micromed'
 
     info = {
