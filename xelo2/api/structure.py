@@ -191,6 +191,15 @@ class Table_with_files(Table):
         return out
 
     def add_file(self, format, path):
+        """Add a file to this object.
+
+        Parameters
+        ----------
+        format : str
+            type of file (list of acceptable formats is stored in "allowed_values"
+        path : str or Path
+            path of the file (it does not need to exist)
+        """
         path = Path(path).resolve()
 
         query = QSqlQuery(f"SELECT id, format FROM files WHERE path == '{path}'")
