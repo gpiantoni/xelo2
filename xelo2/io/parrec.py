@@ -86,6 +86,10 @@ def _get_MRI_info(hdr):
         info['task_name'] = 'verb'
         info['modality'] = 'bold'
 
+    elif ('chill' in protocol):
+        info['task_name'] = 'chill'
+        info['modality'] = 'bold'
+
     elif ('syllables' in protocol):
         info['task_name'] = 'syllables'
         info['modality'] = 'bold'
@@ -102,6 +106,8 @@ def _get_MRI_info(hdr):
         pass
 
     else:
-        print(f'could not parse {hdr["protocol_name"]}')
+        print(f'could not parse {hdr["protocol_name"]}, so calling it "rest". PLEASE FIX IT')
+        info['task_name'] = 'rest'
+        info['modality'] = 'bold'
 
     return info
