@@ -288,9 +288,12 @@ def _make_README(data_path):
 
 
 def _set_date_to_1900(base_date, datetime_of_interest):
-    return datetime.combine(
-        date(1900, 1, 1) + (datetime_of_interest.date() - base_date),
-        datetime_of_interest.time())
+    if datetime_of_interest is None:  # run.start_time is null
+        return datetime(1900, 1, 1, 0, 0, 0)
+    else:
+        return datetime.combine(
+            date(1900, 1, 1) + (datetime_of_interest.date() - base_date),
+            datetime_of_interest.time())
 
 
 def _make_sess_name(subj_path, sess):
