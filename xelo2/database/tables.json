@@ -801,7 +801,8 @@
                 "scanphyslog",
                 "dicom",
                 "pdf",
-                "docx"
+                "docx",
+                "image"
             ]
         },
         "path": {

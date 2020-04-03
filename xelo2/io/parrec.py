@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 from nibabel.parrec import parse_PAR_header
+from numpy import round
 
 
 def add_parrec_to_sess(sess, par_file):
@@ -12,9 +13,8 @@ def add_parrec_to_sess(sess, par_file):
     exam_date = datetime.strptime(hdr['exam_date'], '%Y.%m.%d / %H:%M:%S')
     # There is no time for individual runs, so we estimate an average duration of 4 minutes
     start_time = exam_date + timedelta(seconds=4 * 60 * hdr['acq_nr'])
-    duration = hdr['scan_duration']
 
-    run = sess.add_run(info['task_name'], start_time, duration)
+    run = sess.add_run(info['task_name'], start_time)
 
     if info['task_name'] == 'motor':
         run.left_right = info['left_right']
@@ -24,6 +24,22 @@ def add_parrec_to_sess(sess, par_file):
 
     rec.add_file('parrec', par_file)
     rec.PulseSequenceType = hdr['tech']
+
+    n_dyns = image['dynamic scan number'].max()
+    if n_dyns == 1:
+        duration = hdr['scan_duration']
+        TR = 0
+
+    else:
+        TR = image['dyn_scan_begin_time'].max() / (n_dyns - 1)
+        TR = round(TR, decimals=3)
+        duration = image['dyn_scan_begin_time'].max() + TR
+
+    run.duration = duration
+    run.acquisition = hdr['protocol_name']
+    if info['modality'] == 'bold':
+        rec.RepetitionTime = TR
+        rec.FlipAngle = image['image_flip_angle'][0]
 
 
 def _get_MRI_info(hdr):
@@ -53,6 +69,9 @@ def _get_MRI_info(hdr):
         info['left_right'] = None
 
         if 'tongue' in protocol:
+            info['body_part'] = 'tongue'
+            info['left_right'] = 'both'
+        elif 'tong' in protocol:
             info['body_part'] = 'tongue'
             info['left_right'] = 'both'
         elif 'motorlhand' in protocol:
@@ -88,6 +107,14 @@ def _get_MRI_info(hdr):
 
     elif ('chill' in protocol):
         info['task_name'] = 'chill'
+        info['modality'] = 'bold'
+
+    elif ('calc' in protocol):
+        info['task_name'] = 'calc'
+        info['modality'] = 'bold'
+
+    elif ('story' in protocol):
+        info['task_name'] = 'story'
         info['modality'] = 'bold'
 
     elif ('syllables' in protocol):
