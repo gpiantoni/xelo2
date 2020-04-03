@@ -28,13 +28,25 @@ install:
   - pip install -U numpy
   - pip install PyQt5 nibabel pandas wonambi bidso
   - pip install -U pytest pytest-cov pytest-qt codecov 
+  - pip install -U sphinx 
   - pip install -e .
 
 script:
   - pytest --cov=xelo2 tests/ -vv
+  - sphinx-apidoc -f -M -E -o $API_PATH xelo2
+  - sed -zi "s/Submodules\n----------\n//g" $API_PATH/*.rst
+  - sphinx-build -d $DOCTREES_PATH docs/source/ $HTML_PATH
 
 after_success:
   - codecov
 
 notifications:
   email: false
+
+deploy:
+ - provider: pages
+   skip_cleanup: true
+   local_dir : $HTML_PATH
+   repo : gpiantoni/gridloc
+   target_branch : gh-pages
+   github_token : $GITHUB_TOKEN
