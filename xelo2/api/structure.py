@@ -20,6 +20,19 @@ lg = getLogger(__name__)
 
 
 def list_subjects(reverse=False):
+    """List of the subjects in the currently open database, sorted based on
+    the date of their first experiment.
+
+    Parameters
+    ----------
+    reverse : bool
+        False -> oldest to newest, True -> newest to oldest
+
+    Returns
+    -------
+    list of instances of Subject
+        list of subjects in the database
+    """
     query = QSqlQuery(f"SELECT id FROM subjects")
 
     list_of_subjects = []
