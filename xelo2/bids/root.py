@@ -145,6 +145,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                 lg.info(f'Adding {subj.code} / {bids_sess} / {bids_run}')
 
                 data_name = None
+                # TODO: this is very unstable. We need to find a robust way to find the correct run number
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
@@ -158,25 +159,26 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         data_name = convert_ieeg(run, rec, mod_path, bids_run, intendedfor)
 
                     elif rec.modality == 'physio':
-                        convert_physio(rec, data_name)
+                        if data_name is None:
+                            lg.warning('physio only works after another recording modality')
+                        else:
+                            base_name = create_basename(data_name)
+                            convert_physio(rec, data_name)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
+                    base_name = create_basename(data_name)
                     if acquisition in ('ieeg', 'func'):
-                        base_name = remove_underscore(data_name)
                         convert_events(run, base_name)
 
-                if data_name is None:
-                    continue
-
-                relative_filename = str(data_name.relative_to(data_path))
-                intendedfor[run.id] = relative_filename
-                run_files.append({
-                    'filename': relative_filename,
-                    'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
-                    })
+                    relative_filename = str(data_name.relative_to(data_path))
+                    intendedfor[run.id] = relative_filename
+                    run_files.append({
+                        'filename': relative_filename,
+                        'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
+                        })
 
             if len(run_files) == 0:
                 continue
@@ -279,6 +281,16 @@ def add_intended_for(subset):
         run_id_sql = 'runs.id IN (' + ', '.join(str(x) for x in reference_t1w) + ')'
 
     return prepare_subset(run_id_sql, subset)
+
+
+def create_basename(data_name):
+    """Remove '_modality.ext' and also '_acq-'
+    """
+    p = remove_underscore(data_name)
+
+    s = p.stem
+    s = '_'.join(x for x in s.split('_') if not x.startswith('acq-'))
+    return p.parent / s
 
 
 def _make_README(data_path):

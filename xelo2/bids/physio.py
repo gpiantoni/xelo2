@@ -1,15 +1,18 @@
 import gzip
 from json import dump
+from logging import getLogger
 
-from bidso.utils import replace_extension, add_underscore, remove_underscore
+from bidso.utils import replace_extension, add_underscore
 
 from .io.dataglove import parse_dataglove_log
 from .io.pulse_and_resp_scanner import parse_scanner_physio
 
+lg = getLogger(__name__)
 
-def convert_physio(rec, data_name):
-    base_name = remove_underscore(data_name)
 
+def convert_physio(rec, base_name):
+
+    rec_name = None
     for file in rec.list_files():
         if file.format == 'dataglove':
             rec_name = 'dataglove'
@@ -23,6 +26,10 @@ def convert_physio(rec, data_name):
             return
 
         hdr['StartTime'] = rec.onset
+
+    if rec_name is None:
+        lg.warning(f'No file associated with physio recording')
+        return
 
     physio_tsv = add_underscore(base_name, f'rec-{rec_name}_physio.tsv.gz')
     _write_physio(tsv, physio_tsv)
