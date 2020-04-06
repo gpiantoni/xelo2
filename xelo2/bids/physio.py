@@ -11,7 +11,21 @@ lg = getLogger(__name__)
 
 
 def convert_physio(rec, base_name):
+    """Convert physiological signal to BIDS format.
 
+    Parameters
+    ----------
+    rec : instance of Recording
+        recording of type 'physio' (like dataglove or heart rate)
+    base_name : path
+        base name of the path (to which we add _rec-XXX_physio.tsv.gz)
+
+    Notes
+    -----
+    StartTime in the .json file gives the offset from the start of the recording.
+    If the tsv contains a "time" column, the "time" info is already aligned
+    with the recording (so you don't need to add StartTime.
+    """
     rec_name = None
     for file in rec.list_files():
         if file.format == 'dataglove':
@@ -26,6 +40,8 @@ def convert_physio(rec, base_name):
             return
 
         hdr['StartTime'] = rec.onset
+        if 'time' in tsv.columns:
+            tsv['time'] += rec.onset
 
     if rec_name is None:
         lg.warning(f'No file associated with physio recording')

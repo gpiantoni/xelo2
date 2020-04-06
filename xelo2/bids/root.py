@@ -146,6 +146,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
                 data_name = None
                 # TODO: this is very unstable. We need to find a robust way to find the correct run number
+                # for example, if run-1 has only blackrock and run-2 has blackrock and micromed, then micromed gets run-1 which is not correct
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
@@ -169,13 +170,13 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
-                    base_name = create_basename(data_name)
-                    if acquisition in ('ieeg', 'func'):
+                    if data_name is not None and acquisition in ('ieeg', 'func'):
+                        base_name = create_basename(data_name)
                         convert_events(run, base_name)
 
-                    relative_filename = str(data_name.relative_to(data_path))
-                    intendedfor[run.id] = relative_filename
-                    if rec.modality != 'physio':  # secondary modality
+                    if data_name is not None and rec.modality != 'physio':  # secondary modality
+                        relative_filename = str(data_name.relative_to(data_path))
+                        intendedfor[run.id] = relative_filename
                         run_files.append({
                             'filename': relative_filename,
                             'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
