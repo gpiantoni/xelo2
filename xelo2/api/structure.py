@@ -20,6 +20,19 @@ lg = getLogger(__name__)
 
 
 def list_subjects(reverse=False):
+    """List of the subjects in the currently open database, sorted based on
+    the date of their first experiment.
+
+    Parameters
+    ----------
+    reverse : bool
+        False -> oldest to newest, True -> newest to oldest
+
+    Returns
+    -------
+    list of instances of Subject
+        list of subjects in the database
+    """
     query = QSqlQuery(f"SELECT id FROM subjects")
 
     list_of_subjects = []
@@ -29,6 +42,14 @@ def list_subjects(reverse=False):
 
 
 class Table():
+    """General class to handle one row in a SQL table. End users should not
+    use this class but only its subclasses.
+
+    Parameters
+    ----------
+    id : int
+        row index for an unspecified table
+    """
     t = ''
     columns = []
     subtables = {}
@@ -53,6 +74,9 @@ class Table():
         return hash(self.__str__())
 
     def delete(self):
+        """Delete current item / this row from this table. It does not delete
+        the python object.
+        """
         QSqlQuery(f"""\
             DELETE FROM {self.t}s WHERE id == {self.id}
             """)
@@ -85,7 +109,20 @@ class Table():
                 return out
 
     def __setattr__(self, key, value):
+        """Set a value for a key at this row.
+        Note that __setattr__ has precedence over all other attributes, so we need
+        to make sure that important attributes are handled correctly by the
+        subclasses.
 
+        Notes
+        -----
+        Order in python:
+        1. __getattribute__ and __setattr__
+        2. Data descriptors, like property
+        3. Instance variables from the object's __dict__ (when setting an attribute, the search ends here)
+        4. Non-Data descriptors (like methods) and other class variables
+        5. __getattr__
+        """
         BUILTINS = (
             'id',
             't',
@@ -141,8 +178,12 @@ class Table():
 
 
 class Table_with_files(Table):
-
+    """This class (which should be used by end-users) is useful when handling
+    objects which might be associated with files.
+    """
     def list_files(self):
+        """List all the files associated with this object
+        """
         query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
         out = []
         while query.next():
@@ -150,6 +191,15 @@ class Table_with_files(Table):
         return out
 
     def add_file(self, format, path):
+        """Add a file to this object.
+
+        Parameters
+        ----------
+        format : str
+            type of file (list of acceptable formats is stored in "allowed_values"
+        path : str or Path
+            path of the file (it does not need to exist)
+        """
         path = Path(path).resolve()
 
         query = QSqlQuery(f"SELECT id, format FROM files WHERE path == '{path}'")

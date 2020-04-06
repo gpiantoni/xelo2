@@ -30,6 +30,9 @@ def parse_filetype(file_path):
     elif suffix == '.pdf':
         data_type = 'pdf'
 
+    elif suffix in ('.jpg', '.jpeg', '.png'):
+        data_type = 'image'
+
     elif suffix in ('.doc', '.docx'):
         data_type = 'docx'
 
