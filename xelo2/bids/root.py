@@ -163,7 +163,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                             lg.warning('physio only works after another recording modality')
                         else:
                             base_name = create_basename(data_name)
-                            convert_physio(rec, data_name)
+                            convert_physio(rec, base_name)
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
