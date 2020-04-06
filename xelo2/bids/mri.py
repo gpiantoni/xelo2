@@ -34,9 +34,9 @@ def convert_mri(run, rec, dest_path, stem, deface=True):
     else:
         input_nii = convert_parrec_nibabel(file.path)
         move(input_nii, output_nii)
-        _fix_tr(output_nii, run.RepetitionTime)
+        _fix_tr(output_nii, rec.RepetitionTime)
 
-        if deface:
+        if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
             run_deface(output_nii)
 
     sidecar = _convert_sidecar(run, rec)
