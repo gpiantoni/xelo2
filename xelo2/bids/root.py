@@ -175,10 +175,11 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
                     relative_filename = str(data_name.relative_to(data_path))
                     intendedfor[run.id] = relative_filename
-                    run_files.append({
-                        'filename': relative_filename,
-                        'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
-                        })
+                    if rec.modality != 'physio':  # secondary modality
+                        run_files.append({
+                            'filename': relative_filename,
+                            'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
+                            })
 
             if len(run_files) == 0:
                 continue
