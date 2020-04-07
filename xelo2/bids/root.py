@@ -194,10 +194,10 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
             if len(run_files) == 0:
                 continue
-            tsv_file = sess_path / (bids_subj + '_' + bids_sess + '_scans.tsv')
+            tsv_file = sess_path / f'{bids_name["sub"]}_{bids_name["ses"]}_scans.tsv'
             _list_scans(tsv_file, run_files)
 
-        tsv_file = subj_path / (bids_subj + '_sessions.tsv')
+        tsv_file = subj_path / f'{bids_name["sub"]}_sessions.tsv'
         _list_scans(tsv_file, sess_files)
 
         json_sessions = tsv_file.with_suffix('.json')
