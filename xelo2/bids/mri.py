@@ -2,41 +2,50 @@ from logging import getLogger
 from json import dump
 from os import environ
 from pathlib import Path
-from shutil import move
+from shutil import move, copyfile, copyfileobj
 from subprocess import run, DEVNULL
 from tempfile import mkstemp, gettempdir
+import gzip
 
 from nibabel import save as nisave
 from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import rename_task, make_bids_name
+from .utils import rename_task, make_bids_name, find_one_file
 
 lg = getLogger(__name__)
-
-TOUCH = False
 
 
 def convert_mri(run, rec, dest_path, name, deface=True):
     """Return base name for this run"""
-
-    file = _select_parrec(rec)
-    if file is None:
-        return None
-
     output_nii = dest_path / f'{make_bids_name(name)}_{rec.modality}.nii.gz'
 
-    if TOUCH:
-        output_nii.touch()
-
-    else:
+    file = find_one_file(rec, ('parrec', ))
+    if file is not None:
         input_nii = convert_parrec_nibabel(file.path)
         move(input_nii, output_nii)
-        _fix_tr(output_nii, rec.RepetitionTime)
 
-        if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
-            run_deface(output_nii)
+    else:
+        file = find_one_file(rec, ('nifti', ))
+        if file is None:
+            return None
+
+        else:
+            input_nii = file.path
+
+            if input_nii.name.endswith('.nii.gz'):
+                copyfile(file.path, output_nii)
+            elif input_nii.name.endswith('.nii'):
+                gz(file.path, output_nii)
+            else:
+                lg.warning(f'Unknown extension for nifti for {input_nii}')
+                return None
+
+    _fix_tr(output_nii, rec.RepetitionTime)
+
+    if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
+        run_deface(output_nii)
 
     sidecar = _convert_sidecar(run, rec)
     sidecar_file = replace_extension(output_nii, '.json')
@@ -58,28 +67,6 @@ def _fix_tr(nii, RepetitionTime):
         img.header['pixdim'][4] = RepetitionTime
 
     nisave(img, str(nii))
-
-
-def _select_parrec(rec):
-    parrec = []
-    for file in rec.list_files():
-        if file.format == 'parrec':
-            parrec.append(file)
-
-    if len(parrec) == 0:
-        lg.warning(f'No file for {rec}')
-        return None
-
-    elif len(parrec) > 1:
-        lg.warning(f'Too many files for {rec}')  # TODO
-        return None
-
-    file = parrec[0]
-    if not Path(file.path).exists():
-        lg.warning(f'{rec} does not exist')
-        return None
-
-    return file
 
 
 def _convert_sidecar(run, rec):
@@ -119,3 +106,9 @@ def run_deface(nii):
         )
 
     nii_tmp.rename(nii)
+
+
+def gz(input_file, output_file):
+    with input_file.open('rb') as f_in:
+        with gzip.open(output_file, 'wb') as f_out:
+            copyfileobj(f_in, f_out)

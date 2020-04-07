@@ -4,7 +4,7 @@ from json import dump
 
 from bidso.utils import add_underscore
 
-from .utils import rename_task, make_bids_name
+from .utils import rename_task, make_bids_name, find_one_file
 from ..io.tsv import save_tsv
 from ..io.ieeg import localize_blackrock
 
@@ -22,7 +22,7 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
         duration = run.duration
     end_time = start_time + timedelta(seconds=duration)
 
-    file = _select_ieeg(rec)
+    file = find_one_file(rec, ('blackrock', 'micromed', 'bci2000'))
     if file is None:
         return
 
@@ -74,28 +74,6 @@ def replace_micro(channels_tsv):
 
     with channels_tsv.open('w') as f:
         f.write(x)
-
-
-def _select_ieeg(rec):
-    ieeg = []
-    for file in rec.list_files():
-        if file.format in ('blackrock', 'micromed', 'bci2000'):
-            ieeg.append(file)
-
-    if len(ieeg) == 0:
-        lg.warning(f'No file for {rec}')
-        return None
-
-    elif len(ieeg) > 1:
-        lg.warning(f'Too many files for {ieeg}')  # TODO
-        return None
-
-    file = ieeg[0]
-    if not file.path.exists():
-        lg.warning(f'{rec} does not exist')
-        return None
-
-    return file
 
 
 def _convert_sidecar(run, rec, d):

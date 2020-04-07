@@ -1,3 +1,9 @@
+from pathlib import Path
+from logging import getLogger
+
+lg = getLogger(__name__)
+
+
 def rename_task(task_name):
     """To be consistent with BIDS (no dashes)"""
     if task_name.startswith('bair_'):
@@ -10,3 +16,27 @@ def rename_task(task_name):
 
 def make_bids_name(bids_name):
     return '_'.join([str(x) for x in bids_name.values() if x is not None])
+
+
+def find_one_file(rec, formats):
+    """formats has to be a list"""
+    format_str = 'with formats (' + ', '.join(formats) + ')'
+    found = []
+    for file in rec.list_files():
+        if file.format in formats:
+            found.append(file)
+
+    if len(found) == 0:
+        lg.warning(f'No file {format_str} for {rec}')
+        return None
+
+    elif len(found) > 1:
+        lg.warning(f'Too many files {format_str} for {rec}')  # TODO
+        return None
+
+    file = found[0]
+    if not Path(file.path).exists():
+        lg.warning(f'{rec} does not exist {format_str}')
+        return None
+
+    return file
