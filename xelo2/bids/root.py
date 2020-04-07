@@ -1,5 +1,7 @@
 from json import dump
 from pathlib import Path
+from copy import copy as c
+from collections import defaultdict
 from logging import getLogger
 from datetime import date, datetime
 from shutil import copy, rmtree
@@ -7,15 +9,13 @@ from shutil import copy, rmtree
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtSql import QSqlQuery
 
-from bidso.utils import remove_underscore
-
 from ..api import list_subjects, Run
 from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .physio import convert_physio
 from .events import convert_events
 from ..io.export_db import prepare_query
-from .utils import find_next_value, rename_task
+from .utils import rename_task
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -62,6 +62,16 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
     i = 0
     participants = []
     for subj in list_subjects():
+        bids_name = {
+            'sub': None,
+            'ses': None,
+            'task': None,
+            'acq': None,
+            'rec': None,
+            'dir': None,
+            'run': None,
+            'rec': None,
+            }
         if subset is not None and subj.id not in subset_subj:
             continue
 
@@ -78,8 +88,8 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             continue
 
         lg.info(f'Adding {subj.code}')
-        bids_subj = 'sub-' + subj.code
-        subj_path = data_path / bids_subj
+        bids_name['sub'] = 'sub-' + subj.code
+        subj_path = data_path / bids_name['sub']
         subj_path.mkdir(parents=True, exist_ok=True)
 
         if subj.date_of_birth is None:
@@ -90,24 +100,26 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             age = f'{age:.0f}'
 
         participants.append({
-            'participant_id': bids_subj,
+            'participant_id': bids_name['sub'],
             'sex': subj.sex,
             'age': age,
             'group': 'patient',
             })
 
+        sess_count = defaultdict(int)
         sess_files = []
         for sess in subj.list_sessions():
+            sess_count[_make_sess_name(sess)] += 1  # also count the sessions which are not included
             if subset is not None and sess.id not in subset_sess:
                 continue
 
-            sess_path = _make_sess_name(subj_path, sess)
+            bids_name['ses'] = f'ses-{_make_sess_name(sess)}{sess_count[_make_sess_name(sess)]}'
+            sess_path = subj_path / bids_name['ses']
             sess_path.mkdir(parents=True, exist_ok=True)
-            bids_sess = sess_path.name
-            lg.info(f'Adding {subj.code} / {bids_sess}')
+            lg.info(f'Adding {bids_name["sub"]} / {bids_name["ses"]}')
 
             sess_files.append({
-                'session_id': bids_sess,
+                'session_id': bids_name['ses'],
                 'resection': 'n/a',
                 'implantation': 'no',
                 'breathing_challenge': 'no',
@@ -115,8 +127,11 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             if sess.name in ('IEMU', 'OR', 'CT'):
                 sess_files[-1]['implantation'] = 'yes'
 
+            run_count = defaultdict(int)
             run_files = []
             for run in sess.list_runs():
+                run_count[run.task_name] += 1  # also count the runs which are not included
+
                 if subset is not None and run.id not in subset_run:
                     continue
 
@@ -134,45 +149,40 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         return
 
                 acquisition = get_bids_acquisition(run)
+                bids_name['run'] = run_count[run.task_name]
 
                 if acquisition in ('ieeg', 'func'):
-                    task = rename_task(run.task_name)
-                    bids_run = f'{bids_subj}_{bids_sess}_task-{task}'
+                    bids_name['task'] = rename_task(run.task_name)
                 else:
-                    bids_run = f'{bids_subj}_{bids_sess}'
+                    bids_name['task'] = None
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
-                lg.info(f'Adding {subj.code} / {bids_sess} / {bids_run}')
+                lg.info(f'Adding {bids_name["sub"]} / {bids_name["ses"]} / {acquisition} / {bids_name["task"]} / {bids_name["run"]}')
 
                 data_name = None
-                # TODO: this is very unstable. We need to find a robust way to find the correct run number
-                # for example, if run-1 has only blackrock and run-2 has blackrock and micromed, then micromed gets run-1 which is not correct
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
-                        data_name = convert_mri(run, rec, mod_path, bids_run, deface)
+                        data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
                     elif rec.modality == 'ieeg':
                         if run.duration is None:
                             lg.warning(f'You need to specify duration for {subj.code}/{run.task_name}')
                             continue
-
-                        data_name = convert_ieeg(run, rec, mod_path, bids_run, intendedfor)
+                        data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
 
                     elif rec.modality == 'physio':
                         if data_name is None:
                             lg.warning('physio only works after another recording modality')
                         else:
-                            base_name = create_basename(data_name)
-                            convert_physio(rec, base_name)
+                            convert_physio(rec, mod_path, c(bids_name))
 
                     else:
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
                     if data_name is not None and acquisition in ('ieeg', 'func'):
-                        base_name = create_basename(data_name)
-                        convert_events(run, base_name)
+                        convert_events(run, mod_path, c(bids_name))
 
                     if data_name is not None and rec.modality != 'physio':  # secondary modality
                         relative_filename = str(data_name.relative_to(data_path))
@@ -285,16 +295,6 @@ def add_intended_for(subset):
     return prepare_subset(run_id_sql, subset)
 
 
-def create_basename(data_name):
-    """Remove '_modality.ext' and also '_acq-'
-    """
-    p = remove_underscore(data_name)
-
-    s = p.stem
-    s = '_'.join(x for x in s.split('_') if not x.startswith('acq-'))
-    return p.parent / s
-
-
 def _make_README(data_path):
 
     with (data_path / 'README').open('w') as f:
@@ -310,11 +310,9 @@ def _set_date_to_1900(base_date, datetime_of_interest):
             datetime_of_interest.time())
 
 
-def _make_sess_name(subj_path, sess):
-
+def _make_sess_name(sess):
     if sess.name == 'MRI':
         sess_name = sess.MagneticFieldStrength.lower()
     else:
         sess_name = sess.name.lower()
-    sess_path = subj_path / ('ses-' + sess_name + r'(\d)')
-    return find_next_value(sess_path)
+    return sess_name

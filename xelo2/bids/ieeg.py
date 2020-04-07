@@ -1,11 +1,10 @@
 from logging import getLogger
 from datetime import timedelta
-from wonambi import Dataset
 from json import dump
 
-from bidso.utils import remove_underscore, add_underscore
+from bidso.utils import add_underscore
 
-from .utils import find_next_value, rename_task
+from .utils import rename_task, make_bids_name
 from ..io.tsv import save_tsv
 from ..io.ieeg import localize_blackrock
 
@@ -13,7 +12,7 @@ from ..io.ieeg import localize_blackrock
 lg = getLogger(__name__)
 
 
-def convert_ieeg(run, rec, dest_path, stem, intendedfor):
+def convert_ieeg(run, rec, dest_path, name, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.onset)
 
     # use rec duration if possible, otherwise use run duration
@@ -34,11 +33,10 @@ def convert_ieeg(run, rec, dest_path, stem, intendedfor):
     # I am not sure
     if rec.Manufacturer is None:
         lg.warning(f'Please specify Manufacturer for {run} / {rec}')
-        acq = 'none'
+        name['acq'] = 'none'
     else:
-        acq = rec.Manufacturer.lower()
-    output_ieeg = dest_path / fr'{stem}_acq-{acq}_run-(\d)_{rec.modality}.eeg'
-    output_ieeg = find_next_value(output_ieeg)
+        name['acq'] = rec.Manufacturer.lower()
+    output_ieeg = dest_path / f'{make_bids_name(name)}_{rec.modality}.ieeg'
     data.export(output_ieeg, 'brainvision', anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
@@ -46,7 +44,7 @@ def convert_ieeg(run, rec, dest_path, stem, intendedfor):
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
-    base_name = remove_underscore(output_ieeg)
+    base_name = dest_path / make_bids_name(name)
     _convert_chan_elec(rec, base_name, intendedfor)
     return output_ieeg
 

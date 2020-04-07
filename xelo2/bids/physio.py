@@ -2,23 +2,25 @@ import gzip
 from json import dump
 from logging import getLogger
 
-from bidso.utils import replace_extension, add_underscore
-
+from bidso.utils import replace_extension
+from .utils import make_bids_name
 from .io.dataglove import parse_dataglove_log
 from .io.pulse_and_resp_scanner import parse_scanner_physio
 
 lg = getLogger(__name__)
 
 
-def convert_physio(rec, base_name):
+def convert_physio(rec, dest_path, name):
     """Convert physiological signal to BIDS format.
 
     Parameters
     ----------
     rec : instance of Recording
         recording of type 'physio' (like dataglove or heart rate)
-    base_name : path
-        base name of the path (to which we add _rec-XXX_physio.tsv.gz)
+    dest_path : path
+        full path to modality folder
+    name : dict
+        dictionary with parts to make bids name
 
     Notes
     -----
@@ -26,14 +28,13 @@ def convert_physio(rec, base_name):
     If the tsv contains a "time" column, the "time" info is already aligned
     with the recording (so you don't need to add StartTime.
     """
-    rec_name = None
     for file in rec.list_files():
         if file.format == 'dataglove':
-            rec_name = 'dataglove'
+            name['rec'] = 'dataglove'
             tsv, hdr = parse_dataglove_log(file.path)
 
         elif file.format == 'scanphyslog':
-            rec_name = 'resp'
+            name['rec'] = 'resp'
             tsv, hdr = parse_scanner_physio(file.path)
 
         else:
@@ -43,11 +44,11 @@ def convert_physio(rec, base_name):
         if 'time' in tsv.columns:
             tsv['time'] += rec.onset
 
-    if rec_name is None:
+    if name['rec'] is None:
         lg.warning(f'No file associated with physio recording')
         return
 
-    physio_tsv = add_underscore(base_name, f'rec-{rec_name}_physio.tsv.gz')
+    physio_tsv = dest_path / f'{make_bids_name(name)}_physio.tsv.gz'
     _write_physio(tsv, physio_tsv)
 
     physio_json = replace_extension(physio_tsv, '.json')

@@ -11,22 +11,21 @@ from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import find_next_value, rename_task
+from .utils import rename_task, make_bids_name
 
 lg = getLogger(__name__)
 
 TOUCH = False
 
 
-def convert_mri(run, rec, dest_path, stem, deface=True):
+def convert_mri(run, rec, dest_path, name, deface=True):
     """Return base name for this run"""
 
     file = _select_parrec(rec)
     if file is None:
         return None
 
-    output_nii = dest_path / fr'{stem}_run-(\d)_{rec.modality}.nii.gz'
-    output_nii = find_next_value(output_nii)
+    output_nii = dest_path / f'{make_bids_name(name)}_{rec.modality}.nii.gz'
 
     if TOUCH:
         output_nii.touch()
