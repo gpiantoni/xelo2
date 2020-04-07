@@ -149,10 +149,10 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         return
 
                 acquisition = get_bids_acquisition(run)
-                bids_name['run'] = run_count[run.task_name]
+                bids_name['run'] = f'run-{run_count[run.task_name]}'
 
                 if acquisition in ('ieeg', 'func'):
-                    bids_name['task'] = rename_task(run.task_name)
+                    bids_name['task'] = f'task-{rename_task(run.task_name)}'
                 else:
                     bids_name['task'] = None
                 mod_path = sess_path / acquisition

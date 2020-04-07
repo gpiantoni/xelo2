@@ -33,9 +33,9 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
     # I am not sure
     if rec.Manufacturer is None:
         lg.warning(f'Please specify Manufacturer for {run} / {rec}')
-        name['acq'] = 'none'
+        name['acq'] = 'acq-none'
     else:
-        name['acq'] = rec.Manufacturer.lower()
+        name['acq'] = f'acq-{rec.Manufacturer.lower()}'
     output_ieeg = dest_path / f'{make_bids_name(name)}_{rec.modality}.ieeg'
     data.export(output_ieeg, 'brainvision', anonymize=True)
 
