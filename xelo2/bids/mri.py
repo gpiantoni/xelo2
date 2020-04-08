@@ -42,6 +42,10 @@ def convert_mri(run, rec, dest_path, name, deface=True):
                 lg.warning(f'Unknown extension for nifti for {input_nii}')
                 return None
 
+    if run.task_name == 'MP2RAGE':
+        lg.info('Keeping only the first volume for MP2RAGE')
+        select(output_nii, 'first')
+
     _fix_tr(output_nii, rec.RepetitionTime)
 
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
@@ -54,6 +58,13 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         dump(sidecar, f, indent=2)
 
     return output_nii
+
+
+def select(nii, slicing):
+    img = niload(nii)
+    if slicing == 'first':
+        img = img.slicer[:, :, :, 0]
+    img.to_filename(nii)
 
 
 def _fix_tr(nii, RepetitionTime):
