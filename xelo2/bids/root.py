@@ -312,7 +312,12 @@ def _set_date_to_1900(base_date, datetime_of_interest):
 
 def _make_sess_name(sess):
     if sess.name == 'MRI':
-        sess_name = sess.MagneticFieldStrength.lower()
+        MagneticFieldStrength = sess.MagneticFieldStrength
+        if MagneticFieldStrength is None:
+            lg.warning(f'Please specify Magnetic Field Strength for {sess}')
+            sess_name = 'mri'
+        else:
+            sess_name = MagneticFieldStrength.lower()
     else:
         sess_name = sess.name.lower()
     return sess_name
