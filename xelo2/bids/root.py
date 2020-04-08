@@ -300,6 +300,12 @@ def _make_README(data_path):
     with (data_path / 'README').open('w') as f:
         f.write('Converted with xelo2')
 
+    # this is necessary to work around this issue
+    # https://github.com/bids-standard/bids-specification/issues/209
+    with (data_path / '.bidsignore').open('w') as f:
+        f.write('sub-*/ses-*/ieeg/*_physio.tsv.gz\n')
+        f.write('sub-*/ses-*/ieeg/*_physio.json\n')
+
 
 def _set_date_to_1900(base_date, datetime_of_interest):
     if datetime_of_interest is None:  # run.start_time is null
