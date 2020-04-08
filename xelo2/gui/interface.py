@@ -84,6 +84,8 @@ class Interface(QMainWindow):
 
         super().__init__()
         self.setWindowTitle(sqlite_file.stem)
+        create_menubar(self)
+        create_shortcuts(self)
 
         lists = {}
         groups = {}
@@ -274,8 +276,6 @@ class Interface(QMainWindow):
         self.t_export = t_export
         self.exports = []
 
-        create_menubar(self)
-        create_shortcuts(self)
         self.search = Search()
 
         self.sql_access()
@@ -325,7 +325,17 @@ class Interface(QMainWindow):
             l.clear()
 
         to_select = None
-        for subj in list_subjects(reverse=True):
+        if self.subjsort.isChecked():
+            args = {
+                'alphabetical': True,
+                'reverse': False,
+                }
+        else:
+            args = {
+                'alphabetical': False,
+                'reverse': True,
+                }
+        for subj in list_subjects(**args):
             item = QListWidgetItem(subj.code)
             if subj.complete == 'yes':
                 done(item)

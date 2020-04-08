@@ -19,14 +19,19 @@ from ..database import TABLES
 lg = getLogger(__name__)
 
 
-def list_subjects(reverse=False):
+def list_subjects(alphabetical=False, reverse=False):
     """List of the subjects in the currently open database, sorted based on
-    the date of their first experiment.
+    the date of their first run.
 
     Parameters
     ----------
+    alphabetical : bool
+        False -> sort by date of first run
+        True -> sort alphabetically
+
     reverse : bool
         False -> oldest to newest, True -> newest to oldest
+        False -> A to Z, True -> Z to A
 
     Returns
     -------
@@ -38,6 +43,12 @@ def list_subjects(reverse=False):
     list_of_subjects = []
     while query.next():
         list_of_subjects.append(Subject(id=query.value('id')))
+
+    if alphabetical:
+        _sort_subjects = _sort_subjects_alphabetical
+    else:
+        _sort_subjects = _sort_subjects_date
+
     return sorted(list_of_subjects, key=_sort_subjects, reverse=reverse)
 
 
@@ -702,7 +713,11 @@ def _get_dtypes(table):
     return dtype(dtypes)
 
 
-def _sort_subjects(subj):
+def _sort_subjects_alphabetical(subj):
+    return subj.code
+
+
+def _sort_subjects_date(subj):
     sessions = subj.list_sessions()
     if len(sessions) == 0 or sessions[0].start_time is None:
         return datetime(1900, 1, 1, 0, 0, 0)

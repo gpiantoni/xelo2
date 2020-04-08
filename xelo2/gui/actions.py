@@ -30,7 +30,7 @@ def create_menubar(main):
     action_revert.triggered.connect(main.sql_rollback)
     menu_db.addAction(action_revert)
 
-    action_export = QAction('Export ... (beta)', main)
+    action_export = QAction('Backup to tsv', main)
     action_export.triggered.connect(main.export_tsv)
     menu_db.addAction(action_export)
 
@@ -43,6 +43,13 @@ def create_menubar(main):
     action_info = QAction('Information', main)
     action_info.triggered.connect(lambda x: show_summary(main))
     menu_db.addAction(action_info)
+
+    # View
+    menu_view = menubar.addMenu('View')
+    main.subjsort = QAction('Sort Subjects A->Z', main)
+    main.subjsort.setCheckable(True)
+    main.subjsort.triggered.connect(main.list_subjects)
+    menu_view.addAction(main.subjsort)
 
     # New
     menu_new = menubar.addMenu('Add')
