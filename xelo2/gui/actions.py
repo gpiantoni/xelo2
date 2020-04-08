@@ -51,6 +51,32 @@ def create_menubar(main):
     main.subjsort.triggered.connect(main.list_subjects)
     menu_view.addAction(main.subjsort)
 
+    menu_view.addSeparator()
+
+    action_refresh = QAction('Refresh Subjects', main)
+    action_refresh.triggered.connect(main.list_subjects)
+    menu_view.addAction(action_refresh)
+
+    action_refresh = QAction('Refresh Sessions', main)
+    action_refresh.triggered.connect(main.list_sessions_and_protocols)
+    menu_view.addAction(action_refresh)
+
+    action_refresh = QAction('Refresh Protocols', main)
+    action_refresh.triggered.connect(main.list_sessions_and_protocols)
+    menu_view.addAction(action_refresh)
+
+    action_refresh = QAction('Refresh Runs', main)
+    action_refresh.triggered.connect(main.list_runs)
+    menu_view.addAction(action_refresh)
+
+    action_refresh = QAction('Refresh Recordings', main)
+    action_refresh.triggered.connect(main.list_recordings)
+    menu_view.addAction(action_refresh)
+
+    action_refresh = QAction('Refresh Parameters', main)
+    action_refresh.triggered.connect(main.list_params)
+    menu_view.addAction(action_refresh)
+
     # New
     menu_new = menubar.addMenu('Add')
     for level in LEVELS:

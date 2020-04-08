@@ -379,7 +379,10 @@ class Interface(QMainWindow):
         self.list_params()
         self.list_files()
 
-    def list_sessions_and_protocols(self, subj):
+    def list_sessions_and_protocols(self, subj=None):
+
+        if subj is None or subj is False:
+            subj = self.current('subjects')
 
         for level, l in self.lists.items():
             if level in ('subjects', ):
@@ -403,7 +406,10 @@ class Interface(QMainWindow):
             self.lists['protocols'].addItem(item)
         self.lists['protocols'].setCurrentRow(0)
 
-    def list_runs(self, sess):
+    def list_runs(self, sess=None):
+
+        if sess is None or sess is False:
+            sess = self.current('sessions')
 
         for level, l in self.lists.items():
             if level in ('subjects', 'sessions', 'protocols'):
@@ -419,7 +425,10 @@ class Interface(QMainWindow):
             self.lists['runs'].addItem(item)
         self.lists['runs'].setCurrentRow(0)
 
-    def list_recordings(self, run):
+    def list_recordings(self, run=None):
+
+        if run is None or run is False:
+            run = self.current('runs')
 
         for level, l in self.lists.items():
             if level in ('subjects', 'sessions', 'protocols', 'runs'):
