@@ -33,12 +33,14 @@ def import_electrodes(mat_file, n_chan):
 
 
 def _find_electrodes(mat, n_chan):
+    print(f'Number of electrodes in mat file: {mat.shape[0]}')
     if mat.shape[0] == n_chan:
         return mat
 
     has_nan = isnan(mat).all(axis=1)
     mat = mat[~has_nan, :3]
 
+    print(f'Number of electrodes in mat file without nan: {mat.shape[0]}')
     if mat.shape[0] == n_chan:
         return mat
 

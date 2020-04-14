@@ -1,7 +1,10 @@
 from pathlib import Path
+from numpy import isin
 
 from ..io.ieeg import read_info_from_ieeg
 from ..io.channels import create_channels
+from ..io.electrodes import import_electrodes
+from ..api import Electrodes
 
 
 def recap(subj, sess, run):
@@ -60,11 +63,12 @@ def recap(subj, sess, run):
 
 
 def add_recording(run):
-    print('adding recording')
     recs = run.list_recordings()
     if len(recs) == 0:
+        print('adding recording')
         return run.add_recording('ieeg')
     elif len(recs) == 1:
+        print('getting recording')
         return recs[0]
     else:
         raise ValueError('too many recordings')
@@ -107,9 +111,9 @@ def set_channels(sess, rec):
 
 def remove_bci2000(rec):
     print('removing bci2000')
-    file = rec.list_files()[0]
-    if file.format == 'bci2000':
-        rec.delete_file(file)
+    for file in rec.list_files():
+        if file.format == 'bci2000':
+            rec.delete_file(file)
 
 
 def add_events_type(run):
@@ -132,6 +136,49 @@ def add_events_type(run):
         'task end'
         ]
     events = run.events
-    assert events.shape[0] == 15
-    events['trial_type'] = EVENTS_TYPE
+    if events.shape[0] == 15:
+        events['trial_type'] = EVENTS_TYPE
+    elif events.shape[0] == 16:
+        events['trial_type'][1:] = EVENTS_TYPE
+    else:
+        raise ValueError(f'number of events {events.shape[0]}')
+
     run.events = events
+
+
+def attach_electrodes(sess, rec, mat_file=None, idx=None):
+    if len(sess.list_electrodes()) == 0:
+        elec = create_electrodes(rec, mat_file, idx)
+        if elec is None:
+            raise ValueError('cannot create electrodes')
+    elif len(sess.list_electrodes()) == 1:
+        elec = sess.list_electrodes()[0]
+    else:
+        raise ValueError('too many electrodes')
+
+    rec.attach_electrodes(elec)
+
+
+def create_electrodes(rec, mat_file, idx=None):
+    chan = rec.channels
+    chan_data = chan.data
+    if idx is None:
+        idx = isin(chan_data['type'], ('ECOG', 'SEEG'))
+
+    n_chan = idx.sum()
+    print(f'# of ECOG/SEEG channels for this recording: {n_chan}')
+
+    xyz = import_electrodes(mat_file, n_chan)
+    if xyz is None:
+        print('you need to do this manually')
+        return
+
+    elec = Electrodes()
+    elec_data = elec.empty(n_chan)
+    elec_data['name'] = chan_data['name'][idx]
+    elec_data['x'] = xyz[:, 0]
+    elec_data['y'] = xyz[:, 1]
+    elec_data['z'] = xyz[:, 2]
+    elec.data = elec_data
+
+    return elec
