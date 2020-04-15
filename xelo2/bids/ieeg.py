@@ -37,7 +37,8 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
     else:
         name['acq'] = f'acq-{rec.Manufacturer.lower()}'
     output_ieeg = dest_path / f'{make_bids_name(name)}_{rec.modality}.ieeg'
-    data.export(output_ieeg, 'brainvision', anonymize=True)
+    markers = convert_events_to_wonambi(run.events)
+    data.export(output_ieeg, 'brainvision', markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
     sidecar_file = output_ieeg.with_suffix('.json')
@@ -116,3 +117,16 @@ def save_coordsystem(electrodes_json, electrodes, intendedfor):
 
     with electrodes_json.open('w') as f:
         dump(D, f, indent=2)
+
+
+def convert_events_to_wonambi(events):
+    """This function should be in wonambi, once the bids format is more stable
+    in wonambi"""
+    mrk = []
+    for ev in events:
+        mrk.append({
+            'name': ev['trial_type'],
+            'start': ev['onset'],
+            'end': ev['onset'] + ev['duration']
+        })
+    return mrk
