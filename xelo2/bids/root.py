@@ -76,16 +76,16 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             continue
 
         # use relative date based on date_of_signature
-
-        protocols = [p.date_of_signature for p in subj.list_protocols()]
-        if len(protocols) == 0:
+        reference_dates = [p.date_of_signature for p in subj.list_protocols()]
+        if len(reference_dates) == 0:
             lg.warning(f'You need to add at least one research protocol for {subj.code}')
             continue
 
-        date_of_signature = min(protocols)
-        if date_of_signature is None:
+        reference_date = min(reference_dates)
+        if reference_date is None:
             lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
-            continue
+            lg.info(f'Using date of the first task performed by the subject')
+            reference_date = min([x.start_time for x in subj.list_sessions()]).date()
 
         lg.info(f'Adding {subj.code}')
         bids_name['sub'] = 'sub-' + subj.code
@@ -96,7 +96,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             lg.warning(f'You need to add date_of_birth to {subj.code}')
             age = 'n/a'
         else:
-            age = (date_of_signature - subj.date_of_birth).days // 365.2425
+            age = (reference_date - subj.date_of_birth).days // 365.2425
             age = f'{age:.0f}'
 
         participants.append({
@@ -189,7 +189,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                         intendedfor[run.id] = relative_filename
                         run_files.append({
                             'filename': relative_filename,
-                            'acq_time': _set_date_to_1900(date_of_signature, run.start_time).isoformat(),
+                            'acq_time': _set_date_to_1900(reference_date, run.start_time).isoformat(),
                             })
 
             if len(run_files) == 0:
