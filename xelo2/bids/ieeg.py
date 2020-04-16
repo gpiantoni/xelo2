@@ -4,7 +4,7 @@ from json import dump
 
 from bidso.utils import add_underscore
 
-from .utils import rename_task, make_bids_name, find_one_file
+from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
 from ..io.ieeg import localize_blackrock
 
@@ -83,9 +83,7 @@ def _convert_sidecar(run, rec, d):
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
         'Manufacturer': rec.Manufacturer,
         'TaskName': rename_task(run.task_name),
-        'TaskDescription': run.task_description,
-        'Performance': run.performance,
-        'DataAcquisition': run.acquisition,
+        'TaskDescription': make_taskdescription(run),
         'SamplingFrequency': int(d.header['s_freq']),
         'iEEGReference': str(rec.Reference),
         'PowerLineFrequency': 50,

@@ -40,3 +40,22 @@ def find_one_file(rec, formats):
         return None
 
     return file
+
+
+def make_taskdescription(run):
+    """This is only place I can think of where we can put information about
+    performance and acquisition"""
+    s = []
+
+    FIELDS = [
+        'task_description',
+        'performance',
+        'acquisition',
+        ]
+
+    for f in FIELDS:
+        value = getattr(run, f)
+        if value is not None:
+            s.append(value)
+
+    return '; '.join(s)

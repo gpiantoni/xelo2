@@ -12,7 +12,7 @@ from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import rename_task, make_bids_name, find_one_file
+from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 
 lg = getLogger(__name__)
 
@@ -84,9 +84,7 @@ def _convert_sidecar(run, rec):
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
-        'TaskDescription': run.task_description,
-        'Performance': run.performance,
-        'DataAcquisition': run.acquisition,
+        'TaskDescription': make_taskdescription(run),
         }
     if rec.modality == 'bold':
         D = {
