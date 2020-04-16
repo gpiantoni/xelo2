@@ -322,6 +322,8 @@ def _make_sess_name(sess):
         if MagneticFieldStrength is None:
             lg.warning(f'Please specify Magnetic Field Strength for {sess}')
             sess_name = 'mri'
+        elif MagneticFieldStrength == '1.5T':  # we cannot use 1.5 in session name
+            sess_name = 'mri'
         else:
             sess_name = MagneticFieldStrength.lower()
     else:
