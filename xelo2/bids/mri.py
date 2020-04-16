@@ -84,6 +84,9 @@ def _convert_sidecar(run, rec):
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
+        'TaskDescription': run.task_description,
+        'Performance': run.performance,
+        'DataAcquisition': run.acquisition,
         }
     if rec.modality == 'bold':
         D = {
