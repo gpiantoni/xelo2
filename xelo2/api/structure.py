@@ -606,14 +606,13 @@ class Subject(Table_with_files):
         return f'{self.t.capitalize()}({self.codes})'
 
     @classmethod
-    def add(cls, code, date_of_birth=None, sex=None):
+    def add(cls, code=None, date_of_birth=None, sex=None):
+        """You can create an empty subject, with no code, but it's a bad idea
         """
-        TODO
-        check if it exists already
-        """
-        id = _find_subject_id(code)
-        if id is not None:
-            raise ValueError(f'Subject "{code}" already exists')
+        if code is not None:
+            id = _find_subject_id(code)
+            if id is not None:
+                raise ValueError(f'Subject "{code}" already exists')
 
         query = QSqlQuery(f"""\
             INSERT INTO subjects ("date_of_birth", "sex")
@@ -624,7 +623,7 @@ class Subject(Table_with_files):
             err = query.lastError()
             raise ValueError(err.databaseText())
 
-        else:
+        elif code is not None:
             query = QSqlQuery(f"""\
                 INSERT INTO subject_codes ("subject_id", "code")
                 VALUES ({id}, "{code}")""")

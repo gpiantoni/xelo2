@@ -31,6 +31,9 @@ def import_database(INPUT, db_file):
     IDS = _import_main(
         INPUT / 'main.tsv',
         IDS)
+    _import_codes(
+        INPUT / 'subject_codes.tsv',
+        IDS)
     IDS = _import_protocols(
         INPUT / 'protocols.tsv',
         IDS)
@@ -172,6 +175,13 @@ def _import_protocols(TSV_FILE, IDS):
     return IDS
 
 
+def _import_codes(TSV_FILE, IDS):
+
+    for d in _read_tsv(TSV_FILE):
+        subj = IDS['subjects'][d['subject_codes.subject_id']]
+        subj.add_code(d['subject_codes.code'])
+
+
 def _import_main(TSV_MAIN, IDS):
 
     for d in _read_tsv(TSV_MAIN):
@@ -179,7 +189,7 @@ def _import_main(TSV_MAIN, IDS):
             subj = IDS['subjects'][d['subjects.id']]
 
         else:
-            subj = Subject.add(d['subjects.code'])
+            subj = Subject.add()
             _setattr(subj, 'subjects', d)
             IDS['subjects'][d['subjects.id']] = subj
 

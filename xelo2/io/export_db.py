@@ -17,6 +17,7 @@ def export_database(OUTPUT):
 
     TABLE_INFO = {
         'main.tsv': ('subjects', 'sessions', 'runs', 'recordings'),
+        'subject_codes.tsv': ('subject_codes', ),
         'protocols.tsv': ('protocols', ),
         'runs_protocols.tsv': ('runs_protocols', ),
         'events.tsv': ('events', ),

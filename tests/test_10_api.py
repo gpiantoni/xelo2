@@ -16,7 +16,7 @@ def test_api_subject():
     subj = Subject.add('subjecttest')
     assert subj.id == 1
     assert str(subj) == '<subject (#1)>'
-    assert repr(subj) == 'Subject(code="subjecttest")'
+    assert repr(subj) == "Subject(['subjecttest'])"
 
     with raises(ValueError):
         Subject.add('subjecttest')
