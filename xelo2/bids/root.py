@@ -78,22 +78,22 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         # use relative date based on date_of_signature
         reference_dates = [p.date_of_signature for p in subj.list_protocols()]
         if len(reference_dates) == 0:
-            lg.warning(f'You need to add at least one research protocol for {subj.code}')
+            lg.warning(f'You need to add at least one research protocol for {subj.codes}')
             continue
 
         reference_date = min(reference_dates)
         if reference_date is None:
-            lg.warning(f'You need to add date_of_signature to the METC of {subj.code}')
+            lg.warning(f'You need to add date_of_signature to the METC of {subj.codes}')
             lg.info(f'Using date of the first task performed by the subject')
             reference_date = min([x.start_time for x in subj.list_sessions()]).date()
 
-        lg.info(f'Adding {subj.code}')
-        bids_name['sub'] = 'sub-' + subj.code
+        lg.info(f'Adding {subj.codes}')
+        bids_name['sub'] = 'sub-' + subj.codes[0]
         subj_path = data_path / bids_name['sub']
         subj_path.mkdir(parents=True, exist_ok=True)
 
         if subj.date_of_birth is None:
-            lg.warning(f'You need to add date_of_birth to {subj.code}')
+            lg.warning(f'You need to add date_of_birth to {subj.codes}')
             age = 'n/a'
         else:
             age = (reference_date - subj.date_of_birth).days // 365.2425
@@ -136,13 +136,13 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
                     continue
 
                 if len(run.list_recordings()) == 0:
-                    lg.warning(f'No recordings for {subj.code}/{run.task_name}')
+                    lg.warning(f'No recordings for {subj.codes}/{run.task_name}')
                     continue
 
                 if progress is not None:
                     progress.setValue(i)
                     i += 1
-                    progress.setLabelText(f'Exporting "{subj.code}" / "{sess.name}" / "{run.task_name}"')
+                    progress.setLabelText(f'Exporting "{subj.codes}" / "{sess.name}" / "{run.task_name}"')
                     QGuiApplication.processEvents()
 
                     if progress.wasCanceled():
@@ -167,7 +167,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
                     elif rec.modality == 'ieeg':
                         if run.duration is None:
-                            lg.warning(f'You need to specify duration for {subj.code}/{run.task_name}')
+                            lg.warning(f'You need to specify duration for {subj.codes}/{run.task_name}')
                             continue
                         data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
 
