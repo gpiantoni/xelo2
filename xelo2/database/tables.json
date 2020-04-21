@@ -1,11 +1,6 @@
 {
     "subjects": {
         "id": null,
-        "code": {
-            "name": "Code",
-            "type": "TEXT UNIQUE NOT NULL",
-            "doc": "Unique identifier for each subject"
-        },
         "date_of_birth": {
             "name": "Date of Birth",
             "type": "DATE",
@@ -38,6 +33,14 @@
                 "yes",
                 "no"
             ]
+        }
+    },
+    "subject_codes": {
+        "subject_id": null,
+        "code": {
+            "name": "Code",
+            "type": "TEXT UNIQUE NOT NULL",
+            "doc": "Unique identifier for each subject"
         }
     },
     "protocols": {

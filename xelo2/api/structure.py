@@ -137,7 +137,6 @@ class Table():
         BUILTINS = (
             'id',
             't',
-            'code',
             'columns',
             'subtables',
             'experimenters',
@@ -470,7 +469,7 @@ class Run(Table_with_files):
 
             for row in values:
                 values_str = ', '.join([f'"{x}"' for x in row])
-                query = QSqlQuery(f"""\
+                QSqlQuery(f"""\
                     INSERT INTO events ("run_id", {query_str})
                     VALUES ("{self.id}", {values_str})
                     """)
@@ -597,35 +596,63 @@ class Subject(Table_with_files):
     def __init__(self, code=None, id=None):
 
         if code is not None:
-            self.code = code
-            query = QSqlQuery(f"SELECT id FROM subjects WHERE code == '{code}'")
-
-            if query.next():
-                id = query.value('id')
-            else:
-                raise ValueError(f'There is no "{code}" in "subjects" table')
+            id = _find_subject_id(code)
+            if id is None:
+                raise ValueError(f'There is no "{code}" in "subject_codes" table')
 
         super().__init__(id)
 
-        if code is None:
-            self.code = self.__getattr__('code')  # explicit otherwise it gets ignored
-
     def __repr__(self):
-        return f'{self.t.capitalize()}(code="{self.code}")'
+        return f'{self.t.capitalize()}({self.codes})'
 
     @classmethod
     def add(cls, code, date_of_birth=None, sex=None):
+        """
+        TODO
+        check if it exists already
+        """
+        id = _find_subject_id(code)
+        if id is not None:
+            raise ValueError(f'Subject "{code}" already exists')
 
         query = QSqlQuery(f"""\
-            INSERT INTO subjects ("code", "date_of_birth", "sex")
-            VALUES ("{code}", {_date(date_of_birth)}, {_null(sex)})""")
+            INSERT INTO subjects ("date_of_birth", "sex")
+            VALUES ({_date(date_of_birth)}, {_null(sex)})""")
 
         id = query.lastInsertId()
         if id is None:
             err = query.lastError()
             raise ValueError(err.databaseText())
 
+        else:
+            query = QSqlQuery(f"""\
+                INSERT INTO subject_codes ("subject_id", "code")
+                VALUES ({id}, "{code}")""")
+
         return Subject(id=id)
+
+    @property
+    def codes(self):
+
+        query = QSqlQuery(f"""\
+            SELECT code FROM subject_codes
+            WHERE subject_codes.subject_id == '{self.id}'""")
+
+        list_of_codes = []
+        while query.next():
+            list_of_codes.append(query.value('code'))
+
+        return list_of_codes
+
+    def add_code(self, code):
+
+        query = QSqlQuery(f"""\
+            INSERT INTO subject_codes ("subject_id", "code")
+            VALUES ({self.id}, "{code}")""")
+
+        if query.lastInsertId() is None:
+            err = query.lastError()
+            raise ValueError(err.databaseText())
 
     def add_session(self, name):
 
@@ -803,3 +830,14 @@ def list_channels_electrodes(session_id, name='channel'):
             continue
         list_of_items.append(int(val))
     return list_of_items
+
+
+def _find_subject_id(code):
+    query = QSqlQuery(f"""\
+        SELECT subject_id FROM subject_codes
+        WHERE subject_codes.code == '{code}'""")
+
+    while query.next():
+        return query.value('subject_id')
+    else:
+        return None
