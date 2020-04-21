@@ -88,7 +88,12 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             reference_date = min([x.start_time for x in subj.list_sessions()]).date()
 
         lg.info(f'Adding {subj.codes}')
-        bids_name['sub'] = 'sub-' + subj.codes[0]
+        codes = subj.codes
+        if len(codes) == 0:
+            code = 'id{subj.id}'  # use id if code is empty
+        else:
+            code = codes[0]
+        bids_name['sub'] = 'sub-' + code
         subj_path = data_path / bids_name['sub']
         subj_path.mkdir(parents=True, exist_ok=True)
 
