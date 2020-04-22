@@ -45,7 +45,7 @@ def merge_subjects_table(subj, subj_to_merge):
 
 def delete_one_subj(subj_to_merge):
     query = QSqlQuery(f"""\
-        DELETE subjects
+        DELETE FROM subjects
         WHERE "subject_id"== "{subj_to_merge.id}"
         """)
     err = query.lastError()
