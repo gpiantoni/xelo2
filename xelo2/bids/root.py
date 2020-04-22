@@ -29,6 +29,10 @@ def prepare_subset(where, subset=None):
     query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
     query = QSqlQuery(f"""{query_str} WHERE {where}""")
 
+    err = query.lastError()
+    if err.isValid():
+        raise ValueError(err.databaseText())
+
     if subset is None:
         subset = {'subjects': [], 'sessions': [], 'runs': []}
 
