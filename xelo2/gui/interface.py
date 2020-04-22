@@ -336,14 +336,14 @@ class Interface(QMainWindow):
                 'reverse': True,
                 }
         for subj in list_subjects(**args):
-            item = QListWidgetItem(subj.code)
+            item = QListWidgetItem(str(subj))
             if subj.complete == 'yes':
                 done(item)
             if subj.id in self.search.subjects:
                 highlight(item)
             item.setData(Qt.UserRole, subj)
             self.lists['subjects'].addItem(item)
-            if code_to_select is not None and code_to_select == subj.code:
+            if code_to_select is not None and code_to_select == str(subj):
                 to_select = item
             if to_select is None:  # select first one
                 to_select = item
@@ -719,7 +719,7 @@ class Interface(QMainWindow):
             run = self.lists['runs'].currentItem().data(Qt.UserRole)
 
         d = {}
-        d['subjects'] = subj.code
+        d['subjects'] = str(subj)
         if sess.name == 'MRI':
             d['sessions'] = f'{sess.name} ({sess.MagneticFieldStrength})'
         else:
@@ -1000,7 +1000,7 @@ class Interface(QMainWindow):
             current_subject = self.current('subjects')
             text, ok = QInputDialog.getItem(
                 self,
-                f'Add New Session for {current_subject.code}',
+                f'Add New Session for {current_subject}',
                 'Session Name:',
                 TABLES['sessions']['name']['values'],
                 0, False)
@@ -1009,7 +1009,7 @@ class Interface(QMainWindow):
             current_subject = self.current('subjects')
             text, ok = QInputDialog.getItem(
                 self,
-                f'Add New Protocol for {current_subject.code}',
+                f'Add New Protocol for {current_subject}',
                 'Protocol Name:',
                 TABLES['protocols']['metc']['values'],
                 0, False)
@@ -1124,7 +1124,7 @@ class Interface(QMainWindow):
 
         list_parrec = list(Path(par_folder).glob('*.PAR'))
         progress = QProgressDialog('', 'Cancel', 0, len(list_parrec), self)
-        progress.setWindowTitle(f'Importing PAR/REC files to "{sess.subject.code}"/"{sess.name}"')
+        progress.setWindowTitle(f'Importing PAR/REC files to "{sess.subject}"/"{sess.name}"')
         progress.setMinimumDuration(0)
         progress.setWindowModality(Qt.WindowModal)
 

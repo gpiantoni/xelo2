@@ -602,6 +602,15 @@ class Subject(Table_with_files):
 
         super().__init__(id)
 
+    def __str__(self):
+        codes = self.codes
+        if len(codes) == 0:
+            return 'subject without code'
+        elif len(codes) == 1:
+            return codes[0]
+        else:
+            return ', '.join(codes)
+
     def __repr__(self):
         return f'{self.t.capitalize()}({self.codes})'
 
