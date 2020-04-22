@@ -611,9 +611,6 @@ class Subject(Table_with_files):
         else:
             return ', '.join(codes)
 
-    def __repr__(self):
-        return f'{self.t.capitalize()}({self.codes})'
-
     @classmethod
     def add(cls, code=None, date_of_birth=None, sex=None):
         """You can create an empty subject, with no code, but it's a bad idea
@@ -749,7 +746,7 @@ def _get_dtypes(table):
 
 
 def _sort_subjects_alphabetical(subj):
-    return subj.code
+    return str(subj)
 
 
 def _sort_subjects_date(subj):
