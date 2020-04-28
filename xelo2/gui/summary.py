@@ -32,7 +32,7 @@ class Summary(QDialog):
         lay.addRow(
             f'# Subjects with both MRI and IEMU sessions',
             _info("""
-                SELECT COUNT(code) FROM subjects
+                SELECT COUNT(id) FROM subjects
                 WHERE subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'IEMU')
                 AND subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'MRI')"""))
         lay.addRow(
@@ -70,9 +70,11 @@ class Summary(QDialog):
 
 def _info(s):
     query = QSqlQuery(s)
+    label = QLabel()
+    label.setAlignment(Qt.AlignRight)
     if query.next():
-        label = QLabel()
         label.setText(str(query.value(0)))
-        label.setAlignment(Qt.AlignRight)
+    else:
+        label.setText("(ERROR)")
 
     return label
