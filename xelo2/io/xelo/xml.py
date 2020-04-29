@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 from lxml.etree import parse
-from ...api.structure import Run, Subject
+from ...api.structure import Subject
 
 
 def read_xml_subject(p_xml_subj, CUTOFF):
@@ -95,7 +95,7 @@ def add_subject_to_sql(xml_subj):
         ('ImplantationDate', 'date_of_implantation'),
         ('ExplantationDate', 'date_of_explantation'),
         ]
-    sql_sess = _find_session(sql_subj)
+    sql_sess = get_session(sql_subj)
     for xml_param, sql_param in SQLXML_FIELDS:
         assign_value(sql_sess, sql_param, xml_subj.pop(xml_param, None))
 
@@ -105,24 +105,28 @@ def add_subject_to_sql(xml_subj):
     return sql_subj
 
 
-def add_task_to_sql(task, subsets):
-    # subj = Subject(id=subsets['subjects'][0])
-    # sess = Session(id=subsets['sessions'][0])
-    run = Run(id=subsets['runs'][0])
+def add_task_to_sql(task, run):
 
     COLUMNS_DONE = [
+        'TaskName',  # this should be already in there
         'TaskMetadataLocation',
         'xelo_stem',
         'Age',
         'ExperimentGridDensity',
         'Protocol',  # TODO: I don't know how to handle Protocol
+        'BadElectrodes',  # TODO: how to handle this
     ]
     [task.pop(col, None) for col in COLUMNS_DONE]
 
     SQLXML_FIELDS = [
         ('Performance', 'performance'),
         ('Experimenters', 'experimenters'),
+        ('TaskDescription', 'task_description'),
+        ('BodyPart', 'body_part'),
+        ('LeftRight', 'left_right'),
+        ('ExecutionImagery', 'execution_imagery'),
         ]
+
     for xml_param, sql_param in SQLXML_FIELDS:
         assign_value(run, sql_param, task.pop(xml_param, None))
 
@@ -157,7 +161,7 @@ def _assign_list(run, xml_value):
             print(f'SQL  has {",".join(sql_value)}\nxelo has {xml_value}')
 
 
-def _find_session(sql_subj):
+def get_session(sql_subj):
     sessions = [sess for sess in sql_subj.list_sessions() if sess.name == 'IEMU']
     if len(sessions) == 1:
         return sessions[0]
