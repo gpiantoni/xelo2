@@ -33,7 +33,7 @@ def read_xml_subject(p_xml_subj, CUTOFF):
     return subj, tasks
 
 
-def read_xml_task(xml_task, CUTOFF):
+def read_xml_task(xml_task, CUTOFF=datetime(1900, 1, 1)):
 
     task = {}
     for tag in xml_task.iterchildren():  # it's important it follows the document order
