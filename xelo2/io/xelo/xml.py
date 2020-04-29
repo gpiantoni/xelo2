@@ -42,6 +42,10 @@ def read_xml_task(xml_task, CUTOFF=datetime(1900, 1, 1)):
         if tag.tag == 'TaskMetadataLocation' or CUTOFF < datetime.fromisoformat(tag.get('Date')):
             task[tag.tag] = tag.text
 
+    return read_xml_task_only(task, CUTOFF)
+
+
+def read_xml_task_only(task, CUTOFF=datetime(1900, 1, 1)):
     try:
         p_task = Path(task['TaskMetadataLocation'])
     except KeyError:
@@ -61,7 +65,7 @@ def read_xml_task(xml_task, CUTOFF=datetime(1900, 1, 1)):
 def add_subject_to_sql(xml_subj):
     sql_subj = Subject(code=xml_subj['SubjectCode'])
 
-    if 'ProtocolSigned':
+    if xml_subj.get('ProtocolSigned', None) is not None:
         protocol_sql = ', '.join(p.metc for p in sql_subj.list_protocols())
         print(f'SQL  has {protocol_sql}\nxelo has {xml_subj["ProtocolSigned"]}')
 
@@ -79,6 +83,8 @@ def add_subject_to_sql(xml_subj):
 
     if xml_subj:
         print(f'You need to add {", ".join(xml_subj)}')
+
+    return sql_subj
 
 
 def add_task_to_sql(task, subsets):
@@ -107,8 +113,9 @@ def add_task_to_sql(task, subsets):
 
 
 def assign_value(run, param, xml_value):
-    """xml_value = task.pop('Performance', None)
-    """
+    if xml_value is None:
+        return
+
     if param == 'experimenters':
         _assign_list(run, xml_value)
 
@@ -116,11 +123,10 @@ def assign_value(run, param, xml_value):
         if param in ('date_of_birth', ):
             xml_value = datetime.strptime(xml_value, '%Y-%b-%d').date()
         sql_value = getattr(run, param)
-        if xml_value is not None:
-            if sql_value is None:
-                setattr(run, param, xml_value)
-            elif sql_value != xml_value:
-                print(f'SQL  has {sql_value}\nxelo has {xml_value}')
+        if sql_value is None:
+            setattr(run, param, xml_value)
+        elif sql_value != xml_value:
+            print(f'SQL  has {sql_value}\nxelo has {xml_value}')
 
 
 def _assign_list(run, xml_value):
