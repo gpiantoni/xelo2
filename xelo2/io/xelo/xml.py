@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 from lxml.etree import parse
-from ...api.structure import Run, Subject, Session
+from ...api.structure import Run, Subject
 
 
 def read_xml_subject(p_xml_subj, CUTOFF):
@@ -30,8 +30,7 @@ def read_xml_subject(p_xml_subj, CUTOFF):
         if task is not None:
             tasks.append(task)
 
-    subj['tasks'] = tasks
-    return subj
+    return subj, tasks
 
 
 def read_xml_task(xml_task, CUTOFF):
@@ -57,6 +56,29 @@ def read_xml_task(xml_task, CUTOFF):
             task[tag.tag] = tag.text
 
     return task
+
+
+def add_subject_to_sql(xml_subj):
+    sql_subj = Subject(code=xml_subj['SubjectCode'])
+
+    if 'ProtocolSigned':
+        protocol_sql = ', '.join(p.metc for p in sql_subj.list_protocols())
+        print(f'SQL  has {protocol_sql}\nxelo has {xml_subj["ProtocolSigned"]}')
+
+    COLUMNS_DONE = [
+        'SubjectCode',
+        'ProtocolSigned',
+    ]
+    [xml_subj.pop(col, None) for col in COLUMNS_DONE]
+
+    SQLXML_FIELDS = [
+        ('DateOfBirth', 'date_of_birth'),
+        ]
+    for xml_param, sql_param in SQLXML_FIELDS:
+        assign_value(sql_subj, sql_param, xml_subj.pop(xml_param, None))
+
+    if xml_subj:
+        print(f'You need to add {", ".join(xml_subj)}')
 
 
 def add_task_to_sql(task, subsets):
