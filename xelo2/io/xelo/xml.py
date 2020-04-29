@@ -61,9 +61,14 @@ def read_xml_task_only(task, CUTOFF=datetime(1900, 1, 1)):
 
     return task
 
+def _match_subject(code):
+    if code.startswith('intraop'):
+        return 'intraop' + code[-3:]
+    else:
+        return code
 
 def add_subject_to_sql(xml_subj):
-    sql_subj = Subject(code=xml_subj['SubjectCode'])
+    sql_subj = Subject(code=_match_subject(xml_subj['SubjectCode']))
 
     if xml_subj.get('ProtocolSigned', None) is not None:
         protocol_sql = ', '.join(p.metc for p in sql_subj.list_protocols())
@@ -71,15 +76,28 @@ def add_subject_to_sql(xml_subj):
 
     COLUMNS_DONE = [
         'SubjectCode',
+        'SubjectType',
+        'Hemisphere',
         'ProtocolSigned',
-    ]
+        'SubjectFolderLocation',
+        'GridDensity',
+        ]
     [xml_subj.pop(col, None) for col in COLUMNS_DONE]
 
     SQLXML_FIELDS = [
         ('DateOfBirth', 'date_of_birth'),
+        ('Sex', 'Sex'),
         ]
     for xml_param, sql_param in SQLXML_FIELDS:
         assign_value(sql_subj, sql_param, xml_subj.pop(xml_param, None))
+
+    SQLXML_FIELDS = [
+        ('ImplantationDate', 'date_of_implantation'),
+        ('ExplantationDate', 'date_of_explantation'),
+        ]
+    sql_sess = _find_session(sql_subj)
+    for xml_param, sql_param in SQLXML_FIELDS:
+        assign_value(sql_sess, sql_param, xml_subj.pop(xml_param, None))
 
     if xml_subj:
         print(f'You need to add {", ".join(xml_subj)}')
@@ -113,17 +131,18 @@ def add_task_to_sql(task, subsets):
 
 
 def assign_value(run, param, xml_value):
-    if xml_value is None:
+    if xml_value is None or xml_value.strip() == '':
         return
 
     if param == 'experimenters':
         _assign_list(run, xml_value)
 
     else:
-        if param in ('date_of_birth', ):
+        if param.startswith('date_of'):
             xml_value = datetime.strptime(xml_value, '%Y-%b-%d').date()
         sql_value = getattr(run, param)
         if sql_value is None:
+            print(f'updating {param} with {xml_value}')
             setattr(run, param, xml_value)
         elif sql_value != xml_value:
             print(f'SQL  has {sql_value}\nxelo has {xml_value}')
@@ -136,3 +155,13 @@ def _assign_list(run, xml_value):
             run.experimenters = xml_value.split(', ')
         elif sql_value != xml_value:
             print(f'SQL  has {",".join(sql_value)}\nxelo has {xml_value}')
+
+
+def _find_session(sql_subj):
+    sessions = [sess for sess in sql_subj.list_sessions() if sess.name == 'IEMU']
+    if len(sessions) == 1:
+        return sessions[0]
+    elif len(sessions) == 0:
+        return sql_subj.add_session('IEMU')
+    else:
+        raise ValueError(f'There are {len(sessions)} IEMU sessions for {sql_subj.code}')
