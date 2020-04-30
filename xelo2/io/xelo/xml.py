@@ -5,17 +5,28 @@ from ...api.filetype import parse_filetype
 
 
 def add_run_from_task(task, sql_subj):
-    sql_sess = get_session(sql_subj, _match_session(task['Technique']))
+    task_full = read_xml_task_only(task)
+    sql_sess = get_session(sql_subj, _match_session(task_full['Technique']))
+    if sql_sess is None:
+        print(f'Could not determine session. Not adding {task}')
+        return
+
     taskname = _match_taskname(task['TaskName'])
     run = sql_sess.add_run(taskname)
 
+    add_task_to_sql(task, run)
+
+
+def add_experimentlocation(run, task):
     ExperimentLocation = task.pop('ExperimentLocation', '')
-    if _match_session(task.pop('Technique', '')) == 'IEMU' and ExperimentLocation:
-        rec = run.add_recording('ieeg')
+    if ExperimentLocation:
+        if ExperimentLocation.endswith('.REC'):
+            ExperimentLocation = ExperimentLocation[:-4] + '.PAR'
+
+        rec_modality = get_recording_name(task)
+        rec = run.add_recording(rec_modality)
         format = parse_filetype(ExperimentLocation)
         rec.add_file(format, ExperimentLocation)
-
-    add_task_to_sql(task, run)
 
 
 def read_xml_subject(p_xml_subj, CUTOFF):
@@ -51,7 +62,7 @@ def read_xml_task(xml_task, CUTOFF=datetime(1900, 1, 1)):
     READ_ANYWAY = [
         'TaskName',
         'TaskMetadataLocation',
-        'ExperimentDate',
+        'Technique',
         ]
 
     task = {}
@@ -120,6 +131,7 @@ def add_subject_to_sql(xml_subj, sql_subj):
     SQLXML_FIELDS = [
         ('DateOfBirth', 'date_of_birth'),
         ('Sex', 'Sex'),
+        ('Handedness', 'handedness'),
         ]
     for xml_param, sql_param in SQLXML_FIELDS:
         assign_value(sql_subj, sql_param, xml_subj.pop(xml_param, None))
@@ -152,29 +164,20 @@ def add_subject_to_sql(xml_subj, sql_subj):
 
 def add_task_to_sql(task, run):
 
+    add_experimentlocation(run, task)
+
     task['start_time'], task['duration'] = get_starttime_duration(task)
     task['TaskDescription'] = task.get('TaskDescription', '').strip() + ' ' + task.pop('Task_Instruction', '').strip()
+    if task.get('Phonemes', '').strip():
+        task['TaskDescription'] += ('; Phonemes ' + task.pop('Phonemes'))
+    if task.get('Syllables', '').strip():
+        task['TaskDescription'] += ('; Syllables ' + task.pop('Syllables'))
     task['Acquisition'] = task.get('Acquisition', '').strip() + ' ' + task.pop('TaskCodes', '').strip() + ' ' + task.pop('InsertFile', '').strip()
     if task.get('Attachments', '').strip():
         for attach in task['Attachments'].split('\\n'):
+            if attach.strip().endswith('.PAR'):
+                continue  # we don't care about PAR file in attachment
             run.add_file('task_log', attach.strip())
-
-    COLUMNS_DONE = [
-        'Attachments',
-        'SubjectCode',
-        'TaskName',  # this should be already in there
-        'TaskMetadataLocation',
-        'xelo_stem',
-        'Age',
-        'ExperimentGridDensity',
-        'Protocol',  # TODO: I don't know how to handle Protocol
-        'BadElectrodes',  # TODO: how to handle this
-        'ExperimentDate',
-        'ExperimentStartTime',
-        'ExperimentStopTime',
-        'FieldStrength',  # this should go in session
-    ]
-    [task.pop(col, None) for col in COLUMNS_DONE]
 
     SQLXML_FIELDS = [
         ('Performance', 'performance'),
@@ -192,6 +195,32 @@ def add_task_to_sql(task, run):
     for xml_param, sql_param in SQLXML_FIELDS:
         assign_value(run, sql_param, task.pop(xml_param, None))
 
+    SQLXML_FIELDS = [
+        ('Location', 'region_of_interest'),
+        ]
+    for xml_param, sql_param in SQLXML_FIELDS:
+        if task.get(xml_param, '').strip():
+            rec = get_recording(run, task)  # only get recording if there is info to put in there
+            assign_value(rec, sql_param, task.pop(xml_param, None))
+
+    COLUMNS_DONE = [
+        'Attachments',
+        'SubjectCode',
+        'TaskName',  # this should be already in there
+        'TaskMetadataLocation',
+        'xelo_stem',
+        'Age',
+        'ExperimentGridDensity',
+        'Protocol',  # TODO: I don't know how to handle Protocol
+        'BadElectrodes',  # TODO: how to handle this
+        'ExperimentDate',
+        'ExperimentStartTime',
+        'ExperimentStopTime',
+        'Technique',
+        'FieldStrength',  # this should go in session
+    ]
+    [task.pop(col, None) for col in COLUMNS_DONE]
+
     # remove empty parameters
     task = {k: v for k, v in task.items() if v.strip()}
     if task:
@@ -199,7 +228,7 @@ def add_task_to_sql(task, run):
 
 
 def assign_value(run, param, xml_value):
-    if xml_value is None or (isinstance(xml_value, str) and xml_value.strip() == ''):
+    if xml_value is None or (isinstance(xml_value, str) and xml_value.strip() in ('', 'na')):
         return
 
     if param == 'experimenters':
@@ -211,6 +240,9 @@ def assign_value(run, param, xml_value):
             xml_value = datetime.strptime(xml_value, '%Y-%b-%d').date()
         elif param in ('left_right', 'body_part', 'execution_imagery', 'overt_covert'):
             xml_value = xml_value.lower()
+        elif param == 'handedness':
+            HANDEDNESS = {'Right': 'Right-handed', 'Left': 'Left-handed'}
+            xml_value = HANDEDNESS[xml_value]
         elif isinstance(xml_value, str):
             xml_value = xml_value.strip()
 
@@ -226,7 +258,7 @@ def _assign_list(run, xml_value):
     sql_value = run.experimenters
     if xml_value is not None:
         if len(sql_value) == 0:
-            run.experimenters = xml_value.split(', ')
+            run.experimenters = [x.strip().capitalize() for x in xml_value.split(', ')]
         elif sql_value != xml_value:
             print(f'SQL  has {",".join(sql_value)}\nxelo has {xml_value}')
 
@@ -238,7 +270,31 @@ def get_session(sql_subj, sess_name='IEMU'):
     elif len(sessions) == 0:
         return sql_subj.add_session(sess_name)
     else:
-        print(f'There are {len(sessions)} {sess_name} sessions for {sql_subj.code}')
+        # print(f'There are {len(sessions)} {sess_name} sessions for {sql_subj.codes}')
+        return None
+
+def get_recording_name(task):
+
+    if task['Technique'].lower() in ('ecog', 'seeg'):
+        return 'ieeg'
+    elif task['Technique'].lower() == 'mri':
+        return 'T1w'
+    elif task['Technique'].lower() == 'fmri':
+        return 'bold'
+    else:
+        raise ValueError(task)
+
+
+def get_recording(sql_run, task):
+    rec_name = get_recording_name(task)
+
+    recordings = [rec for rec in sql_run.list_recordings() if rec.modality == rec_name]
+    if len(recordings) == 1:
+        return recordings[0]
+    elif len(recordings) == 0:
+        return sql_run.add_recording(rec_name)
+    else:
+        # print(f'There are {len(recordings)} {rec_name} sessions for {sql_run.task_name}')
         return None
 
 
