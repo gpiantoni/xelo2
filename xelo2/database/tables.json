@@ -332,6 +332,24 @@
                     "type": "TEXT"
                 }
             },
+            "runs_picnam": {
+                "run_id": null,
+                "when": {
+                    "level": "run",
+                    "parameter": "task_name",
+                    "value": [
+                        "picnam"
+                    ]
+                },
+                "overt_covert": {
+                    "name": "Overt / Covert",
+                    "type": "TEXT",
+                    "values": [
+                        "overt",
+                        "covert"
+                    ]
+                }
+            },
             "runs_sensorimotor": {
                 "run_id": null,
                 "when": {
