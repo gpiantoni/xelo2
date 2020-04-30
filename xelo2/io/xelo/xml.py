@@ -107,6 +107,8 @@ def add_subject_to_sql(xml_subj):
 
 def add_task_to_sql(task, run):
 
+    task['start_time'], task['duration'] = get_starttime_duration(task)
+
     COLUMNS_DONE = [
         'TaskName',  # this should be already in there
         'TaskMetadataLocation',
@@ -115,6 +117,9 @@ def add_task_to_sql(task, run):
         'ExperimentGridDensity',
         'Protocol',  # TODO: I don't know how to handle Protocol
         'BadElectrodes',  # TODO: how to handle this
+        'ExperimentDate',
+        'ExperimentStartTime',
+        'ExperimentStopTime',
     ]
     [task.pop(col, None) for col in COLUMNS_DONE]
 
@@ -125,6 +130,8 @@ def add_task_to_sql(task, run):
         ('BodyPart', 'body_part'),
         ('LeftRight', 'left_right'),
         ('ExecutionImagery', 'execution_imagery'),
+        ('start_time', 'start_time'),
+        ('duration', 'duration'),
         ]
 
     for xml_param, sql_param in SQLXML_FIELDS:
@@ -142,8 +149,12 @@ def assign_value(run, param, xml_value):
         _assign_list(run, xml_value)
 
     else:
+
         if param.startswith('date_of'):
             xml_value = datetime.strptime(xml_value, '%Y-%b-%d').date()
+        elif param in ('left_right', 'body_part', 'execution_imagery'):
+            xml_value = xml_value.lower()
+
         sql_value = getattr(run, param)
         if sql_value is None:
             print(f'updating {param} with {xml_value}')
@@ -169,3 +180,15 @@ def get_session(sql_subj):
         return sql_subj.add_session('IEMU')
     else:
         raise ValueError(f'There are {len(sessions)} IEMU sessions for {sql_subj.code}')
+
+
+def _convert_datetime(ExperimentDate, ExperimentTime):
+    ExperimentDate = datetime.strptime(ExperimentDate, '%Y-%b-%d').date()
+    ExperimentTime = datetime.strptime(ExperimentTime, '%H:%M').time()
+    return datetime.combine(ExperimentDate, ExperimentTime)
+
+
+def get_starttime_duration(task):
+    start_time = _convert_datetime(task['ExperimentDate'], task['ExperimentStartTime'])
+    duration = _convert_datetime(task['ExperimentDate'], task['ExperimentStopTime']) - start_time
+    return start_time, duration.total_seconds()
