@@ -3,6 +3,41 @@ from pathlib import Path
 from lxml.etree import parse
 from ...api.filetype import parse_filetype
 
+def import_all():
+    """I don't like importing all"""
+    subj_iter = XML_SUBJECTS.iterdir()
+
+    for p_xml_subj in subj_iter:
+
+        if p_xml_subj.stem in ('UNP001_SubjectXML', 'unp004_SubjectXML', 'unp005_SubjectXML'):  # also test, Newtest
+            continue
+
+        xml_subj, tasks = read_xml_subject(p_xml_subj, CUTOFF)
+
+        subjectcode = _match_subject(xml_subj['SubjectCode'])
+        print(subjectcode)
+        try:
+            sql_subj = Subject(code=subjectcode)
+        except ValueError:
+            sql_subj = Subject.add(subjectcode)
+
+        sql_subj = add_subject_to_sql(xml_subj, sql_subj)
+
+        for task in tasks:
+            if len(task) <= 4:
+                continue
+            print('\tchanged')
+            subsets = prepare_subset(f'xelo_stem == "{task["xelo_stem"]}"')
+            run_ids = set(subsets['runs'])
+            if len(run_ids) == 1:
+                run = Run(id=list(run_ids)[0])
+                add_task_to_sql(task, run)
+            elif len(run_ids) == 0:
+                add_run_from_task(task, sql_subj)
+            else:
+                raise ValueError(f'Too many sql tasks matching "{task["xelo_stem"]}"')
+
+
 
 def add_run_from_task(task, sql_subj):
     task_full = read_xml_task_only(task)
@@ -180,6 +215,7 @@ def add_task_to_sql(task, run):
             run.add_file('task_log', attach.strip())
 
     SQLXML_FIELDS = [
+        ('xelo_stem', 'xelo_stem'),
         ('Performance', 'performance'),
         ('Experimenters', 'experimenters'),
         ('TaskDescription', 'task_description'),
@@ -208,7 +244,6 @@ def add_task_to_sql(task, run):
         'SubjectCode',
         'TaskName',  # this should be already in there
         'TaskMetadataLocation',
-        'xelo_stem',
         'Age',
         'ExperimentGridDensity',
         'Protocol',  # TODO: I don't know how to handle Protocol
@@ -218,6 +253,10 @@ def add_task_to_sql(task, run):
         'ExperimentStopTime',
         'Technique',
         'FieldStrength',  # this should go in session
+        'DataGlove',  # it's only yes or no
+        'FingerMappingSequence',  # this should be in the triggers / events
+        'ISI',  # this should be in the triggers / events
+        'Rest_duration',  # this should be in the triggers / events
     ]
     [task.pop(col, None) for col in COLUMNS_DONE]
 
