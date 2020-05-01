@@ -332,13 +332,14 @@
                     "type": "TEXT"
                 }
             },
-            "runs_picnam": {
+            "runs_speak": {
                 "run_id": null,
                 "when": {
                     "level": "run",
                     "parameter": "task_name",
                     "value": [
-                        "picnam"
+                        "picnam",
+                        "verb"
                     ]
                 },
                 "overt_covert": {

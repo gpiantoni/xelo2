@@ -527,11 +527,15 @@ class Interface(QMainWindow):
                 w = Popup_Protocols(obj, self)
                 parameters.update({'Protocols': w})
 
+                # this should be read from tables.json
                 if obj.task_name == 'mario':
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
 
                 if obj.task_name in ('motor', 'somatosensory'):
                     parameters.update(table_widget(TABLES[k]['subtables']['runs_sensorimotor'], obj, self))
+
+                if obj.task_name in ('picnam', 'verb'):
+                    parameters.update(table_widget(TABLES[k]['subtables']['runs_speak'], obj, self))
 
             elif k == 'recordings':
 
