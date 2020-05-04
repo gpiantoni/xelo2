@@ -21,8 +21,10 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         run.task_name = info['task_name']
 
     if info['task_name'] == 'motor':
-        run.left_right = info['left_right']
-        run.body_part = info['body_part']
+        if run.left_right is None:
+            run.left_right = info['left_right']
+        if run.body_part is None:
+            run.body_part = info['body_part']
 
     if recording is None:
         recording = run.add_recording(info['modality'])
@@ -43,7 +45,8 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         duration = image['dyn_scan_begin_time'].max() + TR
 
     run.duration = duration
-    run.acquisition = hdr['protocol_name']
+    if run.acquisition is None:
+        run.acquisition = hdr['protocol_name']
     if info['modality'] == 'bold':
         recording.RepetitionTime = TR
         recording.FlipAngle = image['image_flip_angle'][0]
