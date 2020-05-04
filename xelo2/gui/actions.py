@@ -85,7 +85,7 @@ def create_menubar(main):
         menu_new.addAction(action)
 
     menu_new.addSeparator()
-    action = QAction(f'new file ...', main)
+    action = QAction('new file ...', main)
     action.triggered.connect(main.new_file)
     menu_new.addAction(action)
 
@@ -105,13 +105,16 @@ def create_menubar(main):
     # io
     menu_io = menubar.addMenu('Import')
     action_parrec = QAction('PAR/REC folder ...', main)
+    action_parrec.triggered.connect(main.io_parrec_sess)
+    menu_io.addAction(action_parrec)
+    action_parrec = QAction('info from PAR/REC recording', main)
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
     menu_io.addSeparator()
     action_ieeg = QAction('iEEG file ...', main)
     action_ieeg.triggered.connect(main.io_ieeg)
     menu_io.addAction(action_ieeg)
-    action_events = QAction('info and events from IEEG recording', main)
+    action_events = QAction('info and events from IEEG recording ...', main)
     action_events.triggered.connect(main.io_events)
     menu_io.addAction(action_events)
     action_chan = QAction('channels from IEEG recording', main)

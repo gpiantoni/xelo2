@@ -56,7 +56,7 @@ from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
-from ..io.parrec import add_parrec_to_sess
+from ..io.parrec import add_parrec
 from ..io.ieeg import add_ieeg_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
@@ -1120,6 +1120,24 @@ class Interface(QMainWindow):
         self.modified()
 
     def io_parrec(self):
+        run = self.current('runs')
+        recording = self.current('recording')
+
+        success = False
+        for file in recording.list_files():
+            if file.format == 'parrec':
+                add_parrec(file.path, run=run, recording=recording)
+                success = True
+                break
+
+        if success:
+            self.list_recordings(run)
+            self.list_params()
+            self.modified()
+        else:
+            self.statusBar().showMessage('Cound not find PAR/REC to collect info from')
+
+    def io_parrec_sess(self):
         sess = self.current('sessions')
 
         par_folder = QFileDialog.getExistingDirectory()
@@ -1136,7 +1154,7 @@ class Interface(QMainWindow):
             progress.setValue(i)
             progress.setLabelText(f'Importing {par_file.name}')
             QGuiApplication.processEvents()
-            add_parrec_to_sess(sess, par_file)
+            add_parrec(par_file, sess=sess)
 
             if progress.wasCanceled():
                 break

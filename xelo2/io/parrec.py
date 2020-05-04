@@ -3,7 +3,7 @@ from nibabel.parrec import parse_PAR_header
 from numpy import round
 
 
-def add_parrec_to_sess(sess, par_file):
+def add_parrec(par_file, sess=None, run=None, recording=None):
     hdr, image = parse_PAR_header(par_file.open())
 
     info = _get_MRI_info(hdr)
@@ -14,16 +14,23 @@ def add_parrec_to_sess(sess, par_file):
     # There is no time for individual runs, so we estimate an average duration of 4 minutes
     start_time = exam_date + timedelta(seconds=4 * 60 * hdr['acq_nr'])
 
-    run = sess.add_run(info['task_name'], start_time)
+    if run is None:
+        run = sess.add_run(info['task_name'], start_time)
+    else:
+        run.start_time = start_time
+        run.task_name = info['task_name']
 
     if info['task_name'] == 'motor':
         run.left_right = info['left_right']
         run.body_part = info['body_part']
 
-    rec = run.add_recording(info['modality'])
+    if recording is None:
+        recording = run.add_recording(info['modality'])
+    else:
+        recording.modality = info['modality']
 
-    rec.add_file('parrec', par_file)
-    rec.PulseSequenceType = hdr['tech']
+    recording.add_file('parrec', par_file)
+    recording.PulseSequenceType = hdr['tech']
 
     n_dyns = image['dynamic scan number'].max()
     if n_dyns == 1:
@@ -38,8 +45,8 @@ def add_parrec_to_sess(sess, par_file):
     run.duration = duration
     run.acquisition = hdr['protocol_name']
     if info['modality'] == 'bold':
-        rec.RepetitionTime = TR
-        rec.FlipAngle = image['image_flip_angle'][0]
+        recording.RepetitionTime = TR
+        recording.FlipAngle = image['image_flip_angle'][0]
 
 
 def _get_MRI_info(hdr):
