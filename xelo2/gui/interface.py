@@ -1121,7 +1121,7 @@ class Interface(QMainWindow):
 
     def io_parrec(self):
         run = self.current('runs')
-        recording = self.current('recording')
+        recording = self.current('recordings')
 
         success = False
         for file in recording.list_files():
