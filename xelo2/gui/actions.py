@@ -141,6 +141,7 @@ SEARCH_STATEMENT = """\
     LEFT JOIN sessions_mri ON sessions_mri.session_id == sessions.id
     LEFT JOIN runs ON runs.session_id == sessions.id
     LEFT JOIN recordings ON recordings.run_id == runs.id
+    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id == recordings.id
     WHERE """
 
 

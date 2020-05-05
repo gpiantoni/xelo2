@@ -36,6 +36,19 @@ class Summary(QDialog):
                 WHERE subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'IEMU')
                 AND subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'MRI')"""))
         lay.addRow(
+            '# IEMU sessions',
+            _info(f'SELECT COUNT(DISTINCT sessions.id) FROM sessions WHERE name == "IEMU"'))
+        for chan_elec in ('channel', 'electrode'):
+            lay.addRow(
+                f'# IEMU sessions with {chan_elec}s',
+                _info(f"""
+                    SELECT COUNT(DISTINCT(sessions.id)) FROM sessions
+                    LEFT JOIN runs ON runs.session_id == sessions.id
+                    LEFT JOIN recordings ON recordings.run_id == runs.id
+                    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id == recordings.id
+                    WHERE sessions.name == 'IEMU'
+                    AND recordings_ieeg.{chan_elec}_group_id IS NOT NULL"""))
+        lay.addRow(
             '# Runs',
             _info('SELECT COUNT(id) FROM runs'))
         lay.addRow(
@@ -47,14 +60,6 @@ class Summary(QDialog):
         lay.addRow(
             '# iEEG Recordings',
             _info('SELECT COUNT(id) FROM recordings WHERE recordings.modality == "ieeg"'))
-        for chan_elec in ('channel', 'electrode'):
-            lay.addRow(
-                f'# iEEG Recordings with {chan_elec}s',
-                _info(f"""
-                    SELECT COUNT(id) FROM recordings
-                    JOIN recordings_ieeg ON recordings_ieeg.recording_id == recordings.id
-                    WHERE recordings.modality == "ieeg"
-                    AND recordings_ieeg.{chan_elec}_group_id IS NOT NULL"""))
 
         ok_button = QDialogButtonBox(QDialogButtonBox.Ok)
         ok_button.accepted.connect(self.accept)
