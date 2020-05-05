@@ -7,10 +7,10 @@ from ..io.electrodes import import_electrodes
 from ..api import Electrodes
 
 
-def recap(subj, sess, run):
+def recap(subj, sess, run, trial_type='speech'):
     df = {}
 
-    df['subject'] = subj.code
+    df['subject'] = str(subj)
     df['start_time'] = run.start_time
 
     metc = subj.list_protocols()
@@ -24,7 +24,7 @@ def recap(subj, sess, run):
     df['has_duration'] = True if run.duration is not None else False
     events = run.events
     df['n_events'] = events.shape[0]
-    df['has_events_type'] = 'speech' in events['trial_type']
+    df['has_events_type'] = trial_type in events['trial_type']
 
     recordings = run.list_recordings()
     if len(recordings) == 0:
@@ -38,7 +38,7 @@ def recap(subj, sess, run):
     else:
         df['has_recording'] = True
         if len(recordings) > 1:
-            raise ValueError('number of recordings')
+            print('number of recordings')
         rec = recordings[0]
 
         files = rec.list_files()
