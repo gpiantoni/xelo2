@@ -83,7 +83,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         reference_dates = [p.date_of_signature for p in subj.list_protocols()]
         if len(reference_dates) == 0:
             lg.warning(f'You need to add at least one research protocol for {subj.codes}')
-            continue
+            reference_dates = [datetime.now().date(), ]
 
         reference_date = min(reference_dates)
         if reference_date is None:
@@ -204,10 +204,12 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
             if len(run_files) == 0:
                 continue
             tsv_file = sess_path / f'{bids_name["sub"]}_{bids_name["ses"]}_scans.tsv'
-            _list_scans(tsv_file, run_files)
+            if run_files:
+                _list_scans(tsv_file, run_files)
 
         tsv_file = subj_path / f'{bids_name["sub"]}_sessions.tsv'
-        _list_scans(tsv_file, sess_files)
+        if sess_files:
+            _list_scans(tsv_file, sess_files)
 
         json_sessions = tsv_file.with_suffix('.json')
         copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
