@@ -90,17 +90,11 @@ def create_menubar(main):
     menu_new.addAction(action)
 
     # search
-    menu_search = menubar.addMenu('Search')
-    action_search = QAction('WHERE ...', main)
-    action_search.triggered.connect(main.sql_search)
-    menu_search.addAction(action_search)
-    action_clear = QAction('clear', main)
-    action_clear.triggered.connect(main.sql_search_clear)
-    menu_search.addAction(action_clear)
-    menu_search.addSeparator()
-    action_export = QAction('add to list to export', main)
-    action_export.triggered.connect(main.add_search_results_to_export)
-    menu_search.addAction(action_export)
+    menu_edit = menubar.addMenu('Edit')
+    menu_new.addSeparator()
+    action = QAction('subject codes ...', main)
+    action.triggered.connect(main.edit_subject_codes)
+    menu_edit.addAction(action)
 
     # io
     menu_io = menubar.addMenu('Import')
@@ -127,6 +121,19 @@ def create_menubar(main):
     action_events = QAction('only events from IEEG recording (deprecated)', main)
     action_events.triggered.connect(main.io_events_only)
     menu_io.addAction(action_events)
+
+    # search
+    menu_search = menubar.addMenu('Search')
+    action_search = QAction('WHERE ...', main)
+    action_search.triggered.connect(main.sql_search)
+    menu_search.addAction(action_search)
+    action_clear = QAction('clear', main)
+    action_clear.triggered.connect(main.sql_search_clear)
+    menu_search.addAction(action_clear)
+    menu_search.addSeparator()
+    action_export = QAction('add to list to export', main)
+    action_export.triggered.connect(main.add_search_results_to_export)
+    menu_search.addAction(action_export)
 
 
 def create_shortcuts(main):

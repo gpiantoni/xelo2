@@ -1092,6 +1092,10 @@ class Interface(QMainWindow):
 
             self.modified()
 
+    def edit_subject_codes(self):
+        subject = self.current('subjects')
+
+
     def new_file(self, checked=None, filename=None):
         get_new_file = NewFile(self, filename=filename)
         result = get_new_file.exec()
