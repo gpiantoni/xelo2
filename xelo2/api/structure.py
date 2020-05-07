@@ -38,7 +38,7 @@ def list_subjects(alphabetical=False, reverse=False):
     list of instances of Subject
         list of subjects in the database
     """
-    query = QSqlQuery(f"SELECT id FROM subjects")
+    query = QSqlQuery("SELECT id FROM subjects")
 
     list_of_subjects = []
     while query.next():
@@ -140,6 +140,7 @@ class Table():
             'columns',
             'subtables',
             'experimenters',
+            'codes',
             'subject',
             'session',
             'run',
@@ -302,7 +303,7 @@ class Channels(NumpyTable):
     def __init__(self, id=None):
         """Use ID if provided, otherwise create a new channel_group"""
         if id is None:
-            query = QSqlQuery(f"""\
+            query = QSqlQuery("""\
                 INSERT INTO channel_groups ("Reference")
                 VALUES ("n/a")
                 """)
@@ -318,7 +319,7 @@ class Electrodes(NumpyTable):
         """Use ID if provided, otherwise create a new electrode_group with
         reasonable parameters"""
         if id is None:
-            query = QSqlQuery(f"""\
+            query = QSqlQuery("""\
                 INSERT INTO electrode_groups ("CoordinateSystem", "CoordinateUnits")
                 VALUES ("ACPC", "mm")
                 """)
@@ -605,10 +606,12 @@ class Subject(Table_with_files):
     def __str__(self):
         codes = self.codes
         if len(codes) == 0:
-            return 'subject without code'
+            return '(subject without code)'
         elif len(codes) == 1:
             return codes[0]
         else:
+            # put RESP at the end
+            codes.sort(key=lambda s: s.startswith('RESP'))
             return ', '.join(codes)
 
     @classmethod
@@ -649,15 +652,19 @@ class Subject(Table_with_files):
 
         return list_of_codes
 
-    def add_code(self, code):
+    @codes.setter
+    def codes(self, codes):
 
-        query = QSqlQuery(f"""\
-            INSERT INTO subject_codes ("subject_id", "code")
-            VALUES ({self.id}, "{code}")""")
+        QSqlQuery(f'DELETE FROM subject_codes WHERE subject_id == "{self.id}"')
+        for code in codes:
 
-        if query.lastInsertId() is None:
-            err = query.lastError()
-            raise ValueError(err.databaseText())
+            query = QSqlQuery(f"""\
+                INSERT INTO subject_codes ("subject_id", "code")
+                VALUES ({self.id}, "{code}")""")
+
+            if query.lastInsertId() is None:
+                err = query.lastError()
+                raise ValueError(err.databaseText())
 
     def add_session(self, name):
 

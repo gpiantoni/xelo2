@@ -882,7 +882,7 @@ class Interface(QMainWindow):
 
         if item is None:
             menu = QMenu(self)
-            action = QAction(f'Add File', self)
+            action = QAction('Add File', self)
             action.triggered.connect(lambda x: self.new_file(self))
             menu.addAction(action)
             menu.popup(self.t_files.mapToGlobal(pos))
@@ -1094,7 +1094,21 @@ class Interface(QMainWindow):
 
     def edit_subject_codes(self):
         subject = self.current('subjects')
+        text = str(subject)
+        if text == '(subject without code)':
+            text = ''
+        text, ok = QInputDialog.getText(
+            self,
+            'Edit Subject Codes',
+            'Separate each code by a comma (spaces are ignored)',
+            text=text,
+            )
 
+        if ok and text != '':
+            text = text.strip(', ')
+            subject.codes = [x.strip() for x in text.split(',')]
+            self.list_subjects()
+            self.modified()
 
     def new_file(self, checked=None, filename=None):
         get_new_file = NewFile(self, filename=filename)
@@ -1253,7 +1267,9 @@ class Interface(QMainWindow):
             return
         chan.name = '(imported)'
         recording.attach_channels(chan)
+
         self.modified()
+        self.list_recordings()
 
     def io_electrodes(self):
 
@@ -1288,6 +1304,7 @@ class Interface(QMainWindow):
         rec.attach_electrodes(elec)
 
         self.modified()
+        self.list_recordings()
 
     def delete_file(self, level_obj, file_obj):
         level_obj.delete_file(file_obj)
