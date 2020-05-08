@@ -656,7 +656,8 @@ class Subject(Table_with_files):
     def codes(self, codes):
 
         QSqlQuery(f'DELETE FROM subject_codes WHERE subject_id == "{self.id}"')
-        for code in codes:
+
+        for code in set(codes):
 
             query = QSqlQuery(f"""\
                 INSERT INTO subject_codes ("subject_id", "code")
