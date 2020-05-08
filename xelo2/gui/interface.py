@@ -798,7 +798,7 @@ class Interface(QMainWindow):
             self.show_events(run)
 
         else:
-            current.data = X
+            current.data = _fake_names(X)
             recording = self.current('recordings')
             self.list_channels_electrodes(recording=recording)
 
@@ -1497,3 +1497,13 @@ def _session_name(sess):
     else:
         date_str = f'{sess.start_time:%d %b %Y}'
     return f'{sess.name} ({date_str})'
+
+
+def _fake_names(X):
+    """We cannot have empty channel names, so we use it the MICROMED
+    convention
+    """
+    for i in range(X['name'].shape[0]):
+        if X['name'][i] == '':
+            X['name'][i] = f'el{i + 1}'
+    return X

@@ -8,9 +8,13 @@ def load_tsv(fname, dtypes):
         header = f.readline().strip().split('\t')
         d = defaultdict(list)
         for l in f:
-            values = l.strip().split('\t')
+            values = l.strip('\n').split('\t')
             for h, v in zip(header, values):
                 if h == 'group':
+
+
+
+
                     h = 'groups'
                 if v == 'n/a':
                     if issubdtype(dtypes[h], floating):
