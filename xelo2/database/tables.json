@@ -39,7 +39,7 @@
         "subject_id": null,
         "code": {
             "name": "Code",
-            "type": "TEXT UNIQUE NOT NULL",
+            "type": "VARCHAR(256) UNIQUE NOT NULL",
             "doc": "Unique identifier for each subject"
         }
     },
@@ -440,141 +440,6 @@
             "type": "TEXT"
         }
     },
-    "recordings": {
-        "id": null,
-        "run_id": null,
-        "modality": {
-            "name": "modality",
-            "type": "TEXT",
-            "values": [
-                "ieeg",
-                "bold",
-                "T1w",
-                "T2w",
-                "T2star",
-                "PD",
-                "FLAIR",
-                "angio",
-                "epi",
-                "dwi",
-                "ct",
-                "physio",
-                "stim"
-            ]
-        },
-        "onset": {
-            "name": "onset",
-            "doc": "Start of the recording in s, relative to the start of the run. To read the data, it will use the run.start_time + recording.onset to find the start time in the recorded file. So, this onset would also take into account the time difference between recording system.",
-            "type": "FLOAT"
-        },
-        "duration": {
-            "name": "duration",
-            "doc": "Duration of the recording in s",
-            "type": "FLOAT"
-        },
-        "complete": {
-            "name": "Complete?",
-            "doc": "Whether the information regarding this recording is completely in the database",
-            "type": "TEXT",
-            "values": [
-                "yes",
-                "no"
-            ]
-        },
-        "subtables": {
-            "recordings_mri": {
-                "recording_id": null,
-                "when": {
-                    "level": "session",
-                    "parameter": "name",
-                    "value": [
-                        "MRI"
-                    ]
-                },
-                "region_of_interest": {
-                    "name": "Region of Interest",
-                    "type": "TEXT"
-                },
-                "PulseSequenceType": {
-                    "name": "Pulse Sequence Type",
-                    "type": "TEXT"
-                }
-            },
-            "recordings_epi": {
-                "recording_id": null,
-                "when": {
-                    "level": "recording",
-                    "parameter": "modality",
-                    "value": [
-                        "bold",
-                        "epi"
-                    ]
-                },
-                "FlipAngle": {
-                    "name": "Flip Angle",
-                    "type": "FLOAT"
-                },
-                "MultibandAccelerationFactor": {
-                    "name": "Multiband Acceleration Factor",
-                    "type": "INTEGER"
-                },
-                "PhaseEncodingDirection": {
-                    "name": "Phase Encoding Direction",
-                    "type": "TEXT",
-                    "values": [
-                        "LR",
-                        "RL",
-                        "AP",
-                        "PA",
-                        "SI",
-                        "IS"
-                    ]
-                },
-                "SliceEncodingDirection": {
-                    "name": "Slice Encoding Direction",
-                    "type": "TEXT",
-                    "values": [
-                        "LR",
-                        "RL",
-                        "AP",
-                        "PA",
-                        "SI",
-                        "IS"
-                    ]
-                },
-                "RepetitionTime": {
-                    "name": "Repetition Time (TR)",
-                    "type": "FLOAT"
-                }
-            },
-            "recordings_ieeg": {
-                "recording_id": null,
-                "channel_group_id": null,
-                "electrode_group_id": null,
-                "when": {
-                    "level": "recording",
-                    "parameter": "modality",
-                    "value": [
-                        "ieeg"
-                    ]
-                },
-                "Manufacturer": {
-                    "name": "Manufacturer",
-                    "type": "TEXT",
-                    "doc": "Manufacturer of the amplifier system (e.g., 'TDT, Blackrock')",
-                    "values": [
-                        "BlackRock",
-                        "Micromed"
-                    ]
-                },
-                "Reference": {
-                    "name": "Reference",
-                    "type": "TEXT",
-                    "doc": "General description of the reference scheme used and (when applicable) of location of the reference electrode in the raw recordings (e.g., 'left mastoid', 'bipolar', 'T01' for electrode with name T01, 'intracranial electrode on top of a grid, not included with data', 'upside down electrode')."
-                }
-            }
-        }
-    },
     "channel_groups": {
         "id": null,
         "name": {
@@ -767,11 +632,146 @@
             "type": "TEXT"
         }
     },
+    "recordings": {
+        "id": null,
+        "run_id": null,
+        "modality": {
+            "name": "modality",
+            "type": "TEXT",
+            "values": [
+                "ieeg",
+                "bold",
+                "T1w",
+                "T2w",
+                "T2star",
+                "PD",
+                "FLAIR",
+                "angio",
+                "epi",
+                "dwi",
+                "ct",
+                "physio",
+                "stim"
+            ]
+        },
+        "onset": {
+            "name": "onset",
+            "doc": "Start of the recording in s, relative to the start of the run. To read the data, it will use the run.start_time + recording.onset to find the start time in the recorded file. So, this onset would also take into account the time difference between recording system.",
+            "type": "FLOAT"
+        },
+        "duration": {
+            "name": "duration",
+            "doc": "Duration of the recording in s",
+            "type": "FLOAT"
+        },
+        "complete": {
+            "name": "Complete?",
+            "doc": "Whether the information regarding this recording is completely in the database",
+            "type": "TEXT",
+            "values": [
+                "yes",
+                "no"
+            ]
+        },
+        "subtables": {
+            "recordings_mri": {
+                "recording_id": null,
+                "when": {
+                    "level": "session",
+                    "parameter": "name",
+                    "value": [
+                        "MRI"
+                    ]
+                },
+                "region_of_interest": {
+                    "name": "Region of Interest",
+                    "type": "TEXT"
+                },
+                "PulseSequenceType": {
+                    "name": "Pulse Sequence Type",
+                    "type": "TEXT"
+                }
+            },
+            "recordings_epi": {
+                "recording_id": null,
+                "when": {
+                    "level": "recording",
+                    "parameter": "modality",
+                    "value": [
+                        "bold",
+                        "epi"
+                    ]
+                },
+                "FlipAngle": {
+                    "name": "Flip Angle",
+                    "type": "FLOAT"
+                },
+                "MultibandAccelerationFactor": {
+                    "name": "Multiband Acceleration Factor",
+                    "type": "INTEGER"
+                },
+                "PhaseEncodingDirection": {
+                    "name": "Phase Encoding Direction",
+                    "type": "TEXT",
+                    "values": [
+                        "LR",
+                        "RL",
+                        "AP",
+                        "PA",
+                        "SI",
+                        "IS"
+                    ]
+                },
+                "SliceEncodingDirection": {
+                    "name": "Slice Encoding Direction",
+                    "type": "TEXT",
+                    "values": [
+                        "LR",
+                        "RL",
+                        "AP",
+                        "PA",
+                        "SI",
+                        "IS"
+                    ]
+                },
+                "RepetitionTime": {
+                    "name": "Repetition Time (TR)",
+                    "type": "FLOAT"
+                }
+            },
+            "recordings_ieeg": {
+                "recording_id": null,
+                "channel_group_id": null,
+                "electrode_group_id": null,
+                "when": {
+                    "level": "recording",
+                    "parameter": "modality",
+                    "value": [
+                        "ieeg"
+                    ]
+                },
+                "Manufacturer": {
+                    "name": "Manufacturer",
+                    "type": "TEXT",
+                    "doc": "Manufacturer of the amplifier system (e.g., 'TDT, Blackrock')",
+                    "values": [
+                        "BlackRock",
+                        "Micromed"
+                    ]
+                },
+                "Reference": {
+                    "name": "Reference",
+                    "type": "TEXT",
+                    "doc": "General description of the reference scheme used and (when applicable) of location of the reference electrode in the raw recordings (e.g., 'left mastoid', 'bipolar', 'T01' for electrode with name T01, 'intracranial electrode on top of a grid, not included with data', 'upside down electrode')."
+                }
+            }
+        }
+    },
     "experimenters": {
         "id": null,
         "name": {
             "name": "name",
-            "type": "TEXT UNIQUE",
+            "type": "VARCHAR(256) UNIQUE",
             "values": [
                 "Flowmanager",
                 "Anna",

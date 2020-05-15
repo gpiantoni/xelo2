@@ -1,6 +1,7 @@
 from logging import getLogger
 from pathlib import Path
 from re import match
+from textwrap import dedent
 
 from PyQt5.QtSql import (
     QSqlDatabase,
@@ -12,57 +13,73 @@ from ..io.export_db import prepare_query
 
 
 lg = getLogger(__name__)
+DB_TYPE = 'QMYSQL'  # 'SQLITE', 'QMYSQL'
 
 
-def open_database(db_name, db_type='QSQLITE'):
+def open_database(db_name, username, password=None):
     """Open the default database using Qt framework
 
     Parameters
     ----------
     db_name : str
         for SQLITE, path to database to create
-    db_type : str
-        one of the Qt SQL drivers (QSQLITE, QMYSQL, QPSQL)
 
     Returns
     -------
     QSqlDatabase
         default database
     """
-    db = QSqlDatabase.addDatabase(db_type)
+    db = QSqlDatabase.addDatabase(DB_TYPE)
     assert db.isValid()
 
-    db_name = Path(db_name).resolve()
+    if DB_TYPE == 'SQLITE':
+        db_name = Path(db_name).resolve()
+    else:
+        db.setHostName('127.0.0.1')
+        db.setUserName(username)
+        if password is not None:
+            db.setPassword(password)
+
     db.setDatabaseName(str(db_name))
     db.open()
 
-    assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
-    assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
+    if DB_TYPE == 'SQLITE':
+        assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
+        assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
     return db
 
 
-def create_database(db_name, db_type='QSQLITE'):
+def create_database(db_name, username=None, password=None):
     """Create a default database using Qt framework
 
     Parameters
     ----------
     db_name : str
         for SQLITE, path to database to create
-    db_type : str
-        one of the Qt SQL drivers (QSQLITE, QMYSQL, QPSQL)
     """
-    db = QSqlDatabase.addDatabase(db_type)
+    db = QSqlDatabase.addDatabase(DB_TYPE)
     assert db.isValid()
 
-    db_name = Path(db_name).resolve()
-    if db_name.exists():
-        db_name.unlink()
+    if DB_TYPE == 'SQLITE':
+        db_name = Path(db_name).resolve()
+        if db_name.exists():
+            db_name.unlink()
+
+    else:
+        db.setHostName('127.0.0.1')
+        db.setUserName(username)
+        if password is not None:
+            db.setPassword(password)
+
     db.setDatabaseName(str(db_name))
     db.open()
 
-    assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
-    assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
+    if DB_TYPE == 'SQLITE':
+        assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
+        assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
+
+    db.transaction()
 
     values = {}
     for table_name, v in TABLES.items():
@@ -75,6 +92,7 @@ def create_database(db_name, db_type='QSQLITE'):
 
     add_views()
 
+    db.commit()
     db.close()
 
     return values
@@ -85,6 +103,7 @@ def parse_table(db, table_name, v, issubtable=False):
     foreign_key = []
     constraints = []
     cmd = []
+    sub_commands = []
     values = {table_name: {}}
 
     for col_name, col_info in v.items():
@@ -92,11 +111,15 @@ def parse_table(db, table_name, v, issubtable=False):
         if col_name == 'subtables':
 
             for subtable, subtable_info in col_info.items():
-                sub_values = parse_table(db, subtable, subtable_info, issubtable=True)
+                sub_values, sub_cmd = parse_table(db, subtable, subtable_info, issubtable=True)
                 values.update(sub_values)
+                sub_commands.append(sub_cmd)
 
         elif col_name == 'id':
-            cmd.append('id INTEGER PRIMARY KEY AUTOINCREMENT')
+            auto = 'AUTO_INCREMENT'
+            if DB_TYPE == 'SQLITE':
+                auto = 'AUTOINCREMENT'
+            cmd.append(f'id INTEGER PRIMARY KEY {auto}')
 
         elif col_name == 'when':
             continue  # TODO
@@ -108,7 +131,7 @@ def parse_table(db, table_name, v, issubtable=False):
                 cmd.append(f'{col_name} INTEGER')
 
             ref_table = '_'.join(col_name.split('_')[:-1])
-            foreign_key.append(f'FOREIGN KEY({col_name}) REFERENCES {ref_table}s(id) ON DELETE CASCADE')
+            foreign_key.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
 
         else:
             cmd.append(f'{col_name} {col_info["type"]}')
@@ -117,7 +140,7 @@ def parse_table(db, table_name, v, issubtable=False):
             matching = match('.*\(([a-z]*)_id\)', col_info['name'])
             if matching:
                 ref_table = matching.group(1)
-                foreign_key.append(f'FOREIGN KEY({col_name}) REFERENCES {ref_table}s(id) ON DELETE CASCADE')
+                foreign_key.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
 
         if col_info is not None and "values" in col_info:
             values[table_name][col_name] = []
@@ -131,12 +154,23 @@ def parse_table(db, table_name, v, issubtable=False):
     cmd.extend(constraints)
 
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
-    lg.debug(sql_cmd)
-    query = QSqlQuery(sql_cmd)
-    if not query.isActive():
-        lg.warning(query.lastError().databaseText())
 
-    return values
+    if not issubtable:
+        lg.debug(sql_cmd)
+        query = QSqlQuery(sql_cmd)
+        if not query.isActive():
+            lg.warning(query.lastError().databaseText())
+
+        for sub_cmd in sub_commands:
+            lg.debug(sql_cmd)
+            query = QSqlQuery(sub_cmd)
+            if not query.isActive():
+                lg.warning(query.lastError().databaseText())
+
+        return values
+
+    else:
+        return values, sql_cmd
 
 
 def add_triggers(allowed_values):
@@ -149,27 +183,42 @@ def add_triggers(allowed_values):
         for col_name, col_info in table_info.items():
             for v in col_info:
                 query = QSqlQuery(f"""\
-                    INSERT INTO allowed_values ("table_name", "column_name", "allowed_value")
-                    VALUES ("{table_name}", "{col_name}", "{v}")""")
+                    INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`)
+                    VALUES ('{table_name}', '{col_name}', '{v}')""")
 
                 if not query.isActive():
                     lg.warning(query.lastError().databaseText())
 
             for statement in ('INSERT', 'UPDATE'):  # mysql cannot handle both in the same trigger statement
+                if DB_TYPE == 'SQLITE':
+                    sql_cmd = f"""\
+                    CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
+                       BEFORE {statement} ON {table_name}
+                    BEGIN
+                       SELECT
+                          CASE
+                        WHEN NEW.{col_name} NOT IN  (
+                            SELECT allowed_value FROM allowed_values
+                            WHERE table_name == `{table_name}`
+                            AND column_name == `{col_name}`)
+                        THEN
+                             RAISE (ABORT, 'Invalid {col_name} for {table_name}')
+                        END;
+                    END;"""
+                else:
                 sql_cmd = f"""\
-                CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
-                   BEFORE {statement} ON {table_name}
-                BEGIN
-                   SELECT
-                      CASE
-                    WHEN NEW.{col_name} NOT IN  (
-                        SELECT allowed_value FROM allowed_values
-                        WHERE table_name == '{table_name}'
-                        AND column_name == '{col_name}')
-                    THEN
-                         RAISE (ABORT, 'Invalid {col_name} for {table_name}')
+                    CREATE TRIGGER bi_user
+                      BEFORE INSERT ON user
+                      FOR EACH ROW
+                    BEGIN
+                      IF NEW.email NOT LIKE '_%@_%.__%' THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email field is not valid';
+                      END IF;
                     END;
-                END;"""
+                """
+
+                print(sql_cmd)
+                assert False
 
                 query = QSqlQuery(sql_cmd)
                 if not query.isActive():
@@ -179,9 +228,12 @@ def add_triggers(allowed_values):
 def add_experimenters(db, table_experimenters):
 
     for experimenter in table_experimenters['name']['values']:
-        assert QSqlQuery(db).exec(f"""\
-            INSERT INTO experimenters ("name")
-            VALUES ("{experimenter}")""")
+        sql_cmd = dedent(f"""\
+            INSERT INTO experimenters (`name`)
+            VALUES ('{experimenter}')""")
+        query = QSqlQuery(sql_cmd)
+        if not query.isActive():
+            lg.warning(query.lastError().databaseText())
 
 
 def add_views():
