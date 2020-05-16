@@ -9,10 +9,10 @@ from ..database.create import create_database, open_database
 from .export_db import FILE_LEVELS, _get_table
 
 
-def import_database(INPUT, db_file):
+def import_database(INPUT, db_file, username=None, password=None):
     INPUT = Path(INPUT)
-    create_database(db_file)
-    db = open_database(db_file)
+    create_database(db_file, username=username, password=password)
+    db = open_database(db_file, username=username, password=password)
     db.transaction()
 
     IDS = {

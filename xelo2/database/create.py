@@ -9,14 +9,14 @@ from PyQt5.QtSql import (
     )
 
 from .tables import TABLES
-from ..io.export_db import prepare_query
+from .queries import prepare_query_with_column_names
 
 
 lg = getLogger(__name__)
 DB_TYPE = 'QMYSQL'  # 'SQLITE', 'QMYSQL'
 
 
-def open_database(db_name, username, password=None):
+def open_database(db_name, username=None, password=None):
     """Open the default database using Qt framework
 
     Parameters
@@ -239,9 +239,8 @@ def add_experimenters(db, table_experimenters):
 
 
 def add_views():
-    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
+    query_str = prepare_query_with_column_names(('subjects', 'sessions', 'runs', 'recordings'))
     sql_cmd = 'CREATE VIEW all_recordings AS \n' + query_str
-    print(sql_cmd)
     query = QSqlQuery(sql_cmd)
 
     if not query.isActive():

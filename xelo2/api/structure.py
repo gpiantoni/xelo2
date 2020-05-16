@@ -173,13 +173,13 @@ class Table():
         # insert row in tables, if it doesn't exist
         # we don't care if it works or if it fails, so we don't check output
         query = QSqlQuery(f"""\
-            INSERT INTO {table_name} ("{id_name}")
+            INSERT INTO {table_name} (`{id_name}`)
             VALUES ("{self.id}")
             """)
 
         query = QSqlQuery(f"""\
             UPDATE {table_name}
-            SET "{key}"={value}
+            SET `{key}`={value}
             WHERE {id_name} = "{self.id}"
             """)
 
@@ -224,12 +224,12 @@ class Table_with_files(Table):
 
         else:
             QSqlQuery(f"""\
-                INSERT INTO files ("format", "path")
+                INSERT INTO files (`format`, `path`)
                 VALUES ("{format}", "{path.resolve()}")""")
             file_id = query.lastInsertId()
 
         query = QSqlQuery(f"""\
-            INSERT INTO {self.t}s_files ("{self.t}_id", "file_id")
+            INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`)
             VALUES ({self.id}, {file_id})""")
 
         return File(id=file_id)
@@ -276,7 +276,7 @@ class NumpyTable(Table_with_files):
             for row in values:
                 column_str, values_str = _create_query(row)
                 query = QSqlQuery(f"""\
-                    INSERT INTO {self._tb_data} ("{self.t}_id", {column_str})
+                    INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
                     VALUES ("{self.id}", {values_str})
                     """)
 
@@ -304,7 +304,7 @@ class Channels(NumpyTable):
         """Use ID if provided, otherwise create a new channel_group"""
         if id is None:
             query = QSqlQuery("""\
-                INSERT INTO channel_groups ("Reference")
+                INSERT INTO channel_groups (`Reference`)
                 VALUES ("n/a")
                 """)
             id = query.lastInsertId()
@@ -320,7 +320,7 @@ class Electrodes(NumpyTable):
         reasonable parameters"""
         if id is None:
             query = QSqlQuery("""\
-                INSERT INTO electrode_groups ("CoordinateSystem", "CoordinateUnits")
+                INSERT INTO electrode_groups (`CoordinateSystem`, `CoordinateUnits`)
                 VALUES ("ACPC", "mm")
                 """)
             id = query.lastInsertId()
@@ -399,7 +399,7 @@ def recording_attach(group, recording_id, group_id=None):
 
     query = QSqlQuery(f"""\
         INSERT INTO recordings_ieeg
-        ("{group}_group_id", "recording_id")
+        (`{group}_group_id`, `recording_id`)
         VALUES ({group_id}, {recording_id})""")
 
     if query.lastInsertId() is None:
@@ -436,7 +436,7 @@ class Run(Table_with_files):
     def add_recording(self, modality, onset=0):
 
         query = QSqlQuery(f"""\
-            INSERT INTO recordings ("run_id", "modality", "onset")
+            INSERT INTO recordings (`run_id`, `modality`, `onset`)
             VALUES ("{self.id}", "{modality}", "{onset}")""")
 
         recording_id = query.lastInsertId()
@@ -469,9 +469,9 @@ class Run(Table_with_files):
             query_str = '"' + '", "'.join(values.dtype.names) + '"'
 
             for row in values:
-                values_str = ', '.join([f'"{x}"' for x in row])
+                values_str = ', '.join([f'`{x}`' for x in row])
                 QSqlQuery(f"""\
-                    INSERT INTO events ("run_id", {query_str})
+                    INSERT INTO events (`run_id`, {query_str})
                     VALUES ("{self.id}", {values_str})
                     """)
 
@@ -496,14 +496,14 @@ class Run(Table_with_files):
             if query.next():
                 exp_id = query.value('id')
                 QSqlQuery(f"""\
-                    INSERT INTO runs_experimenters ("run_id", "experimenter_id")
+                    INSERT INTO runs_experimenters (`run_id`, `experimenter_id`)
                     VALUES ("{self.id}", "{exp_id}")""")
             else:
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
     def attach_protocol(self, protocol):
         query = QSqlQuery(f"""\
-            INSERT INTO runs_protocols ("run_id", "protocol_id")
+            INSERT INTO runs_protocols (`run_id`, `protocol_id`)
             VALUES ("{self.id}", "{protocol.id}")""")
 
         if query.lastInsertId() is None:
@@ -579,7 +579,7 @@ class Session(Table_with_files):
     def add_run(self, task_name, start_time=None, duration=None):
 
         query = QSqlQuery(f"""\
-            INSERT INTO runs ("session_id", "task_name", "start_time", "duration")
+            INSERT INTO runs (`session_id`, `task_name`, `start_time`, `duration`)
             VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_null(duration)})""")
 
         run_id = query.lastInsertId()
@@ -624,7 +624,7 @@ class Subject(Table_with_files):
                 raise ValueError(f'Subject "{code}" already exists')
 
         query = QSqlQuery(f"""\
-            INSERT INTO subjects ("date_of_birth", "sex")
+            INSERT INTO subjects (`date_of_birth`, `sex`)
             VALUES ({_date(date_of_birth)}, {_null(sex)})""")
 
         id = query.lastInsertId()
@@ -634,7 +634,7 @@ class Subject(Table_with_files):
 
         elif code is not None:
             query = QSqlQuery(f"""\
-                INSERT INTO subject_codes ("subject_id", "code")
+                INSERT INTO subject_codes (`subject_id`, `code`)
                 VALUES ({id}, "{code}")""")
 
         return Subject(id=id)
@@ -660,7 +660,7 @@ class Subject(Table_with_files):
         for code in set(codes):
 
             query = QSqlQuery(f"""\
-                INSERT INTO subject_codes ("subject_id", "code")
+                INSERT INTO subject_codes (`subject_id`, `code`)
                 VALUES ({self.id}, "{code}")""")
 
             if query.lastInsertId() is None:
@@ -670,7 +670,7 @@ class Subject(Table_with_files):
     def add_session(self, name):
 
         query = QSqlQuery(f"""\
-            INSERT INTO sessions ("subject_id", "name")
+            INSERT INTO sessions (`subject_id`, `name`)
             VALUES ("{self.id}", "{name}")""")
 
         session_id = query.lastInsertId()
@@ -696,7 +696,7 @@ class Subject(Table_with_files):
     def add_protocol(self, METC, date_of_signature=None):
 
         query = QSqlQuery(f"""\
-            INSERT INTO protocols ("subject_id", "METC", "date_of_signature")
+            INSERT INTO protocols (`subject_id`, `METC`, `date_of_signature`)
             VALUES ("{self.id}", "{METC}", {_date(date_of_signature)})""")
 
         protocol_id = query.lastInsertId()
@@ -820,7 +820,7 @@ def _create_query(row):
 
         assert 'name' in columns
 
-    columns_str = ', '.join([f'"{x}"' for x in columns])
+    columns_str = ', '.join([f'`{x}`' for x in columns])
     values_str = ', '.join(values)
 
     return columns_str, values_str
