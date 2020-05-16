@@ -16,7 +16,7 @@ def prepare_query_files(level):
         }
     query_str = f"""\
         SELECT {level}s_files.{level}_id, files.format, files.path FROM {level}s_files
-        JOIN files ON files.id == {level}s_files.file_id"""
+        JOIN files ON files.id = {level}s_files.file_id"""
 
     return query_str, columns
 
@@ -33,7 +33,7 @@ def prepare_query_experimenters():
         }
     query_str = """\
         SELECT runs_experimenters.run_id, experimenters.name FROM runs_experimenters
-        JOIN experimenters ON runs_experimenters.experimenter_id == experimenters.id"""
+        JOIN experimenters ON runs_experimenters.experimenter_id = experimenters.id"""
 
     return query_str, columns
 
@@ -84,7 +84,7 @@ def prepare_query_str(all_tables):
             main_table = 'run'
         else:
             print('missing table')
-        q.append(f'LEFT JOIN {table} ON {main_table}s.id == {table}.{main_table}_id')
+        q.append(f'LEFT JOIN {table} ON {main_table}s.id = {table}.{main_table}_id')
 
     return '\n'.join(q)
 

@@ -89,7 +89,7 @@ class Table():
         the python object.
         """
         QSqlQuery(f"""\
-            DELETE FROM {self.t}s WHERE id == {self.id}
+            DELETE FROM {self.t}s WHERE id = {self.id}
             """)
         self.id = None
 
@@ -103,7 +103,7 @@ class Table():
             table_name = f'{self.t}s'
             id_name = 'id'
 
-        query = QSqlQuery(f"SELECT {key} FROM {table_name} WHERE {id_name} == {self.id}")
+        query = QSqlQuery(f"SELECT {key} FROM {table_name} WHERE {id_name} = {self.id}")
         if query.next():
             out = query.value(0)
 
@@ -180,7 +180,7 @@ class Table():
         query = QSqlQuery(f"""\
             UPDATE {table_name}
             SET "{key}"={value}
-            WHERE {id_name} == "{self.id}"
+            WHERE {id_name} = "{self.id}"
             """)
 
         err = query.lastError()
@@ -195,7 +195,7 @@ class Table_with_files(Table):
     def list_files(self):
         """List all the files associated with this object
         """
-        query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id == {self.id}")
+        query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = {self.id}")
         out = []
         while query.next():
             out.append(File(query.value('file_id')))
@@ -213,7 +213,7 @@ class Table_with_files(Table):
         """
         path = Path(path).resolve()
 
-        query = QSqlQuery(f"SELECT id, format FROM files WHERE path == '{path}'")
+        query = QSqlQuery(f"SELECT id, format FROM files WHERE path = '{path}'")
 
         if query.next():
             file_id = query.value('id')
@@ -237,7 +237,7 @@ class Table_with_files(Table):
     def delete_file(self, file):
         """TODO: add trigger to remove file, here we only remove the link in the table
         """
-        QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id == "{self.id}" AND file_id == "{file.id}"')
+        QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id = "{self.id}" AND file_id = "{file.id}"')
 
 
 class NumpyTable(Table_with_files):
@@ -253,7 +253,7 @@ class NumpyTable(Table_with_files):
         dtypes = _get_dtypes(TABLES[self._tb_data])
         query_str = '"' + '", "'.join(dtypes.names) + '"'
         values = []
-        query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id == {self.id}""")
+        query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = {self.id}""")
 
         while query.next():
             row = []
@@ -270,7 +270,7 @@ class NumpyTable(Table_with_files):
     @data.setter
     def data(self, values):
 
-        QSqlQuery(f'DELETE FROM {self._tb_data} WHERE {self.t}_id == "{self.id}"')
+        QSqlQuery(f'DELETE FROM {self._tb_data} WHERE {self.t}_id = "{self.id}"')
 
         if values is not None:
             for row in values:
@@ -381,7 +381,7 @@ class Recording(Table_with_files):
 def recording_get(group, recording_id):
     query = QSqlQuery(f"""\
         SELECT {group}_group_id FROM recordings_ieeg
-        WHERE recording_id == {recording_id}""")
+        WHERE recording_id = {recording_id}""")
     if query.next():
         out = query.value(f'{group}_group_id')
         if out == '':
@@ -406,7 +406,7 @@ def recording_attach(group, recording_id, group_id=None):
         QSqlQuery(f"""\
             UPDATE recordings_ieeg
             SET "{group}_group_id"={group_id}
-            WHERE recording_id == "{recording_id}" """)
+            WHERE recording_id = "{recording_id}" """)
 
 
 class Run(Table_with_files):
@@ -423,7 +423,7 @@ class Run(Table_with_files):
     def list_recordings(self):
         query = QSqlQuery(f"""\
             SELECT recordings.id FROM recordings
-            WHERE recordings.run_id == {self.id}""")
+            WHERE recordings.run_id = {self.id}""")
 
         list_of_recordings = []
         while query.next():
@@ -453,7 +453,7 @@ class Run(Table_with_files):
 
         query_str = '"' + '", "'.join(dtypes.names) + '"'
         values = []
-        query = QSqlQuery(f"""SELECT {query_str} FROM events WHERE run_id == {self.id}""")
+        query = QSqlQuery(f"""SELECT {query_str} FROM events WHERE run_id = {self.id}""")
         while query.next():
             values.append(
                 tuple(query.value(name) for name in dtypes.names)
@@ -463,7 +463,7 @@ class Run(Table_with_files):
     @events.setter
     def events(self, values):
 
-        QSqlQuery(f'DELETE FROM events WHERE run_id == "{self.id}"')
+        QSqlQuery(f'DELETE FROM events WHERE run_id = "{self.id}"')
 
         if values is not None:
             query_str = '"' + '", "'.join(values.dtype.names) + '"'
@@ -479,8 +479,8 @@ class Run(Table_with_files):
     def experimenters(self):
         query = QSqlQuery(f"""\
             SELECT name FROM experimenters
-            JOIN runs_experimenters ON experimenters.id == runs_experimenters.experimenter_id
-            WHERE run_id == {self.id}""")
+            JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id
+            WHERE run_id = {self.id}""")
         list_of_experimenters = []
         while query.next():
             list_of_experimenters.append(query.value('name'))
@@ -489,9 +489,9 @@ class Run(Table_with_files):
     @experimenters.setter
     def experimenters(self, experimenters):
 
-        QSqlQuery(f'DELETE FROM runs_experimenters WHERE run_id == "{self.id}"')
+        QSqlQuery(f'DELETE FROM runs_experimenters WHERE run_id = "{self.id}"')
         for exp in experimenters:
-            query = QSqlQuery(f'SELECT id FROM experimenters WHERE name == "{exp}"')
+            query = QSqlQuery(f'SELECT id FROM experimenters WHERE name = "{exp}"')
 
             if query.next():
                 exp_id = query.value('id')
@@ -513,11 +513,11 @@ class Run(Table_with_files):
     def detach_protocol(self, protocol):
         QSqlQuery(f"""\
             DELETE FROM runs_protocols
-            WHERE run_id == {self.id} AND protocol_id == {protocol.id}
+            WHERE run_id = {self.id} AND protocol_id = {protocol.id}
             """)
 
     def list_protocols(self):
-        query = QSqlQuery(f"SELECT protocol_id FROM runs_protocols WHERE run_id == {self.id}")
+        query = QSqlQuery(f"SELECT protocol_id FROM runs_protocols WHERE run_id = {self.id}")
         list_of_protocols = []
         while query.next():
             list_of_protocols.append(
@@ -547,7 +547,7 @@ class Session(Table_with_files):
     @property
     def start_time(self):
         query = QSqlQuery(f"""\
-            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id == {self.id}
+            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = {self.id}
             """)
         if query.next():
             return _datetime_out(query.value(0))
@@ -556,7 +556,7 @@ class Session(Table_with_files):
 
         query = QSqlQuery(f"""\
             SELECT runs.id FROM runs
-            WHERE runs.session_id == {self.id}""")
+            WHERE runs.session_id = {self.id}""")
 
         list_of_runs = []
         while query.next():
@@ -644,7 +644,7 @@ class Subject(Table_with_files):
 
         query = QSqlQuery(f"""\
             SELECT code FROM subject_codes
-            WHERE subject_codes.subject_id == '{self.id}'""")
+            WHERE subject_codes.subject_id = '{self.id}'""")
 
         list_of_codes = []
         while query.next():
@@ -655,7 +655,7 @@ class Subject(Table_with_files):
     @codes.setter
     def codes(self, codes):
 
-        QSqlQuery(f'DELETE FROM subject_codes WHERE subject_id == "{self.id}"')
+        QSqlQuery(f'DELETE FROM subject_codes WHERE subject_id = "{self.id}"')
 
         for code in set(codes):
 
@@ -683,7 +683,7 @@ class Subject(Table_with_files):
     def list_sessions(self):
         query = QSqlQuery(f"""\
             SELECT sessions.id, name FROM sessions
-            WHERE sessions.subject_id ==  '{self.id}'""")
+            WHERE sessions.subject_id =  '{self.id}'""")
 
         list_of_sessions = []
         while query.next():
@@ -708,7 +708,7 @@ class Subject(Table_with_files):
 
     def list_protocols(self):
         query = QSqlQuery(f"""\
-            SELECT id FROM protocols WHERE subject_id ==  '{self.id}'""")
+            SELECT id FROM protocols WHERE subject_id =  '{self.id}'""")
 
         list_of_protocols = []
         while query.next():
@@ -830,10 +830,10 @@ def list_channels_electrodes(session_id, name='channel'):
 
     query = QSqlQuery(f"""\
         SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
-        JOIN recordings ON recordings_ieeg.recording_id == recordings.id
-        JOIN runs ON runs.id == recordings.run_id
-        WHERE recordings.modality == 'ieeg'
-        AND runs.session_id == {session_id}
+        JOIN recordings ON recordings_ieeg.recording_id = recordings.id
+        JOIN runs ON runs.id = recordings.run_id
+        WHERE recordings.modality = 'ieeg'
+        AND runs.session_id = {session_id}
         ORDER BY runs.start_time""")
 
     list_of_items = []
@@ -848,7 +848,7 @@ def list_channels_electrodes(session_id, name='channel'):
 def _find_subject_id(code):
     query = QSqlQuery(f"""\
         SELECT subject_id FROM subject_codes
-        WHERE subject_codes.code == '{code}'""")
+        WHERE subject_codes.code = '{code}'""")
 
     while query.next():
         return query.value('subject_id')

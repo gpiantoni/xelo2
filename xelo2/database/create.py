@@ -241,6 +241,7 @@ def add_experimenters(db, table_experimenters):
 def add_views():
     query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
     sql_cmd = 'CREATE VIEW all_recordings AS \n' + query_str
+    print(sql_cmd)
     query = QSqlQuery(sql_cmd)
 
     if not query.isActive():
