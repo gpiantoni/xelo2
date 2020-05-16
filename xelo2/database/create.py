@@ -206,22 +206,24 @@ def add_triggers(allowed_values):
                         END;
                     END;"""
                 else:
-                sql_cmd = f"""\
-                    CREATE TRIGGER bi_user
-                      BEFORE INSERT ON user
-                      FOR EACH ROW
-                    BEGIN
-                      IF NEW.email NOT LIKE '_%@_%.__%' THEN
-                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email field is not valid';
-                      END IF;
-                    END;
-                """
-
-                print(sql_cmd)
-                assert False
+                    sql_cmd = f"""\
+                        CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
+                          BEFORE {statement} ON {table_name}
+                          FOR EACH ROW
+                        BEGIN
+                          IF NEW.{col_name} NOT IN  (
+                            SELECT allowed_value FROM allowed_values
+                            WHERE table_name = '{table_name}'
+                            AND column_name = '{col_name}')
+                          THEN
+                            SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column {col_name} is not allowed in table {table_name}';
+                          END IF;
+                        END;
+                    """
 
                 query = QSqlQuery(sql_cmd)
                 if not query.isActive():
+                    print(sql_cmd)
                     lg.warning(query.lastError().databaseText())
 
 
