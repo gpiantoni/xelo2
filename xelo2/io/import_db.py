@@ -11,9 +11,9 @@ from .export_db import FILE_LEVELS, _get_table
 
 def import_database(INPUT, db_file, username=None, password=None):
     INPUT = Path(INPUT)
-    create_database(db_file, username=username, password=password)
+    # create_database(db_file, username=username, password=password)
     db = open_database(db_file, username=username, password=password)
-    db.transaction()
+    # db.transaction()
 
     IDS = {
         'subjects': {},
@@ -56,7 +56,7 @@ def import_database(INPUT, db_file, username=None, password=None):
 
     _add_experimenters(INPUT / 'experimenters.tsv', IDS)
 
-    db.commit()
+    # db.commit()
 
 
 def _add_experimenters(TSV_FILE, IDS):
@@ -101,7 +101,8 @@ def _add_channels_electrodes(INPUT, NAME):
     DATA = genfromtxt(TSV_DATA_FILE, dtype=DTYPE, skip_header=1, delimiter='\t')
     for item_id in unique(DATA[f'{NAME}_group_id']):
         item = IDS[item_id]
-        item.data = DATA[DATA[f'{NAME}_group_id'] == item_id]
+        data = DATA[DATA[f'{NAME}_group_id'] == item_id]
+        item.data = _rm_field(data, f'{NAME}_group_id')
 
     return IDS
 
@@ -249,3 +250,10 @@ def _setattr(item, name, d):
                 v = datetime.fromisoformat(v)
 
             setattr(item, k.split('.')[1], v)
+
+
+def _rm_field(x, name_to_remove):
+    names = list(x.dtype.names)
+    if name_to_remove in names:
+        names.remove(name_to_remove)
+    return x[names]
