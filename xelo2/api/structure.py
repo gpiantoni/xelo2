@@ -779,6 +779,7 @@ def _null(s):
     if s is None:
         return 'null'
     else:
+        s = s.replace("'", '"')
         s = s.replace('\\', '"')
         return f"'{s}'"
 
