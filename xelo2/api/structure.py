@@ -174,18 +174,19 @@ class Table():
         # we don't care if it works or if it fails, so we don't check output
         query = QSqlQuery(f"""\
             INSERT INTO {table_name} (`{id_name}`)
-            VALUES ("{self.id}")
+            VALUES ('{self.id}')
             """)
 
         query = QSqlQuery(f"""\
             UPDATE {table_name}
-            SET `{key}`={value}
-            WHERE {id_name} = "{self.id}"
+            SET `{key}` = {value}
+            WHERE {id_name} = '{self.id}'
             """)
 
-        err = query.lastError()
-        if err.isValid():
-            raise ValueError(err.databaseText())
+        if not query.isActive():
+            print(query.lastQuery())
+            err = query.lastError()
+            raise ValueError(err.text())
 
 
 class Table_with_files(Table):
@@ -251,7 +252,7 @@ class NumpyTable(Table_with_files):
     @property
     def data(self):
         dtypes = _get_dtypes(TABLES[self._tb_data])
-        query_str = '"' + '", "'.join(dtypes.names) + '"'
+        query_str = ", ".join(f"`{col}`" for col in dtypes.names)
         values = []
         query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = {self.id}""")
 
@@ -270,19 +271,20 @@ class NumpyTable(Table_with_files):
     @data.setter
     def data(self, values):
 
-        QSqlQuery(f'DELETE FROM {self._tb_data} WHERE {self.t}_id = "{self.id}"')
+        QSqlQuery(f"DELETE FROM {self._tb_data} WHERE {self.t}_id = '{self.id}'")
 
         if values is not None:
             for row in values:
                 column_str, values_str = _create_query(row)
                 query = QSqlQuery(f"""\
                     INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
-                    VALUES ("{self.id}", {values_str})
+                    VALUES ('{self.id}', {values_str})
                     """)
 
-                if query.lastInsertId() is None:
+                if not query.isActive():
+                    print(query.lastQuery())
                     err = query.lastError()
-                    raise ValueError(err.databaseText())
+                    raise ValueError(err.text())
 
     def empty(self, n_rows):
         """convenience function to get an empty array with empty values if
@@ -442,7 +444,7 @@ class Run(Table_with_files):
         recording_id = query.lastInsertId()
         if recording_id is None:
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
         recording = Recording(recording_id, run=self)
         return recording
@@ -506,9 +508,10 @@ class Run(Table_with_files):
             INSERT INTO runs_protocols (`run_id`, `protocol_id`)
             VALUES ("{self.id}", "{protocol.id}")""")
 
-        if query.lastInsertId() is None:
+        if query.isActive() is None:
+            print(query.lastQuery())
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
     def detach_protocol(self, protocol):
         QSqlQuery(f"""\
@@ -585,7 +588,7 @@ class Session(Table_with_files):
         run_id = query.lastInsertId()
         if run_id is None:
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
         run = Run(run_id, session=self)
         return run
@@ -630,7 +633,7 @@ class Subject(Table_with_files):
         id = query.lastInsertId()
         if id is None:
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
         elif code is not None:
             query = QSqlQuery(f"""\
@@ -665,7 +668,7 @@ class Subject(Table_with_files):
 
             if query.lastInsertId() is None:
                 err = query.lastError()
-                raise ValueError(err.databaseText())
+                raise ValueError(err.text())
 
     def add_session(self, name):
 
@@ -676,7 +679,7 @@ class Subject(Table_with_files):
         session_id = query.lastInsertId()
         if session_id is None:
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
         return Session(session_id, subject=self)
 
@@ -702,7 +705,7 @@ class Subject(Table_with_files):
         protocol_id = query.lastInsertId()
         if protocol_id is None:
             err = query.lastError()
-            raise ValueError(err.databaseText())
+            raise ValueError(err.text())
 
         return Protocol(protocol_id, subject=self)
 
@@ -776,7 +779,8 @@ def _null(s):
     if s is None:
         return 'null'
     else:
-        return f'"{s}"'
+        s = s.replace('\\', '"')
+        return f"'{s}'"
 
 
 def _date(s):
@@ -810,11 +814,11 @@ def _create_query(row):
         if issubdtype(dtypes[name].type, floating):
             if not isnan(row[name]):
                 columns.append(name)
-                values.append(f'"{row[name]}"')
+                values.append(f"'{row[name]}'")
         elif issubdtype(dtypes[name].type, character):
             if row[name] != '':
                 columns.append(name)
-                values.append(f'"{row[name]}"')
+                values.append(f"'{row[name]}'")
         else:
             raise ValueError(f'Unknown dtype {dtypes[name]}')
 
