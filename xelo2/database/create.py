@@ -13,7 +13,7 @@ from .queries import prepare_query_with_column_names
 
 
 lg = getLogger(__name__)
-DB_TYPE = 'QMYSQL'  # 'SQLITE', 'QMYSQL'
+DB_TYPE = 'QMYSQL'  # 'QSQLITE', 'QMYSQL'
 
 
 def open_database(db_name, username=None, password=None):

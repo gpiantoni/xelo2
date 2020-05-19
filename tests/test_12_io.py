@@ -2,7 +2,7 @@ from datetime import datetime
 
 from xelo2.api.structure import Subject
 from xelo2.io.tsv import save_tsv, load_tsv
-from xelo2.io.parrec import add_parrec_to_sess
+# from xelo2.io.parrec import add_parrec_to_sess
 from xelo2.io.ieeg import add_ieeg_to_sess
 from xelo2.database.create import open_database
 from xelo2.io.channels import create_channels
