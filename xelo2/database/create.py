@@ -13,26 +13,33 @@ from .queries import prepare_query_with_column_names
 
 
 lg = getLogger(__name__)
-DB_TYPE = 'QMYSQL'  # 'QSQLITE', 'QMYSQL'
+CONNECTION_NAME = 'xelo2_database'
 
 
-def open_database(db_name, username=None, password=None):
+def open_database(db_type, db_name, username=None, password=None):
     """Open the default database using Qt framework
 
     Parameters
     ----------
+    db_type : str
+        driver to use (QSQLITE or QMYSQL)
     db_name : str
-        for SQLITE, path to database to create
+        path to database (QSQLITE) or database name (QMYSQL)
+    username : str
+        user name to open database
+    password : str
+        password to open database
 
     Returns
     -------
     QSqlDatabase
         default database
     """
-    db = QSqlDatabase.addDatabase(DB_TYPE)
+    assert db_type in ('QSQLITE', 'QMYSQL')
+    db = QSqlDatabase.addDatabase(db_type, CONNECTION_NAME)
     assert db.isValid()
 
-    if DB_TYPE == 'SQLITE':
+    if db_type == 'QSQLITE':
         db_name = Path(db_name).resolve()
     else:
         db.setHostName('127.0.0.1')
@@ -43,25 +50,37 @@ def open_database(db_name, username=None, password=None):
     db.setDatabaseName(str(db_name))
     db.open()
 
-    if DB_TYPE == 'SQLITE':
+    if db_type == 'QSQLITE':
         assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
         assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
     return db
 
 
-def create_database(db_name, username=None, password=None):
+def create_database(db_type, db_name, username=None, password=None):
     """Create a default database using Qt framework
 
     Parameters
     ----------
+    db_type : str
+        driver to use (QSQLITE or QMYSQL)
     db_name : str
-        for SQLITE, path to database to create
+        path to database (QSQLITE) or database name (QMYSQL)
+    username : str
+        user name to open database
+    password : str
+        password to open database
+
+    Returns
+    -------
+    QSqlDatabase
+        default database
     """
-    db = QSqlDatabase.addDatabase(DB_TYPE)
+    assert db_type in ('QSQLITE', 'QMYSQL')
+    db = QSqlDatabase.addDatabase(db_type, CONNECTION_NAME)
     assert db.isValid()
 
-    if DB_TYPE == 'SQLITE':
+    if db_type == 'QSQLITE':
         db_name = Path(db_name).resolve()
         if db_name.exists():
             db_name.unlink()
@@ -75,7 +94,7 @@ def create_database(db_name, username=None, password=None):
     db.setDatabaseName(str(db_name))
     db.open()
 
-    if DB_TYPE == 'SQLITE':
+    if db_type == 'QSQLITE':
         assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
         assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
@@ -85,10 +104,12 @@ def create_database(db_name, username=None, password=None):
     for table_name, v in TABLES.items():
         values.update(parse_table(db, table_name, v))
 
+    return db
+
     add_experimenters(db, TABLES['experimenters'])
 
     values.pop('experimenters')  # experimenters is not constraint by the trigger system
-    add_triggers(values)
+    add_triggers(db, values)
 
     add_views()
 
@@ -117,7 +138,7 @@ def parse_table(db, table_name, v, issubtable=False):
 
         elif col_name == 'id':
             auto = 'AUTO_INCREMENT'
-            if DB_TYPE == 'SQLITE':
+            if db.driverName() == 'QSQLITE':
                 auto = 'AUTOINCREMENT'
             cmd.append(f'id INTEGER PRIMARY KEY {auto}')
 
@@ -157,15 +178,15 @@ def parse_table(db, table_name, v, issubtable=False):
 
     if not issubtable:
         lg.debug(sql_cmd)
-        query = QSqlQuery(sql_cmd)
-        if not query.isActive():
-            lg.warning(query.lastError().databaseText())
+        query = QSqlQuery(db)
+        if not query.exec(sql_cmd):
+            lg.warning(query.lastError().text())
 
         for sub_cmd in sub_commands:
             lg.debug(sql_cmd)
-            query = QSqlQuery(sub_cmd)
-            if not query.isActive():
-                lg.warning(query.lastError().databaseText())
+            query = QSqlQuery(db)
+            if not query.exec(sql_cmd):
+                lg.warning(query.lastError().text())
 
         return values
 
@@ -173,7 +194,7 @@ def parse_table(db, table_name, v, issubtable=False):
         return values, sql_cmd
 
 
-def add_triggers(allowed_values):
+def add_triggers(db, allowed_values):
     sql_cmd = 'CREATE TABLE allowed_values ( table_name TEXT NOT NULL, column_name TEXT NOT NULL, allowed_value TEXT NOT NULL)'
     query = QSqlQuery(sql_cmd)
     if not query.isActive():
@@ -190,7 +211,7 @@ def add_triggers(allowed_values):
                     lg.warning(query.lastError().databaseText())
 
             for statement in ('INSERT', 'UPDATE'):  # mysql cannot handle both in the same trigger statement
-                if DB_TYPE == 'SQLITE':
+                if db.driverName() == 'QSQLITE':
                     sql_cmd = f"""\
                     CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
                        BEFORE {statement} ON {table_name}
