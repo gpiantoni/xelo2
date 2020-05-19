@@ -99,12 +99,11 @@ def create_database(db_type, db_name, username=None, password=None):
         assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
     db.transaction()
+    return db
 
     values = {}
     for table_name, v in TABLES.items():
         values.update(parse_table(db, table_name, v))
-
-    return db
 
     add_experimenters(db, TABLES['experimenters'])
 
@@ -119,24 +118,16 @@ def create_database(db_type, db_name, username=None, password=None):
     return values
 
 
-def parse_table(db, table_name, v, issubtable=False):
+def parse_table(db, table_name, v):
 
     foreign_key = []
     constraints = []
     cmd = []
-    sub_commands = []
     values = {table_name: {}}
 
     for col_name, col_info in v.items():
 
-        if col_name == 'subtables':
-
-            for subtable, subtable_info in col_info.items():
-                sub_values, sub_cmd = parse_table(db, subtable, subtable_info, issubtable=True)
-                values.update(sub_values)
-                sub_commands.append(sub_cmd)
-
-        elif col_name == 'id':
+        if col_name == 'id':
             auto = 'AUTO_INCREMENT'
             if db.driverName() == 'QSQLITE':
                 auto = 'AUTOINCREMENT'
@@ -146,7 +137,7 @@ def parse_table(db, table_name, v, issubtable=False):
             continue  # TODO
 
         elif col_name.endswith('_id'):
-            if issubtable and not col_name.endswith('_group_id'):  # channel_group_id and electrode_group_id are not unique
+            if 'when' in v:  # if sub-table, then make sure it's unique
                 cmd.append(f'{col_name} INTEGER UNIQUE')
             else:
                 cmd.append(f'{col_name} INTEGER')
@@ -158,7 +149,7 @@ def parse_table(db, table_name, v, issubtable=False):
             cmd.append(f'{col_name} {col_info["type"]}')
 
             # 'name' should end with "(run_id)" or "(subject_id)" which then points to the "runs" table or the "subjects" table
-            matching = match('.*\(([a-z]*)_id\)', col_info['name'])
+            matching = match(r'.*\(([a-z]*)_id\)', col_info['name'])
             if matching:
                 ref_table = matching.group(1)
                 foreign_key.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
@@ -175,23 +166,16 @@ def parse_table(db, table_name, v, issubtable=False):
     cmd.extend(constraints)
 
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
+    print(sql_cmd)
 
-    if not issubtable:
-        lg.debug(sql_cmd)
-        query = QSqlQuery(db)
-        if not query.exec(sql_cmd):
-            lg.warning(query.lastError().text())
+    """
+    lg.debug(sql_cmd)
+    query = QSqlQuery(db)
+    if not query.exec(sql_cmd):
+        lg.warning(query.lastError().text())
+    """
 
-        for sub_cmd in sub_commands:
-            lg.debug(sql_cmd)
-            query = QSqlQuery(db)
-            if not query.exec(sql_cmd):
-                lg.warning(query.lastError().text())
-
-        return values
-
-    else:
-        return values, sql_cmd
+    return values
 
 
 def add_triggers(db, allowed_values):

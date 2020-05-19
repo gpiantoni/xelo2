@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='xelo2',
-    version='0.1',
+    version='0.2',
     description='Database GUI',
     url='https://github.com/gpiantoni/xelo2',
     author="Gio Piantoni",
@@ -24,6 +24,11 @@ setup(
         'wonambi',
         'bidso',
         ],
+    package_data={
+        'xelo2': [
+            'database/tables.json',
+            ],
+        },
     entry_points={
         'console_scripts': [
             'xelo2=xelo2.gui.main:main',
