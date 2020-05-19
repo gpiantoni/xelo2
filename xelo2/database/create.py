@@ -102,9 +102,9 @@ def create_database(db_type, db_name, username=None, password=None):
     for table_name, v in TABLES.items():
         parse_table(db, table_name, v)
 
-    return db
     add_experimenters(db, TABLES['experimenters'])
 
+    return db
     add_triggers(db, TABLES)
 
     add_views()
@@ -156,10 +156,9 @@ def parse_table(db, table_name, v):
 
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
 
-    lg.debug(sql_cmd)
     query = QSqlQuery(db)
     if not query.exec(sql_cmd):
-        print(sql_cmd)
+        lg.debug(sql_cmd)
         lg.warning(query.lastError().text())
 
 
@@ -224,7 +223,8 @@ def add_experimenters(db, table_experimenters):
             INSERT INTO experimenters (`name`)
             VALUES ('{experimenter}')""")
         query = QSqlQuery(db)
-        if not query.isActive():
+        if not query.exec(sql_cmd):
+            lg.debug(sql_cmd)
             lg.warning(query.lastError().databaseText())
 
 
