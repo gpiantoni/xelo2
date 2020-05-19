@@ -180,8 +180,7 @@ def _import_codes(TSV_FILE, IDS):
 
     for d in _read_tsv(TSV_FILE):
         subj = IDS['subjects'][d['subject_codes.subject_id']]
-        subj.add_code(d['subject_codes.code'])
-
+        subj.codes = subj.codes + [d['subject_codes.code'], ]
 
 def _import_main(TSV_MAIN, IDS):
 

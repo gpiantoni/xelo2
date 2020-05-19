@@ -666,9 +666,10 @@ class Subject(Table_with_files):
                 INSERT INTO subject_codes (`subject_id`, `code`)
                 VALUES ({self.id}, "{code}")""")
 
-            if query.lastInsertId() is None:
+            if not query.isActive():
                 err = query.lastError()
-                raise ValueError(err.text())
+                print(err.text())
+                # raise ValueError(err.text())
 
     def add_session(self, name):
 
@@ -779,7 +780,7 @@ def _null(s):
     if s is None:
         return 'null'
     else:
-        s = s.replace("'", '"')
+        s = str(s).replace("'", '"')
         s = s.replace('\\', '"')
         return f"'{s}'"
 
