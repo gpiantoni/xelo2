@@ -19,7 +19,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         'numpy',
-        'PyQt5',
         'pandas',
         'nibabel',
         'wonambi',

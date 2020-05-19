@@ -28,14 +28,25 @@ def main():
 
     parser = ArgumentParser(prog='open xelo2 database')
     parser.add_argument(
-        'sqlite',
-        nargs='?',
+        '--sqlite', default=None,
         help='path to ')
+    parser.add_argument(
+        '--mysql', default=None,
+        help='MYSQL database')
+    parser.add_argument(
+        '-U', '--username', default=None,
+        help='MYSQL username')
+    parser.add_argument(
+        '-P', '--password', default=None,
+        help='MYSQL password')
     args = parser.parse_args()
 
-    sqlite = Path(args.sqlite).resolve()
+    if args.sqlite is not None:
+        sqlite = Path(args.sqlite).resolve()
+        w = Interface(sqlite)
+    else:
+        w = Interface(args.mysql, args.username, args.password)
 
-    w = Interface(sqlite)
     app.exec()
 
 

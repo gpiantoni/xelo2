@@ -78,12 +78,14 @@ class Interface(QMainWindow):
     test = False
     unsaved_changes = False
 
-    def __init__(self, sqlite_file):
+    def __init__(self, db_name, username=None, password=None):
 
-        self.sqlite_file = sqlite_file
+        self.db_name = db_name
+        self.username = username
+        self.password = password
 
         super().__init__()
-        self.setWindowTitle(sqlite_file.stem)
+        self.setWindowTitle(str(db_name))
         create_menubar(self)
         create_shortcuts(self)
 
@@ -284,7 +286,7 @@ class Interface(QMainWindow):
     def sql_access(self):
         """This is where you access the database
         """
-        self.sql = open_database(self.sqlite_file)
+        self.sql = open_database(self.db_name, username=self.username, password=self.password)
         self.sql.transaction()
 
         self.events_model = QSqlTableModel(self)
