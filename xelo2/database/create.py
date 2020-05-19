@@ -1,6 +1,5 @@
 from logging import getLogger
 from pathlib import Path
-from re import match
 from textwrap import dedent
 
 from PyQt5.QtSql import (
@@ -99,83 +98,69 @@ def create_database(db_type, db_name, username=None, password=None):
         assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
     db.transaction()
-    return db
 
-    values = {}
     for table_name, v in TABLES.items():
-        values.update(parse_table(db, table_name, v))
+        parse_table(db, table_name, v)
 
+    return db
     add_experimenters(db, TABLES['experimenters'])
 
-    values.pop('experimenters')  # experimenters is not constraint by the trigger system
-    add_triggers(db, values)
+    add_triggers(db, TABLES)
 
     add_views()
 
     db.commit()
     db.close()
 
-    return values
-
 
 def parse_table(db, table_name, v):
 
-    foreign_key = []
+    foreign_keys = []
     constraints = []
     cmd = []
-    values = {table_name: {}}
 
     for col_name, col_info in v.items():
 
-        if col_name == 'id':
-            auto = 'AUTO_INCREMENT'
+        if col_name == 'when':
+            continue
+
+        elif col_name == 'id':
             if db.driverName() == 'QSQLITE':
                 auto = 'AUTOINCREMENT'
+            else:
+                auto = 'AUTO_INCREMENT'
             cmd.append(f'id INTEGER PRIMARY KEY {auto}')
 
-        elif col_name == 'when':
-            continue  # TODO
+        elif col_name.endswith('_id') or "foreign_key" in col_info:
+            if col_info is not None and 'foreign_key' in col_info:
+                foreign_key = col_info['foreign_key']
+            else:
+                foreign_key = col_name
 
-        elif col_name.endswith('_id'):
             if 'when' in v:  # if sub-table, then make sure it's unique
                 cmd.append(f'{col_name} INTEGER UNIQUE')
             else:
                 cmd.append(f'{col_name} INTEGER')
 
-            ref_table = '_'.join(col_name.split('_')[:-1])
-            foreign_key.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
+            ref_table = '_'.join(foreign_key.split('_')[:-1])
+            foreign_keys.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
 
         else:
             cmd.append(f'{col_name} {col_info["type"]}')
 
-            # 'name' should end with "(run_id)" or "(subject_id)" which then points to the "runs" table or the "subjects" table
-            matching = match(r'.*\(([a-z]*)_id\)', col_info['name'])
-            if matching:
-                ref_table = matching.group(1)
-                foreign_key.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
-
-        if col_info is not None and "values" in col_info:
-            values[table_name][col_name] = []
-            for v in col_info['values']:
-                values[table_name][col_name].append(v)
-
     if len(v) == 2 and list(v)[0].endswith('_id') and list(v)[1].endswith('_id'):
         constraints.append(f'CONSTRAINT {table_name}_unique UNIQUE ({list(v)[0]}, {list(v)[1]})')
 
-    cmd.extend(foreign_key)
+    cmd.extend(foreign_keys)
     cmd.extend(constraints)
 
     sql_cmd = f'CREATE TABLE {table_name} (\n ' + ',\n '.join(cmd) + '\n)'
-    print(sql_cmd)
 
-    """
     lg.debug(sql_cmd)
     query = QSqlQuery(db)
     if not query.exec(sql_cmd):
+        print(sql_cmd)
         lg.warning(query.lastError().text())
-    """
-
-    return values
 
 
 def add_triggers(db, allowed_values):
@@ -238,7 +223,7 @@ def add_experimenters(db, table_experimenters):
         sql_cmd = dedent(f"""\
             INSERT INTO experimenters (`name`)
             VALUES ('{experimenter}')""")
-        query = QSqlQuery(sql_cmd)
+        query = QSqlQuery(db)
         if not query.isActive():
             lg.warning(query.lastError().databaseText())
 

@@ -363,9 +363,9 @@
   "intended_for": {
     "run_id": null,
     "target": {
-      "name": "target (run_id)",
-      "doc": "run_id should point to the original task (top_up), while the target should point to the 'intended-for' task (bold task)",
-      "type": "INTEGER"
+      "foreign_key": "run_id",
+      "name": "target",
+      "doc": "run_id should point to the original task (top_up), while the target should point to the 'intended-for' task (bold task)"
     }
   },
   "runs_protocols": {
@@ -513,12 +513,12 @@
         "mm",
         "m"
       ]
+    },
+    "IntendedFor": {
+      "foreign_key": "run_id",
+      "name": "IntendedFor",
+      "doc": "this should point to the T1w used for this electrodes"
     }
-  },
-  "IntendedFor": {
-    "name": "IntendedFor (run_id)",
-    "doc": "this should point to the T1w used for this electrodes",
-    "type": "INTEGER"
   },
   "electrodes": {
     "electrode_group_id": null,
