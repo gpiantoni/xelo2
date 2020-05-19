@@ -13,6 +13,7 @@ from numpy import (
     issubdtype,
     )
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QDateTime, QDate
 
 from ..database import TABLES
 
@@ -111,7 +112,13 @@ class Table():
                 return None
 
             elif key.startswith('date_of_'):  # TODO: it should look TABLES up
-                return datetime.strptime(out, '%Y-%m-%d').date()
+                if isinstance(out, QDate):
+                    if not out.isValid():
+                        return None
+                    else:
+                        return out.toPyDate()
+                else:
+                    return datetime.strptime(out, '%Y-%m-%d').date()
 
             elif key.endswith('_time'):  # TODO: it should look TABLES up
                 return _datetime_out(out)
@@ -802,7 +809,11 @@ def _datetime(s):
 def _datetime_out(out):
     if out == 'null' or out == '':
         return None
-
+    elif isinstance(out, QDateTime):
+        if not out.isValid():
+            return None
+        else:
+            return out.toPyDateTime()
     else:
         return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
 
