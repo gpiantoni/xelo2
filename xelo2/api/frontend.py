@@ -223,17 +223,131 @@ class Session(Table_with_files):
         elec_ids = list_channels_electrodes(self.id, name='electrode')
         return [Electrodes(id=id_) for id_ in elec_ids]
 
-    def add_run(self, task_name, start_time=None, duration=None):
+    def add_run(self, task_name):
 
-        query = QSqlQuery(f"""\
-            INSERT INTO runs (`session_id`, `task_name`, `start_time`, `duration`)
-            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_null(duration)})""")
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO runs (`session_id`, `task_name`) VALUES (:id, :task_name)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':task_name', task_name)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         run_id = query.lastInsertId()
-        if run_id is None:
+        return Run(self.db, run_id, session=self)
+
+
+class Run(Table_with_files):
+    t = 'run'
+    session = None
+
+    def __init__(self, db, id, session=None):
+        self.session = session
+        super().__init__(db, id)
+
+    def __str__(self):
+        return f'<{self.t} (#{self.id})>'
+
+    def list_recordings(self):
+        query = QSqlQuery(f"""\
+            SELECT recordings.id FROM recordings
+            WHERE recordings.run_id = {self.id}""")
+
+        list_of_recordings = []
+        while query.next():
+            list_of_recordings.append(
+                Recording(
+                    id=query.value('id'),
+                    run=self))
+        return sorted(list_of_recordings, key=lambda obj: obj.modality)
+
+    def add_recording(self, modality, onset=0):
+
+        query = QSqlQuery(f"""\
+            INSERT INTO recordings (`run_id`, `modality`, `onset`)
+            VALUES ("{self.id}", "{modality}", "{onset}")""")
+
+        recording_id = query.lastInsertId()
+        if recording_id is None:
             err = query.lastError()
             raise ValueError(err.text())
 
-        run = Run(run_id, session=self)
-        return run
+        recording = Recording(recording_id, run=self)
+        return recording
 
+    @property
+    def events(self):
+        dtypes = _get_dtypes(TABLES['events'])
+
+        query_str = '"' + '", "'.join(dtypes.names) + '"'
+        values = []
+        query = QSqlQuery(f"""SELECT {query_str} FROM events WHERE run_id = {self.id}""")
+        while query.next():
+            values.append(
+                tuple(query.value(name) for name in dtypes.names)
+                )
+        return array(values, dtype=dtypes)
+
+    @events.setter
+    def events(self, values):
+
+        QSqlQuery(f'DELETE FROM events WHERE run_id = "{self.id}"')
+
+        if values is not None:
+            query_str = '"' + '", "'.join(values.dtype.names) + '"'
+
+            for row in values:
+                values_str = ', '.join([f'`{x}`' for x in row])
+                QSqlQuery(f"""\
+                    INSERT INTO events (`run_id`, {query_str})
+                    VALUES ("{self.id}", {values_str})
+                    """)
+
+    @property
+    def experimenters(self):
+        query = QSqlQuery(f"""\
+            SELECT name FROM experimenters
+            JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id
+            WHERE run_id = {self.id}""")
+        list_of_experimenters = []
+        while query.next():
+            list_of_experimenters.append(query.value('name'))
+        return sorted(list_of_experimenters)
+
+    @experimenters.setter
+    def experimenters(self, experimenters):
+
+        QSqlQuery(f'DELETE FROM runs_experimenters WHERE run_id = "{self.id}"')
+        for exp in experimenters:
+            query = QSqlQuery(f'SELECT id FROM experimenters WHERE name = "{exp}"')
+
+            if query.next():
+                exp_id = query.value('id')
+                QSqlQuery(f"""\
+                    INSERT INTO runs_experimenters (`run_id`, `experimenter_id`)
+                    VALUES ("{self.id}", "{exp_id}")""")
+            else:
+                lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
+
+    def attach_protocol(self, protocol):
+        query = QSqlQuery(f"""\
+            INSERT INTO runs_protocols (`run_id`, `protocol_id`)
+            VALUES ("{self.id}", "{protocol.id}")""")
+
+        if query.isActive() is None:
+            print(query.lastQuery())
+            err = query.lastError()
+            raise ValueError(err.text())
+
+    def detach_protocol(self, protocol):
+        QSqlQuery(f"""\
+            DELETE FROM runs_protocols
+            WHERE run_id = {self.id} AND protocol_id = {protocol.id}
+            """)
+
+    def list_protocols(self):
+        query = QSqlQuery(f"SELECT protocol_id FROM runs_protocols WHERE run_id = {self.id}")
+        list_of_protocols = []
+        while query.next():
+            list_of_protocols.append(
+                Protocol(query.value('protocol_id')))
+        return list_of_protocols

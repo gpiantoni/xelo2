@@ -66,12 +66,13 @@ def test_api_session():
 
 
 def test_api_run():
-    db = open_database(DB_PATH)
-    subj = list_subjects()[0]
+    db = open_database('QSQLITE', DB_PATH)
+    subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
 
     fake_time = datetime(2000, 1, 1, 10, 0, 0)
-    run = sess.add_run('motor', fake_time)
+    run = sess.add_run('motor')
+    run.start_time = fake_time
     assert str(run) == '<run (#1)>'
     assert repr(run) == 'Run(id=1)'
     assert run.session == sess
