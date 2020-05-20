@@ -88,9 +88,9 @@ def test_api_run():
 
 
 def test_api_protocol():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     protocol_1 = subj.add_protocol('14-622')
     assert protocol_1.id == 1
 
