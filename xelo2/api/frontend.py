@@ -344,25 +344,33 @@ class Run(Table_with_files):
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
     def attach_protocol(self, protocol):
-        query = QSqlQuery(f"""\
-            INSERT INTO runs_protocols (`run_id`, `protocol_id`)
-            VALUES ("{self.id}", "{protocol.id}")""")
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO runs_protocols (`run_id`, `protocol_id`) VALUES (:id, :protocol_id)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':protocol_id', protocol.id)
 
-        if query.isActive() is None:
-            print(query.lastQuery())
-            err = query.lastError()
-            raise ValueError(err.text())
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
     def detach_protocol(self, protocol):
-        QSqlQuery(f"""\
-            DELETE FROM runs_protocols
-            WHERE run_id = {self.id} AND protocol_id = {protocol.id}
-            """)
+        query = QSqlQuery(self.db)
+        query.prepare("DELETE FROM runs_protocols WHERE run_id = :id AND protocol_id = :protocol_id")
+        query.bindValue(':id', self.id)
+        query.bindValue(':protocol_id', protocol.id)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
     def list_protocols(self):
-        query = QSqlQuery(f"SELECT protocol_id FROM runs_protocols WHERE run_id = {self.id}")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT protocol_id FROM runs_protocols WHERE run_id = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+
         list_of_protocols = []
         while query.next():
             list_of_protocols.append(
-                Protocol(query.value('protocol_id')))
+                Protocol(self.db, query.value('protocol_id')))
         return list_of_protocols
