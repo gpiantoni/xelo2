@@ -11,7 +11,7 @@ def find_subject_id(db, code):
 
     if query.exec():
         if query.next():
-            return query.value('allowed_value')
+            return query.value('subject_id')
         else:
             return None
 

@@ -11,7 +11,7 @@ from .paths import TRC_PATH, DB_PATH, T1_PATH
 
 def test_api_subject():
     db = open_database('QSQLITE', DB_PATH)
-    # db.transaction()
+    db.transaction()
 
     subj = Subject.add(db, 'rubble')
     assert subj.id == 1
@@ -28,13 +28,20 @@ def test_api_subject():
 
     assert subj == subj_copy
     assert len({subj, subj_copy}) == 1
-    # db.commit()
+
+    assert len(subj.codes) == 1
+    subj.codes = subj.codes + ['zuma', ]
+    assert len(subj.codes) == 2
+    assert str(subj) == 'rubble, zuma'
+
+    db.commit()
+    db.close()
 
 
 def test_api_session():
     db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     sess = subj.add_session('MRI')
 
     assert sess.id == 1

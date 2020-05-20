@@ -44,13 +44,12 @@ class Subject(Table_with_files):
     t = 'subject'
 
     def __init__(self, db, code=None, id=None):
-
         if code is not None:
             id = find_subject_id(db, code)
             if id is None:
                 raise ValueError(f'There is no "{code}" in "subject_codes" table')
 
-        super().__init__(id)
+        super().__init__(db, id)
 
     def __str__(self):
         codes = self.codes
@@ -59,8 +58,6 @@ class Subject(Table_with_files):
         elif len(codes) == 1:
             return codes[0]
         else:
-            # put RESP at the end
-            codes.sort(key=lambda s: s.startswith('RESP'))
             return ', '.join(codes)
 
     @classmethod
@@ -71,18 +68,16 @@ class Subject(Table_with_files):
         if id is not None:
             raise ValueError(f'Subject "{code}" already exists')
 
+        # add empty value to get new id
         query = QSqlQuery(db)
-        query.prepare("INSERT INTO subjects (`sex`) VALUES (NULL) ")  # add empty value to get new id
-
+        query.prepare("INSERT INTO subjects (`sex`) VALUES (NULL) ")
         if query.exec():
             id = query.lastInsertId()
         else:
             raise ValueError(query.lastError().text())
 
         query = QSqlQuery(db)
-        query.prepare("""\
-            INSERT INTO subject_codes (`subject_id`, `code`)
-            VALUES (:subject_id, :code)""")
+        query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:subject_id, :code)")
         query.bindValue(':subject_id', id)
         query.bindValue(':code', code)
         if query.exec():
@@ -93,32 +88,38 @@ class Subject(Table_with_files):
 
     @property
     def codes(self):
-
-        query = QSqlQuery(f"""\
-            SELECT code FROM subject_codes
-            WHERE subject_codes.subject_id = '{self.id}'""")
+        """Get the codes associated with this subjects"""
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT code FROM subject_codes WHERE subject_codes.subject_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            lg.warning(query.lastError().text())
 
         list_of_codes = []
         while query.next():
             list_of_codes.append(query.value('code'))
 
+        # put RESP at the end
+        list_of_codes.sort()
+        list_of_codes.sort(key=lambda s: s.startswith('RESP'))
         return list_of_codes
 
     @codes.setter
     def codes(self, codes):
 
-        QSqlQuery(f'DELETE FROM subject_codes WHERE subject_id = "{self.id}"')
+        query = QSqlQuery(self.db)
+        query.prepare('DELETE FROM subject_codes WHERE subject_id = :id')
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            lg.warning(query.lastError().text())
 
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:id, :code)")
+        query.bindValue(':id', self.id)
         for code in set(codes):
-
-            query = QSqlQuery(f"""\
-                INSERT INTO subject_codes (`subject_id`, `code`)
-                VALUES ({self.id}, "{code}")""")
-
-            if not query.isActive():
-                err = query.lastError()
-                print(err.text())
-                # raise ValueError(err.text())
+            query.bindValue(':code', code)
+            if not query.exec():
+                raise ValueError(query.lastError().text())
 
     def add_session(self, name):
 

@@ -29,11 +29,13 @@ class Table():
     id : int
         row index for an unspecified table
     """
+    db = None  # instance of database
     t = ''
     columns = []
     subtables = {}
 
-    def __init__(self, id):
+    def __init__(self, db, id):
+        self.db = db
         self.id = id
         self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
@@ -109,6 +111,7 @@ class Table():
         5. __getattr__
         """
         BUILTINS = (
+            'db',
             'id',
             't',
             'columns',
