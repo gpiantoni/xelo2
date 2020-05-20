@@ -260,6 +260,13 @@ def add_triggers_to_add_id(db, TABLES):
         default database
     TABLES : dict
         description of tables
+
+    TODO
+    ----
+    I could not think of a nice way to prune the rows when updating the name
+    of the session. So, if you have an "MRI" session and you change that
+    session to "IEMU", then the sessions_mri will still contain info related to
+    that session. Maybe it's not bad to keep this info but it's also not useful
     """
     for table_name, table_info in TABLES.items():
         if 'when' in table_info:
@@ -270,10 +277,30 @@ def add_triggers_to_add_id(db, TABLES):
                 sql_cmd = dedent(f"""\
                     CREATE TRIGGER add_id_to_subtable_{table_name}
                     AFTER INSERT ON {parent_table}
-                    WHEN NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                    WHEN
+                      NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
                     BEGIN
-                      INSERT INTO {table_name} ({parent_table}_id) VALUES (NEW.id) ;
+                      INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
                     END;""")
+            else:
+                raise NotImplementedError('You need to implement this for MYSQL')
+
+            query = QSqlQuery(db)
+            if not query.exec(sql_cmd):
+                lg.debug(sql_cmd)
+                lg.warning(query.lastError().text())
+
+            if db.driverName() == 'QSQLITE':
+                sql_cmd = dedent(f"""\
+                    CREATE TRIGGER replace_id_to_subtable_{table_name}
+                    BEFORE UPDATE ON {parent_table}
+                    WHEN
+                      NEW.{WHEN['parameter']} <> OLD.{WHEN['parameter']} AND
+                      NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                    BEGIN
+                      INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                    END;""")
+
             else:
                 raise NotImplementedError('You need to implement this for MYSQL')
 

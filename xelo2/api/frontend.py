@@ -133,12 +133,12 @@ class Subject(Table_with_files):
         query.prepare("INSERT INTO sessions (`subject_id`, `name`) VALUES (:id, :name)")
         query.bindValue(':id', self.id)
         query.bindValue(':name', name)
-        assert query.exec()
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         session_id = query.lastInsertId()
         if session_id is None:
-            err = query.lastError()
-            raise ValueError(err.text())
+            raise ValueError(query.lastError().text())
 
         return Session(self.db, session_id, subject=self)
 

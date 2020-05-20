@@ -87,23 +87,22 @@ class Table():
             if out == 'null' or out == '':
                 return None
 
+            elif TABLES[self.t + 's'][key]['type'] == 'DATE':
+
+                if self.db.driverName() == 'QSQLITE':
+                    return datetime.strptime(out, '%Y-%m-%d').date()
+                else:
+                    raise NotImplementedError('date in MYSQL')
+
+            elif TABLES[self.t + 's'][key]['type'] == 'DATETIME':
+
+                if self.db.driverName() == 'QSQLITE':
+                    return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
+                else:
+                    raise NotImplementedError('date in MYSQL')
+
             else:
                 return out
-            """
-
-            elif key.startswith('date_of_'):  # TODO: it should look TABLES up
-                if isinstance(out, QDate):
-                    if not out.isValid():
-                        return None
-                    else:
-                        return out.toPyDate()
-                else:
-                    return datetime.strptime(out, '%Y-%m-%d').date()
-
-            elif key.endswith('_time'):  # TODO: it should look TABLES up
-                return _datetime_out(out)
-
-        """
 
     def __setattr__(self, key, value):
         """Set a value for a key at this row.
@@ -156,15 +155,6 @@ class Table():
             value = _datetime(value)
         else:
             value = _null(value)
-
-        """
-        # insert row in tables, if it doesn't exist
-        # we don't care if it works or if it fails, so we don't check output
-        query = QSqlQuery(self.db)
-        query.prepare(f"INSERT INTO {table_name} (`{id_name}`) VALUES (:id)")
-        query.bindValue(':id', self.id)
-        query.exec()
-        """
 
         query = QSqlQuery(self.db)
         query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id")
@@ -563,6 +553,7 @@ def _datetime(s):
 
 
 def _datetime_out(out):
+    assert False
     if out == 'null' or out == '':
         return None
     elif isinstance(out, QDateTime):
