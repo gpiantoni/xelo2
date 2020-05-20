@@ -16,6 +16,7 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QDateTime, QDate
 
 from ..database import TABLES
+from .utils import construct_subtables
 
 lg = getLogger(__name__)
 
@@ -166,10 +167,11 @@ class Table():
         """
 
         query = QSqlQuery(self.db)
-        query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id'")
+        query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id")
         query.bindValue(':id', self.id)
 
         if not query.exec():
+            print(query.lastQuery())
             raise ValueError(query.lastError().text())
 
 
@@ -520,26 +522,8 @@ class Protocol(Table_with_files):
         self.subject = subject
 
 
-
 def columns(t):
     return [x for x in TABLES[t + 's'] if not x.endswith('id') and x != 'subtables']
-
-
-def construct_subtables(t):
-    if 'subtables' not in TABLES[t + 's']:
-        return {}
-    else:
-        subtables = TABLES[t + 's']['subtables']
-
-    attr_tables = {}
-    for k, v in subtables.items():
-        for i_v in v:
-            if i_v.endswith('_id'):
-                continue
-            attr_tables[i_v] = k
-
-    return attr_tables
-
 
 def _get_dtypes(table):
     dtypes = []

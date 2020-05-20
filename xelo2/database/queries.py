@@ -104,3 +104,11 @@ def get_columns(T):
     # put ids at the end because they are the least informative when sorting tsv
     cols.sort(key=lambda x: x.endswith('id'))
     return cols
+
+
+def sql_in(values):
+    if len(values) == 1:
+        return f"= '{values[0]}'"
+    else:
+        values_str = ", ".join(f"'{x}'" for x in values)
+        return 'IN (' + values_str + ')'

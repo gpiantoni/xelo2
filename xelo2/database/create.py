@@ -1,3 +1,5 @@
+"""Subtables should have a field called "when" and be called "parents_EXTRA"
+"""
 from logging import getLogger
 from pathlib import Path
 from textwrap import dedent
@@ -8,7 +10,7 @@ from PyQt5.QtSql import (
     )
 
 from .tables import TABLES
-from .queries import prepare_query_with_column_names
+from .queries import prepare_query_with_column_names, sql_in
 
 
 lg = getLogger(__name__)
@@ -104,7 +106,8 @@ def create_database(db_type, db_name, username=None, password=None):
 
     add_experimenters(db, TABLES['experimenters'])
 
-    add_triggers(db, TABLES)
+    add_triggers_to_check_values(db, TABLES)
+    add_triggers_to_add_id(db, TABLES)
 
     add_views(db)
 
@@ -172,7 +175,7 @@ def create_statement_table(db, table_name, v):
         lg.warning(query.lastError().text())
 
 
-def add_triggers(db, TABLES):
+def add_triggers_to_check_values(db, TABLES):
     """Add triggers to check if values are allowed, based on table of allowed_values
     This method is more flexible than using CONSTRAINT because we can easily
     add new values by changing the allowed_values table instead of ALTERing the
@@ -247,6 +250,37 @@ def add_triggers(db, TABLES):
                         lg.debug(sql_cmd)
                         lg.warning(trigger_query.lastError().text())
 
+
+def add_triggers_to_add_id(db, TABLES):
+    """These triggers add the ID of the main table to the subtables
+
+    Parameters
+    ----------
+    db : instance of QSqlDatabase
+        default database
+    TABLES : dict
+        description of tables
+    """
+    for table_name, table_info in TABLES.items():
+        if 'when' in table_info:
+            parent_table = table_name.split('_')[0]
+            WHEN = table_info['when']
+
+            if db.driverName() == 'QSQLITE':
+                sql_cmd = dedent(f"""\
+                    CREATE TRIGGER add_id_to_subtable_{table_name}
+                    AFTER INSERT ON {parent_table}
+                    WHEN NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                    BEGIN
+                      INSERT INTO {table_name} ({parent_table}_id) VALUES (NEW.id) ;
+                    END;""")
+            else:
+                raise NotImplementedError('You need to implement this for MYSQL')
+
+            query = QSqlQuery(db)
+            if not query.exec(sql_cmd):
+                lg.debug(sql_cmd)
+                lg.warning(query.lastError().text())
 
 def add_experimenters(db, table_experimenters):
     """Add table with experimenters. We use a separate table so that we can
