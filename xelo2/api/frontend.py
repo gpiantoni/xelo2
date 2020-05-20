@@ -2,7 +2,12 @@ from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
 
 from .backend import Table_with_files
-from .utils import find_subject_id
+from .utils import (
+    find_subject_id,
+    sort_sessions_starttime,
+    sort_subjects_alphabetical,
+    sort_subjects_date,
+    )
 
 lg = getLogger(__name__)
 
@@ -26,16 +31,17 @@ def list_subjects(db, alphabetical=False, reverse=False):
     list of instances of Subject
         list of subjects in the database
     """
-    query = QSqlQuery("SELECT id FROM subjects")
+    query = QSqlQuery(db)
+    query.exec('SELECT id FROM subjects')
 
     list_of_subjects = []
     while query.next():
-        list_of_subjects.append(Subject(id=query.value('id')))
+        list_of_subjects.append(Subject(db, id=query.value('id')))
 
     if alphabetical:
-        _sort_subjects = _sort_subjects_alphabetical
+        _sort_subjects = sort_subjects_alphabetical
     else:
-        _sort_subjects = _sort_subjects_date
+        _sort_subjects = sort_subjects_date
 
     return sorted(list_of_subjects, key=_sort_subjects, reverse=reverse)
 
@@ -123,29 +129,30 @@ class Subject(Table_with_files):
 
     def add_session(self, name):
 
-        query = QSqlQuery(f"""\
-            INSERT INTO sessions (`subject_id`, `name`)
-            VALUES ("{self.id}", "{name}")""")
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO sessions (`subject_id`, `name`) VALUES (:id, :name)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':name', name)
+        assert query.exec()
 
         session_id = query.lastInsertId()
         if session_id is None:
             err = query.lastError()
             raise ValueError(err.text())
 
-        return Session(session_id, subject=self)
+        return Session(self.db, session_id, subject=self)
 
     def list_sessions(self):
-        query = QSqlQuery(f"""\
-            SELECT sessions.id, name FROM sessions
-            WHERE sessions.subject_id =  '{self.id}'""")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT sessions.id, name FROM sessions WHERE sessions.subject_id = :id")
+        query.bindValue(':id', self.id)
+        assert query.exec()
 
         list_of_sessions = []
         while query.next():
             list_of_sessions.append(
-                Session(
-                    id=query.value('id'),
-                    subject=self))
-        return sorted(list_of_sessions, key=_sort_starttime)
+                Session(self.db, id=query.value('id'), subject=self))
+        return sorted(list_of_sessions, key=sort_sessions_starttime)
 
     def add_protocol(self, METC, date_of_signature=None):
 
@@ -171,4 +178,62 @@ class Subject(Table_with_files):
                     id=query.value('id'),
                     subject=self))
         return sorted(list_of_protocols, key=lambda obj: obj.METC)
+
+
+class Session(Table_with_files):
+    t = 'session'
+    subject = None
+
+    def __init__(self, db, id, subject=None):
+        super().__init__(db, id)
+        self.subject = subject
+
+    def __str__(self):
+        return f'<{self.t} {self.name} (#{self.id})>'
+
+    @property
+    def start_time(self):
+        query = QSqlQuery(f"""\
+            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = {self.id}
+            """)
+        if query.next():
+            return _datetime_out(query.value(0))
+
+    def list_runs(self):
+
+        query = QSqlQuery(f"""\
+            SELECT runs.id FROM runs
+            WHERE runs.session_id = {self.id}""")
+
+        list_of_runs = []
+        while query.next():
+            list_of_runs.append(
+                Run(
+                    id=query.value('id'),
+                    session=self))
+        return sorted(list_of_runs, key=_sort_starttime)
+
+    def list_channels(self):
+
+        chan_ids = list_channels_electrodes(self.id, name='channel')
+        return [Channels(id=id_) for id_ in chan_ids]
+
+    def list_electrodes(self):
+
+        elec_ids = list_channels_electrodes(self.id, name='electrode')
+        return [Electrodes(id=id_) for id_ in elec_ids]
+
+    def add_run(self, task_name, start_time=None, duration=None):
+
+        query = QSqlQuery(f"""\
+            INSERT INTO runs (`session_id`, `task_name`, `start_time`, `duration`)
+            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_null(duration)})""")
+
+        run_id = query.lastInsertId()
+        if run_id is None:
+            err = query.lastError()
+            raise ValueError(err.text())
+
+        run = Run(run_id, session=self)
+        return run
 

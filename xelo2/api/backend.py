@@ -73,12 +73,22 @@ class Table():
             table_name = f'{self.t}s'
             id_name = 'id'
 
-        query = QSqlQuery(f"SELECT {key} FROM {table_name} WHERE {id_name} = {self.id}")
+        query = QSqlQuery(self.db)
+        query.prepare(f"SELECT {key} FROM {table_name} WHERE {id_name} = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise ValueError(f'Could not get {key} from {table_name}')
+
         if query.next():
-            out = query.value(0)
+            out = query.value(key)
 
             if out == 'null' or out == '':
                 return None
+
+            else:
+                return out
+            """
 
             elif key.startswith('date_of_'):  # TODO: it should look TABLES up
                 if isinstance(out, QDate):
@@ -92,8 +102,7 @@ class Table():
             elif key.endswith('_time'):  # TODO: it should look TABLES up
                 return _datetime_out(out)
 
-            else:
-                return out
+        """
 
     def __setattr__(self, key, value):
         """Set a value for a key at this row.
@@ -513,63 +522,6 @@ class Protocol(Table_with_files):
         self.subject = subject
 
 
-class Session(Table_with_files):
-    t = 'session'
-    subject = None
-
-    def __init__(self, id, subject=None):
-        super().__init__(id)
-        self.subject = subject
-
-    def __str__(self):
-        return f'<{self.t} {self.name} (#{self.id})>'
-
-    @property
-    def start_time(self):
-        query = QSqlQuery(f"""\
-            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = {self.id}
-            """)
-        if query.next():
-            return _datetime_out(query.value(0))
-
-    def list_runs(self):
-
-        query = QSqlQuery(f"""\
-            SELECT runs.id FROM runs
-            WHERE runs.session_id = {self.id}""")
-
-        list_of_runs = []
-        while query.next():
-            list_of_runs.append(
-                Run(
-                    id=query.value('id'),
-                    session=self))
-        return sorted(list_of_runs, key=_sort_starttime)
-
-    def list_channels(self):
-
-        chan_ids = list_channels_electrodes(self.id, name='channel')
-        return [Channels(id=id_) for id_ in chan_ids]
-
-    def list_electrodes(self):
-
-        elec_ids = list_channels_electrodes(self.id, name='electrode')
-        return [Electrodes(id=id_) for id_ in elec_ids]
-
-    def add_run(self, task_name, start_time=None, duration=None):
-
-        query = QSqlQuery(f"""\
-            INSERT INTO runs (`session_id`, `task_name`, `start_time`, `duration`)
-            VALUES ("{self.id}", "{task_name}", {_datetime(start_time)}, {_null(duration)})""")
-
-        run_id = query.lastInsertId()
-        if run_id is None:
-            err = query.lastError()
-            raise ValueError(err.text())
-
-        run = Run(run_id, session=self)
-        return run
-
 
 def columns(t):
     return [x for x in TABLES[t + 's'] if not x.endswith('id') and x != 'subtables']
@@ -603,25 +555,6 @@ def _get_dtypes(table):
         else:
             assert False
     return dtype(dtypes)
-
-
-def _sort_subjects_alphabetical(subj):
-    return str(subj)
-
-
-def _sort_subjects_date(subj):
-    sessions = subj.list_sessions()
-    if len(sessions) == 0 or sessions[0].start_time is None:
-        return datetime(1900, 1, 1, 0, 0, 0)
-    else:
-        return sessions[0].start_time
-
-
-def _sort_starttime(obj):
-    if obj.start_time is None:
-        return datetime.now()
-    else:
-        return obj.start_time
 
 
 def _null(s):
