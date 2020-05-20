@@ -351,19 +351,6 @@ def recording_attach(group, recording_id, group_id=None):
 def columns(t):
     return [x for x in TABLES[t + 's'] if not x.endswith('id') and x != 'subtables']
 
-def _get_dtypes(table):
-    dtypes = []
-    for k, v in table.items():
-        if v is None:
-            continue
-        elif v['type'] == 'TEXT':
-            dtypes.append((k, 'U4096'))
-        elif v['type'] == 'FLOAT':
-            dtypes.append((k, 'float'))
-        else:
-            assert False
-    return dtype(dtypes)
-
 
 def _null(s):
     if s is None:

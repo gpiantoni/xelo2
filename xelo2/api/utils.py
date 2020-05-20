@@ -2,6 +2,10 @@ from logging import getLogger
 from datetime import datetime
 from PyQt5.QtSql import QSqlQuery
 
+from numpy import (
+    dtype,
+    )
+
 from ..database import TABLES
 
 lg = getLogger(__name__)
@@ -46,6 +50,20 @@ def find_subject_id(db, code):
 
     else:
         lg.warning(query.lastError().text())
+
+
+def get_dtypes(table):
+    dtypes = []
+    for k, v in table.items():
+        if v is None:
+            continue
+        elif v['type'] == 'TEXT':
+            dtypes.append((k, 'U4096'))
+        elif v['type'] == 'FLOAT':
+            dtypes.append((k, 'float'))
+        else:
+            assert False
+    return dtype(dtypes)
 
 
 def sort_subjects_alphabetical(subj):

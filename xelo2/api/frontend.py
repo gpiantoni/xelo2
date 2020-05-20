@@ -1,9 +1,14 @@
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
+from numpy import (
+    array,
+    )
 
+from ..database import TABLES
 from .backend import Table_with_files
 from .utils import (
     find_subject_id,
+    get_dtypes,
     out_datetime,
     sort_starttime,
     sort_subjects_alphabetical,
@@ -293,11 +298,17 @@ class Run(Table_with_files):
 
     @property
     def events(self):
-        dtypes = _get_dtypes(TABLES['events'])
+        dtypes = get_dtypes(TABLES['events'])
 
-        query_str = '"' + '", "'.join(dtypes.names) + '"'
+        query_str = ', '.join(f"`{x}`" for x in dtypes.names)
+        query = QSqlQuery(self.db)
+        query.prepare(f"SELECT {query_str} FROM events WHERE run_id = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+
         values = []
-        query = QSqlQuery(f"""SELECT {query_str} FROM events WHERE run_id = {self.id}""")
         while query.next():
             values.append(
                 tuple(query.value(name) for name in dtypes.names)
@@ -307,17 +318,24 @@ class Run(Table_with_files):
     @events.setter
     def events(self, values):
 
-        QSqlQuery(f'DELETE FROM events WHERE run_id = "{self.id}"')
+        query = QSqlQuery(self.db)
+        query.prepare('DELETE FROM events WHERE run_id = :id')
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         if values is not None:
-            query_str = '"' + '", "'.join(values.dtype.names) + '"'
+            query_str = ', '.join(f"`{x}`" for x in values.dtype.names)
 
             for row in values:
-                values_str = ', '.join([f'`{x}`' for x in row])
-                QSqlQuery(f"""\
+                values_str = ', '.join([f"'{x}'" for x in row])
+                query = QSqlQuery(self.db)
+                sql_cmd = f"""\
                     INSERT INTO events (`run_id`, {query_str})
-                    VALUES ("{self.id}", {values_str})
-                    """)
+                    VALUES ('{self.id}', {values_str})
+                    """
+                if not query.exec(sql_cmd):
+                    raise ValueError(query.lastError().text())
 
     @property
     def experimenters(self):
