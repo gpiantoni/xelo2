@@ -156,23 +156,21 @@ class Table():
         else:
             value = _null(value)
 
+        """
         # insert row in tables, if it doesn't exist
         # we don't care if it works or if it fails, so we don't check output
-        query = QSqlQuery(f"""\
-            INSERT INTO {table_name} (`{id_name}`)
-            VALUES ('{self.id}')
-            """)
+        query = QSqlQuery(self.db)
+        query.prepare(f"INSERT INTO {table_name} (`{id_name}`) VALUES (:id)")
+        query.bindValue(':id', self.id)
+        query.exec()
+        """
 
-        query = QSqlQuery(f"""\
-            UPDATE {table_name}
-            SET `{key}` = {value}
-            WHERE {id_name} = '{self.id}'
-            """)
+        query = QSqlQuery(self.db)
+        query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id'")
+        query.bindValue(':id', self.id)
 
-        if not query.isActive():
-            print(query.lastQuery())
-            err = query.lastError()
-            raise ValueError(err.text())
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
 
 class Table_with_files(Table):
