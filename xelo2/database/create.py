@@ -100,21 +100,31 @@ def create_database(db_type, db_name, username=None, password=None):
     db.transaction()
 
     for table_name, v in TABLES.items():
-        parse_table(db, table_name, v)
+        create_statement_table(db, table_name, v)
 
     add_experimenters(db, TABLES['experimenters'])
 
-    return db
     add_triggers(db, TABLES)
 
-    add_views()
+    add_views(db)
 
     db.commit()
     db.close()
 
 
-def parse_table(db, table_name, v):
+def create_statement_table(db, table_name, v):
+    """
+    Prepare and write CREATE statements for each table
 
+    Parameters
+    ----------
+    db : instance of QSqlDatabase
+        default database
+    table_name : str
+        name of the table
+    v : dict
+        where each key is a column of the table
+    """
     foreign_keys = []
     constraints = []
     cmd = []
@@ -162,62 +172,86 @@ def parse_table(db, table_name, v):
         lg.warning(query.lastError().text())
 
 
-def add_triggers(db, allowed_values):
+def add_triggers(db, TABLES):
+    """Add triggers to check if values are allowed, based on table of allowed_values
+    This method is more flexible than using CONSTRAINT because we can easily
+    add new values by changing the allowed_values table instead of ALTERing the
+    table
+
+    Parameters
+    ----------
+    db : instance of QSqlDatabase
+        default database
+    TABLES : dict
+        description of tables
+    """
     sql_cmd = 'CREATE TABLE allowed_values ( table_name TEXT NOT NULL, column_name TEXT NOT NULL, allowed_value TEXT NOT NULL)'
-    query = QSqlQuery(sql_cmd)
-    if not query.isActive():
-        lg.warning(query.lastError().databaseText())
+    query = QSqlQuery(db)
+    if not query.exec(sql_cmd):
+        lg.debug(sql_cmd)
+        lg.warning(query.lastError().text())
 
-    for table_name, table_info in allowed_values.items():
+    query = QSqlQuery(db)
+    query.prepare("""\
+        INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`)
+        VALUES (:table_name, :column_name, :allowed_value)""")
+
+    for table_name, table_info in TABLES.items():
+        if table_name == 'experimenters':
+            continue  # experimenters go into a separate table
+        query.bindValue(":table_name", table_name)
+
         for col_name, col_info in table_info.items():
-            for v in col_info:
-                query = QSqlQuery(f"""\
-                    INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`)
-                    VALUES ('{table_name}', '{col_name}', '{v}')""")
+            query.bindValue(":column_name", col_name)
 
-                if not query.isActive():
-                    lg.warning(query.lastError().databaseText())
+            if col_info is not None and 'values' in col_info:
+                for value in col_info['values']:
+                    query.bindValue(":allowed_value", value)
+                    if not query.exec():
+                        lg.debug(f'{table_name} / {col_name} : "{value}"')
+                        lg.warning(query.lastError().text())
 
-            for statement in ('INSERT', 'UPDATE'):  # mysql cannot handle both in the same trigger statement
-                if db.driverName() == 'QSQLITE':
-                    sql_cmd = f"""\
-                    CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
-                       BEFORE {statement} ON {table_name}
-                    BEGIN
-                       SELECT
-                          CASE
-                        WHEN NEW.{col_name} NOT IN  (
-                            SELECT allowed_value FROM allowed_values
-                            WHERE table_name == `{table_name}`
-                            AND column_name == `{col_name}`)
-                        THEN
-                             RAISE (ABORT, 'Invalid {col_name} for {table_name}')
-                        END;
-                    END;"""
-                else:
-                    sql_cmd = f"""\
-                        CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
-                          BEFORE {statement} ON {table_name}
-                          FOR EACH ROW
-                        BEGIN
-                          IF NEW.{col_name} NOT IN  (
-                            SELECT allowed_value FROM allowed_values
-                            WHERE table_name = '{table_name}'
-                            AND column_name = '{col_name}')
-                          THEN
-                            SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column {col_name} is not allowed in table {table_name}';
-                          END IF;
-                        END;
-                    """
+                for statement in ('INSERT', 'UPDATE'):  # sql cannot handle both in the same trigger statement
+                    if db.driverName() == 'QSQLITE':
+                        sql_cmd = dedent(f"""\
+                            CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
+                              BEFORE {statement} ON {table_name}
+                            BEGIN
+                              SELECT
+                                CASE
+                                  WHEN NEW.{col_name} NOT IN (
+                                    SELECT allowed_value FROM allowed_values
+                                    WHERE table_name == '{table_name}'
+                                    AND column_name == '{col_name}')
+                                THEN
+                                  RAISE (ABORT, 'Invalid {col_name} for {table_name}')
+                                END;
+                            END;""")
+                    else:
+                        sql_cmd = dedent(f"""\
+                            CREATE TRIGGER validate_{col_name}_before_{statement.lower()}_to_{table_name}
+                              BEFORE {statement} ON {table_name}
+                              FOR EACH ROW
+                            BEGIN
+                              IF NEW.{col_name} NOT IN (
+                                SELECT allowed_value FROM allowed_values
+                                WHERE table_name = '{table_name}'
+                                AND column_name = '{col_name}')
+                              THEN
+                                SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column {col_name} is not allowed in table {table_name}';
+                              END IF;
+                            END;""")
 
-                query = QSqlQuery(sql_cmd)
-                if not query.isActive():
-                    print(sql_cmd)
-                    lg.warning(query.lastError().databaseText())
+                    trigger_query = QSqlQuery(db)
+                    if not trigger_query.exec(sql_cmd):
+                        lg.debug(sql_cmd)
+                        lg.warning(trigger_query.lastError().text())
 
 
 def add_experimenters(db, table_experimenters):
-
+    """Add table with experimenters. We use a separate table so that we can
+    point to them by index
+    """
     for experimenter in table_experimenters['name']['values']:
         sql_cmd = dedent(f"""\
             INSERT INTO experimenters (`name`)
@@ -225,13 +259,14 @@ def add_experimenters(db, table_experimenters):
         query = QSqlQuery(db)
         if not query.exec(sql_cmd):
             lg.debug(sql_cmd)
-            lg.warning(query.lastError().databaseText())
+            lg.warning(query.lastError().text())
 
 
-def add_views():
+def add_views(db):
+    """Create a general view with some information that might be useful"""
     query_str = prepare_query_with_column_names(('subjects', 'sessions', 'runs', 'recordings'))
     sql_cmd = 'CREATE VIEW all_recordings AS \n' + query_str
-    query = QSqlQuery(sql_cmd)
-
-    if not query.isActive():
-        lg.warning(query.lastError().databaseText())
+    query = QSqlQuery(db)
+    if not query.exec(sql_cmd):
+        lg.debug(sql_cmd)
+        lg.warning(query.lastError().text())
