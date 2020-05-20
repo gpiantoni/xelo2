@@ -64,6 +64,8 @@ def test_api_session():
     assert sess.date_of_implantation == fake_date
     assert sess.date_of_explantation is None
 
+    db.close()
+
 
 def test_api_run():
     db = open_database('QSQLITE', DB_PATH)
@@ -85,6 +87,8 @@ def test_api_run():
 
     with raises(ValueError):
         sess.add_run('xxx')
+
+    db.close()
 
 
 def test_api_protocol():
@@ -123,11 +127,13 @@ def test_api_protocol():
     run = sess.add_run('mario')
     run.attach_protocol(protocol_2)
 
+    db.close()
+
 
 def test_api_recording():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
 
@@ -144,21 +150,25 @@ def test_api_recording():
     recording.delete()
     assert len(run.list_recordings()) == 0
 
+    db.close()
+
 
 def test_api_experimenters():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
     run.experimenters = ['Mariska', 'Gio', 'xxx']
     assert run.experimenters == ['Gio', 'Mariska']
 
+    db.close()
+
 
 def test_api_events():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
     events = run.events
@@ -177,11 +187,13 @@ def test_api_events():
     assert events['duration'][5] == 3
     assert events['trial_type'][5] == 'test'
 
+    db.close()
+
 
 def test_api_files():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj = list_subjects()[0]
+    subj = list_subjects(db)[0]
     file = subj.add_file(parse_filetype(TRC_PATH), TRC_PATH)
 
     assert len(subj.list_files()) == 1
@@ -196,9 +208,9 @@ def test_api_files():
 
 
 def test_api_sorting():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    subj_2 = Subject.add('secondsubject')
+    subj_2 = Subject.add(db, 'secondsubject')
     sess = subj_2.add_session('MRI')
     sess.add_run(
         'DTI',

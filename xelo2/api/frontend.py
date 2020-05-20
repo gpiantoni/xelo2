@@ -263,30 +263,32 @@ class Run(Table_with_files):
         return f'<{self.t} (#{self.id})>'
 
     def list_recordings(self):
-        query = QSqlQuery(f"""\
-            SELECT recordings.id FROM recordings
-            WHERE recordings.run_id = {self.id}""")
+
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT recordings.id FROM recordings WHERE recordings.run_id = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         list_of_recordings = []
         while query.next():
             list_of_recordings.append(
-                Recording(
-                    id=query.value('id'),
-                    run=self))
+                Recording(self.db, id=query.value('id'), run=self))
         return sorted(list_of_recordings, key=lambda obj: obj.modality)
 
-    def add_recording(self, modality, onset=0):
+    def add_recording(self, modality):
 
-        query = QSqlQuery(f"""\
-            INSERT INTO recordings (`run_id`, `modality`, `onset`)
-            VALUES ("{self.id}", "{modality}", "{onset}")""")
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO recordings (`run_id`, `modality`) VALUES (:id, :modality)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':modality', modality)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         recording_id = query.lastInsertId()
-        if recording_id is None:
-            err = query.lastError()
-            raise ValueError(err.text())
-
-        recording = Recording(recording_id, run=self)
+        recording = Recording(self.db, recording_id, run=self)
         return recording
 
     @property
@@ -374,3 +376,42 @@ class Run(Table_with_files):
             list_of_protocols.append(
                 Protocol(self.db, query.value('protocol_id')))
         return list_of_protocols
+
+
+class Recording(Table_with_files):
+    t = 'recording'
+    run = None
+
+    def __init__(self, db, id, run=None):
+        self.run = run
+        super().__init__(db, id)
+
+    @property
+    def electrodes(self):
+        electrode_id = recording_get('electrode', self.id)
+        if electrode_id is None:
+            return None
+        return Electrodes(id=electrode_id)
+
+    @property
+    def channels(self):
+        channel_id = recording_get('channel', self.id)
+        if channel_id is None:
+            return None
+        return Channels(id=channel_id)
+
+    def attach_electrodes(self, electrodes):
+        """Only recording_ieeg"""
+        recording_attach('electrode', self.id, group_id=electrodes.id)
+
+    def attach_channels(self, channels):
+        """Only recording_ieeg"""
+        recording_attach('channel', self.id, group_id=channels.id)
+
+    def detach_electrodes(self):
+        """Only recording_ieeg"""
+        recording_attach('electrode', self.id, group_id=None)
+
+    def detach_channels(self):
+        """Only recording_ieeg"""
+        recording_attach('channel', self.id, group_id=None)

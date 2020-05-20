@@ -63,9 +63,12 @@ class Table():
         """Delete current item / this row from this table. It does not delete
         the python object.
         """
-        QSqlQuery(f"""\
-            DELETE FROM {self.t}s WHERE id = {self.id}
-            """)
+        query = QSqlQuery(self.db)
+        query.prepare(f"DELETE FROM {self.t}s WHERE id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+
         self.id = None
 
     def __getattr__(self, key):
@@ -312,43 +315,6 @@ class File(Table):
         return Path(self.__getattr__('path')).resolve()
 
 
-class Recording(Table_with_files):
-    t = 'recording'
-    run = None
-
-    def __init__(self, id, run=None):
-        self.run = run
-        super().__init__(id)
-
-    @property
-    def electrodes(self):
-        electrode_id = recording_get('electrode', self.id)
-        if electrode_id is None:
-            return None
-        return Electrodes(id=electrode_id)
-
-    @property
-    def channels(self):
-        channel_id = recording_get('channel', self.id)
-        if channel_id is None:
-            return None
-        return Channels(id=channel_id)
-
-    def attach_electrodes(self, electrodes):
-        """Only recording_ieeg"""
-        recording_attach('electrode', self.id, group_id=electrodes.id)
-
-    def attach_channels(self, channels):
-        """Only recording_ieeg"""
-        recording_attach('channel', self.id, group_id=channels.id)
-
-    def detach_electrodes(self):
-        """Only recording_ieeg"""
-        recording_attach('electrode', self.id, group_id=None)
-
-    def detach_channels(self):
-        """Only recording_ieeg"""
-        recording_attach('channel', self.id, group_id=None)
 
 
 def recording_get(group, recording_id):
