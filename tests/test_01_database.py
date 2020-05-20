@@ -4,10 +4,10 @@ from .paths import DB_PATH
 
 
 def test_create():
-    create_database(DB_PATH)
+    create_database('QSQLITE', DB_PATH)
     assert DB_PATH.exists()
 
 
 def test_open():
-    db = open_database(DB_PATH)
-    assert len(db.tables()) == 31
+    db = open_database('QSQLITE', DB_PATH)
+    assert len(db.tables()) == 32
