@@ -154,30 +154,40 @@ class Subject(Table_with_files):
                 Session(self.db, id=query.value('id'), subject=self))
         return sorted(list_of_sessions, key=sort_sessions_starttime)
 
-    def add_protocol(self, METC, date_of_signature=None):
+    def add_protocol(self, METC):
 
-        query = QSqlQuery(f"""\
-            INSERT INTO protocols (`subject_id`, `METC`, `date_of_signature`)
-            VALUES ("{self.id}", "{METC}", {_date(date_of_signature)})""")
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO protocols (`subject_id`, `metc`) VALUES (:id, :metc)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':metc', METC)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         protocol_id = query.lastInsertId()
-        if protocol_id is None:
-            err = query.lastError()
-            raise ValueError(err.text())
-
-        return Protocol(protocol_id, subject=self)
+        return Protocol(self.db, protocol_id, subject=self)
 
     def list_protocols(self):
-        query = QSqlQuery(f"""\
-            SELECT id FROM protocols WHERE subject_id =  '{self.id}'""")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id FROM protocols WHERE subject_id = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         list_of_protocols = []
         while query.next():
             list_of_protocols.append(
-                Protocol(
-                    id=query.value('id'),
-                    subject=self))
+                Protocol(self.db, id=query.value('id'), subject=self))
         return sorted(list_of_protocols, key=lambda obj: obj.METC)
+
+
+class Protocol(Table_with_files):
+    t = 'protocol'
+
+    def __init__(self, db, id, subject=None):
+        super().__init__(db, id)
+        self.subject = subject
 
 
 class Session(Table_with_files):
