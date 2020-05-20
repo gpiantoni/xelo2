@@ -2,7 +2,7 @@ from datetime import datetime, date
 from pytest import raises
 from numpy import empty
 
-from xelo2.api import Subject, list_subjects, Electrodes, Channels
+from xelo2.api import Subject, list_subjects
 from xelo2.api.filetype import parse_filetype
 from xelo2.database.create import open_database
 
@@ -10,29 +10,29 @@ from .paths import TRC_PATH, DB_PATH, T1_PATH
 
 
 def test_api_subject():
-    db = open_database(DB_PATH)
-    db.transaction()
+    db = open_database('QSQLITE', DB_PATH)
+    # db.transaction()
 
-    subj = Subject.add('subjecttest')
+    subj = Subject.add(db, 'rubble')
     assert subj.id == 1
-    assert str(subj) == 'subjecttest'
+    assert str(subj) == 'rubble'
     assert repr(subj) == "Subject(id=1)"
 
     with raises(ValueError):
-        Subject.add('subjecttest')
+        Subject.add(db, 'rubble')
 
     with raises(ValueError):
-        Subject('does_not_exist')
+        Subject(db, 'does_not_exist')
 
-    subj_copy = Subject('subjecttest')
+    subj_copy = Subject(db, 'rubble')
 
     assert subj == subj_copy
     assert len({subj, subj_copy}) == 1
-    db.commit()
+    # db.commit()
 
 
 def test_api_session():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
     subj = list_subjects()[0]
     sess = subj.add_session('MRI')

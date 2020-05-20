@@ -39,7 +39,7 @@ def open_database(db_type, db_name, username=None, password=None):
     assert db.isValid()
 
     if db_type == 'QSQLITE':
-        db_name = Path(db_name).resolve()
+        db_name = Path(db_name).expanduser().resolve()
     else:
         db.setHostName('127.0.0.1')
         db.setUserName(username)
@@ -80,7 +80,7 @@ def create_database(db_type, db_name, username=None, password=None):
     assert db.isValid()
 
     if db_type == 'QSQLITE':
-        db_name = Path(db_name).resolve()
+        db_name = Path(db_name).expanduser().resolve()
         if db_name.exists():
             db_name.unlink()
 

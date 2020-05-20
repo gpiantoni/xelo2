@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, date
 from numpy import dtype, unique, genfromtxt
 
-from ..api.structure import Subject, Channels, Electrodes
+# from ..api.structure import Subject, Channels, Electrodes
 from ..database.create import create_database, open_database
 
 from .export_db import FILE_LEVELS, _get_table

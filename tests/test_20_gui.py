@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from xelo2.database.create import open_database
-from xelo2.api.structure import Subject, Channels
-from xelo2.gui.interface import Interface
+from xelo2.api import Subject
+# from xelo2.gui.interface import Interface
 
 from .paths import DB_PATH
 
