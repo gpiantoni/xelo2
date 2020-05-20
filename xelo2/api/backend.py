@@ -87,14 +87,14 @@ class Table():
             if out == 'null' or out == '':
                 return None
 
-            elif TABLES[self.t + 's'][key]['type'] == 'DATE':
+            elif TABLES[table_name][key]['type'] == 'DATE':
 
                 if self.db.driverName() == 'QSQLITE':
                     return datetime.strptime(out, '%Y-%m-%d').date()
                 else:
                     raise NotImplementedError('date in MYSQL')
 
-            elif TABLES[self.t + 's'][key]['type'] == 'DATETIME':
+            elif TABLES[table_name][key]['type'] == 'DATETIME':
 
                 if self.db.driverName() == 'QSQLITE':
                     return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
@@ -161,7 +161,6 @@ class Table():
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            print(query.lastQuery())
             raise ValueError(query.lastError().text())
 
 
