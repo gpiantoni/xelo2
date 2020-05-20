@@ -321,10 +321,12 @@ class Run(Table_with_files):
 
     @property
     def experimenters(self):
-        query = QSqlQuery(f"""\
-            SELECT name FROM experimenters
-            JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id
-            WHERE run_id = {self.id}""")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT name FROM experimenters JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id WHERE run_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+
         list_of_experimenters = []
         while query.next():
             list_of_experimenters.append(query.value('name'))
@@ -333,15 +335,30 @@ class Run(Table_with_files):
     @experimenters.setter
     def experimenters(self, experimenters):
 
-        QSqlQuery(f'DELETE FROM runs_experimenters WHERE run_id = "{self.id}"')
-        for exp in experimenters:
-            query = QSqlQuery(f'SELECT id FROM experimenters WHERE name = "{exp}"')
+        query = QSqlQuery(self.db)
+        query.prepare('DELETE FROM runs_experimenters WHERE run_id = :id')
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
-            if query.next():
-                exp_id = query.value('id')
-                QSqlQuery(f"""\
-                    INSERT INTO runs_experimenters (`run_id`, `experimenter_id`)
-                    VALUES ("{self.id}", "{exp_id}")""")
+        query_select = QSqlQuery(self.db)
+        query_select.prepare("SELECT id FROM experimenters WHERE name = :experimenter")
+
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO runs_experimenters (`run_id`, `experimenter_id`) VALUES (:id, :exp_id)")
+        query.bindValue(':id', self.id)
+
+        for exp in experimenters:
+            query_select.bindValue(':experimenter', exp)
+            if not query_select.exec():
+                raise ValueError(query_select.lastError().text())
+
+            if query_select.next():
+                exp_id = query_select.value('id')
+                query.bindValue(':exp_id', exp_id)
+                if not query.exec():
+                    raise ValueError(query.lastError().text())
+
             else:
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
