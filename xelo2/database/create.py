@@ -264,7 +264,7 @@ def add_experimenters(db, table_experimenters):
 
 def add_views(db):
     """Create a general view with some information that might be useful"""
-    query_str = prepare_query_with_column_names(('subjects', 'sessions', 'runs', 'recordings'))
+    query_str = prepare_query_with_column_names(('subjects', 'sessions', 'runs'))
     sql_cmd = 'CREATE VIEW all_recordings AS \n' + query_str
     query = QSqlQuery(db)
     if not query.exec(sql_cmd):

@@ -38,8 +38,8 @@ def prepare_query_experimenters():
     return query_str, columns
 
 
-def prepare_query(tables):
-    all_tables = _get_all_tables(tables)
+def prepare_query(table_names):
+    all_tables = _get_all_tables(table_names)
     query_str = prepare_query_str(all_tables)
 
     columns = defaultdict(list)
@@ -49,11 +49,11 @@ def prepare_query(tables):
     return query_str, columns
 
 
-def prepare_query_with_column_names(tables):
-    query_str, columns = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))
+def prepare_query_with_column_names(table_names):
+    query_str, columns = prepare_query(table_names)
     column_names = []
     for k, v in columns.items():
-        column_names.extend(f'`{k}.{v0}`' for v0 in v if not v0.endswith('id'))  # do not use id
+        column_names.extend(f'`{k}`.`{v0}`' for v0 in v if not v0.endswith('id'))  # do not use id
     sql_cmd = query_str.replace('*', ', '.join(column_names))
     return sql_cmd
 
