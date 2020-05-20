@@ -60,8 +60,28 @@ def sort_subjects_date(subj):
         return sessions[0].start_time
 
 
-def sort_sessions_starttime(obj):
+def sort_starttime(obj):
     if obj.start_time is None:
         return datetime.now()
     else:
         return obj.start_time
+
+
+def out_date(driver, out):
+    if driver == 'QSQLITE':
+        if out == '':
+            return None
+        else:
+            return datetime.strptime(out, '%Y-%m-%d').date()
+    else:
+        raise NotImplementedError('date in MYSQL')
+
+
+def out_datetime(driver, out):
+    if driver == 'QSQLITE':
+        if out == '':
+            return None
+        else:
+            return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
+    else:
+        raise NotImplementedError('datetime in MYSQL')

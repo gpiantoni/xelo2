@@ -16,7 +16,11 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QDateTime, QDate
 
 from ..database import TABLES
-from .utils import construct_subtables
+from .utils import (
+    construct_subtables,
+    out_date,
+    out_datetime,
+    )
 
 lg = getLogger(__name__)
 
@@ -84,22 +88,14 @@ class Table():
         if query.next():
             out = query.value(key)
 
-            if out == 'null' or out == '':
+            if out == '':
                 return None
 
             elif TABLES[table_name][key]['type'] == 'DATE':
-
-                if self.db.driverName() == 'QSQLITE':
-                    return datetime.strptime(out, '%Y-%m-%d').date()
-                else:
-                    raise NotImplementedError('date in MYSQL')
+                return out_date(self.db.driverName(), out)
 
             elif TABLES[table_name][key]['type'] == 'DATETIME':
-
-                if self.db.driverName() == 'QSQLITE':
-                    return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
-                else:
-                    raise NotImplementedError('date in MYSQL')
+                return out_datetime(self.db.driverName(), out)
 
             else:
                 return out

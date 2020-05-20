@@ -4,7 +4,8 @@ from PyQt5.QtSql import QSqlQuery
 from .backend import Table_with_files
 from .utils import (
     find_subject_id,
-    sort_sessions_starttime,
+    out_datetime,
+    sort_starttime,
     sort_subjects_alphabetical,
     sort_subjects_date,
     )
@@ -152,7 +153,7 @@ class Subject(Table_with_files):
         while query.next():
             list_of_sessions.append(
                 Session(self.db, id=query.value('id'), subject=self))
-        return sorted(list_of_sessions, key=sort_sessions_starttime)
+        return sorted(list_of_sessions, key=sort_starttime)
 
     def add_protocol(self, METC):
 
@@ -179,7 +180,8 @@ class Subject(Table_with_files):
         while query.next():
             list_of_protocols.append(
                 Protocol(self.db, id=query.value('id'), subject=self))
-        return sorted(list_of_protocols, key=lambda obj: obj.METC)
+
+        return sorted(list_of_protocols, key=lambda obj: obj.metc)
 
 
 class Protocol(Table_with_files):
@@ -203,25 +205,28 @@ class Session(Table_with_files):
 
     @property
     def start_time(self):
-        query = QSqlQuery(f"""\
-            SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = {self.id}
-            """)
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = :id")
+        query.bindValue(':id', self.id)
+        assert query.exec()
+
         if query.next():
-            return _datetime_out(query.value(0))
+            return out_datetime(self.db.driverName(), query.value(0))
 
     def list_runs(self):
+        """List runs which were acquired during session"""
 
-        query = QSqlQuery(f"""\
-            SELECT runs.id FROM runs
-            WHERE runs.session_id = {self.id}""")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT runs.id FROM runs WHERE runs.session_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         list_of_runs = []
         while query.next():
             list_of_runs.append(
-                Run(
-                    id=query.value('id'),
-                    session=self))
-        return sorted(list_of_runs, key=_sort_starttime)
+                Run(self.db, id=query.value('id'), session=self))
+        return sorted(list_of_runs, key=sort_starttime)
 
     def list_channels(self):
 
