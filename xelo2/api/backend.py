@@ -36,7 +36,6 @@ class Table():
     """
     db = None  # instance of database
     t = ''
-    columns = []
     subtables = {}
 
     def __init__(self, db, id):
@@ -52,7 +51,6 @@ class Table():
         if not query.next():
             raise ValueError(f'Could not find id = {id} in table {self.t}s')
 
-        self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
 
     def __str__(self):
@@ -132,7 +130,6 @@ class Table():
             'db',
             'id',
             't',
-            'columns',
             'subtables',
             'experimenters',
             'codes',
@@ -325,41 +322,6 @@ class File(Table):
         return Path(self.__getattr__('path')).resolve()
 
 
-def recording_get(group, recording_id):
-    query = QSqlQuery(f"""\
-        SELECT {group}_group_id FROM recordings_ieeg
-        WHERE recording_id = {recording_id}""")
-    if query.next():
-        out = query.value(f'{group}_group_id')
-        if out == '':
-            return None
-        else:
-            return out
-    else:
-        return None
-
-
-def recording_attach(group, recording_id, group_id=None):
-
-    if group_id is None:
-        group_id = 'null'
-
-    query = QSqlQuery(f"""\
-        INSERT INTO recordings_ieeg
-        (`{group}_group_id`, `recording_id`)
-        VALUES ({group_id}, {recording_id})""")
-
-    if query.lastInsertId() is None:
-        QSqlQuery(f"""\
-            UPDATE recordings_ieeg
-            SET "{group}_group_id"={group_id}
-            WHERE recording_id = "{recording_id}" """)
-
-
-def columns(t):
-    return [x for x in TABLES[t + 's'] if not x.endswith('id') and x != 'subtables']
-
-
 def _null(s):
     if s is None:
         return 'null'
@@ -406,22 +368,3 @@ def _create_query(row):
     values_str = ', '.join(values)
 
     return columns_str, values_str
-
-
-def list_channels_electrodes(session_id, name='channel'):
-
-    query = QSqlQuery(f"""\
-        SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
-        JOIN recordings ON recordings_ieeg.recording_id = recordings.id
-        JOIN runs ON runs.id = recordings.run_id
-        WHERE recordings.modality = 'ieeg'
-        AND runs.session_id = {session_id}
-        ORDER BY runs.start_time""")
-
-    list_of_items = []
-    while query.next():
-        val = query.value(0)
-        if val == '':
-            continue
-        list_of_items.append(int(val))
-    return list_of_items

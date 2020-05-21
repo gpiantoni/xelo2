@@ -10,6 +10,9 @@ from .utils import (
     find_subject_id,
     get_dtypes,
     out_datetime,
+    list_channels_electrodes,
+    recording_attach,
+    recording_get,
     sort_starttime,
     sort_subjects_alphabetical,
     sort_subjects_date,
@@ -235,13 +238,13 @@ class Session(Table_with_files):
 
     def list_channels(self):
 
-        chan_ids = list_channels_electrodes(self.id, name='channel')
-        return [Channels(id=id_) for id_ in chan_ids]
+        chan_ids = list_channels_electrodes(self.db, self.id, name='channel')
+        return [Channels(self.db, id=id_) for id_ in chan_ids]
 
     def list_electrodes(self):
 
-        elec_ids = list_channels_electrodes(self.id, name='electrode')
-        return [Electrodes(id=id_) for id_ in elec_ids]
+        elec_ids = list_channels_electrodes(self.db, self.id, name='electrode')
+        return [Electrodes(self.db, id=id_) for id_ in elec_ids]
 
     def add_run(self, task_name):
 
@@ -426,33 +429,33 @@ class Recording(Table_with_files):
 
     @property
     def electrodes(self):
-        electrode_id = recording_get('electrode', self.id)
+        electrode_id = recording_get(self.db, 'electrode', self.id)
         if electrode_id is None:
             return None
-        return Electrodes(id=electrode_id)
+        return Electrodes(self.db, id=electrode_id)
 
     @property
     def channels(self):
-        channel_id = recording_get('channel', self.id)
+        channel_id = recording_get(self.db, 'channel', self.id)
         if channel_id is None:
             return None
-        return Channels(id=channel_id)
+        return Channels(self.db, id=channel_id)
 
     def attach_electrodes(self, electrodes):
         """Only recording_ieeg"""
-        recording_attach('electrode', self.id, group_id=electrodes.id)
+        recording_attach(self.db, 'electrode', self.id, group_id=electrodes.id)
 
     def attach_channels(self, channels):
         """Only recording_ieeg"""
-        recording_attach('channel', self.id, group_id=channels.id)
+        recording_attach(self.db, 'channel', self.id, group_id=channels.id)
 
     def detach_electrodes(self):
         """Only recording_ieeg"""
-        recording_attach('electrode', self.id, group_id=None)
+        recording_attach(self.db, 'electrode', self.id, group_id=None)
 
     def detach_channels(self):
         """Only recording_ieeg"""
-        recording_attach('channel', self.id, group_id=None)
+        recording_attach(self.db, 'channel', self.id, group_id=None)
 
 
 class Channels(NumpyTable):
