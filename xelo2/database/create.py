@@ -356,16 +356,16 @@ def trigger_for_orphan_files_sqlite(TABLES):
 
     search = []
     for table in table_files:
-        search.append(f'(SELECT file_id FROM {table} WHERE file_id = OLD.id LIMIT 1)')
-    search_tables = ' OR '.join(search)
+        search.append(f'NOT EXISTS(SELECT file_id FROM {table} WHERE file_id = OLD.file_id)')
+    search_tables = ' AND '.join(search)
 
     for table in table_files:
         sql_cmd = dedent(f"""\
             CREATE TRIGGER delete_file_if_no_links_in_{table}
             AFTER DELETE ON {table}
             WHEN
-              NOT ({search_tables})
+              {search_tables}
             BEGIN
-              DELETE FROM files WHERE id = OLD.id ;
+              DELETE FROM files WHERE id = OLD.file_id ;
             END""")
         yield sql_cmd

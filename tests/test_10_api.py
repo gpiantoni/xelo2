@@ -3,6 +3,7 @@ from pytest import raises
 from numpy import empty
 
 from xelo2.api import Subject, list_subjects
+from xelo2.api.backend import File
 from xelo2.api.filetype import parse_filetype
 from xelo2.database.create import open_database
 
@@ -196,6 +197,9 @@ def test_api_events():
 def test_api_files():
     db = open_database('QSQLITE', DB_PATH)
 
+    with raises(ValueError):
+        File(db, id=1)  # there should be no file
+
     subj = list_subjects(db)[0]
     file = subj.add_file(parse_filetype(TRC_PATH), TRC_PATH)
 
@@ -203,14 +207,16 @@ def test_api_files():
     assert file.path == TRC_PATH
     assert file.format == 'micromed'
 
-    db.close()
-    return
+    with raises(ValueError):
+        subj.add_file('blackrock', TRC_PATH)
+
     subj.delete_file(file)
     assert len(subj.list_files()) == 0
 
     with raises(ValueError):
-        subj.add_file('blackrock', TRC_PATH)
+        File(db, id=1)  # the file should have deleted by the trigger
 
+    db.close()
 
 
 def test_api_sorting():
