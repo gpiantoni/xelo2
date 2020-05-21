@@ -361,7 +361,7 @@ def trigger_for_orphan_files_sqlite(TABLES):
 
     for table in table_files:
         sql_cmd = dedent(f"""\
-            CREATE TRIGGER delete_file_if_no_links
+            CREATE TRIGGER delete_file_if_no_links_in_{table}
             AFTER DELETE ON {table}
             WHEN
               NOT ({search_tables})
