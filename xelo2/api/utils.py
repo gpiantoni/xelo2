@@ -172,9 +172,6 @@ def recording_attach(db, group, recording_id, group_id=None):
         index of the channel_group or electrode_group. If None, it deletes
         the entry
     """
-    if group_id is None:
-        group_id = 'null'
-
     query = QSqlQuery(db)
     query.prepare(f"UPDATE recordings_ieeg SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id")
     query.bindValue(':group_id', group_id)

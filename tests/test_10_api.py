@@ -297,7 +297,7 @@ def test_api_electrodes_channels_attach():
     recording.detach_electrodes()
     assert recording.electrodes is None
 
-    chan = Channels()
+    chan = Channels.add(db)
     chan_name = 'channels type 1'
     chan.name = chan_name
     assert chan.name == chan_name
