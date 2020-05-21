@@ -284,7 +284,16 @@ def add_triggers_to_add_id(db, TABLES):
                       INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
                     END;""")
             else:
-                raise NotImplementedError('You need to implement this for MYSQL')
+                sql_cmd = dedent(f"""\
+                    CREATE TRIGGER add_id_to_subtable_{table_name}
+                      AFTER INSERT ON {parent_table}
+                      FOR EACH ROW
+                    BEGIN
+                      IF NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                      THEN
+                        INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                      END IF;
+                    END;""")
 
             query = QSqlQuery(db)
             if not query.exec(sql_cmd):
@@ -303,7 +312,17 @@ def add_triggers_to_add_id(db, TABLES):
                     END;""")
 
             else:
-                raise NotImplementedError('You need to implement this for MYSQL')
+                sql_cmd = dedent(f"""\
+                    CREATE TRIGGER replace_id_to_subtable_{table_name}
+                      BEFORE UPDATE ON {parent_table}
+                      FOR EACH ROW
+                    BEGIN
+                      IF NEW.{WHEN['parameter']} <> OLD.{WHEN['parameter']} AND
+                        NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                      THEN
+                        INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                      END IF;
+                    END;""")
 
             query = QSqlQuery(db)
             if not query.exec(sql_cmd):
@@ -336,10 +355,7 @@ def add_views(db):
 
 
 def add_triggers_to_delete_orphan_files(db, TABLES):
-    if db.driverName() == 'QSQLITE':
-        triggers = trigger_for_orphan_files_sqlite(TABLES)
-    else:
-        triggers = trigger_for_orphan_files_mysql(TABLES)
+    triggers = trigger_for_orphan_files(TABLES, db.driverName())
 
     for sql_cmd in triggers:
         query = QSqlQuery(db)
@@ -348,7 +364,7 @@ def add_triggers_to_delete_orphan_files(db, TABLES):
             lg.warning(query.lastError().text())
 
 
-def trigger_for_orphan_files_sqlite(TABLES):
+def trigger_for_orphan_files(TABLES, db_type):
     table_files = []
     for table in TABLES:
         if table.endswith('_files'):
@@ -360,12 +376,24 @@ def trigger_for_orphan_files_sqlite(TABLES):
     search_tables = ' AND '.join(search)
 
     for table in table_files:
-        sql_cmd = dedent(f"""\
-            CREATE TRIGGER delete_file_if_no_links_in_{table}
-            AFTER DELETE ON {table}
-            WHEN
-              {search_tables}
-            BEGIN
-              DELETE FROM files WHERE id = OLD.file_id ;
-            END""")
+        if db_type == 'QSQLITE':
+            sql_cmd = dedent(f"""\
+                CREATE TRIGGER delete_file_if_no_links_in_{table}
+                AFTER DELETE ON {table}
+                WHEN
+                  {search_tables}
+                BEGIN
+                  DELETE FROM files WHERE id = OLD.file_id ;
+                END""")
+        else:
+            sql_cmd = dedent(f"""\
+                CREATE TRIGGER delete_file_if_no_links_in_{table}
+                  AFTER DELETE ON {table}
+                  FOR EACH ROW
+                BEGIN
+                  IF {search_tables}
+                  THEN
+                    DELETE FROM files WHERE id = OLD.file_id ;
+                  END IF ;
+                END""")
         yield sql_cmd
