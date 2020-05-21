@@ -108,6 +108,7 @@ def create_database(db_type, db_name, username=None, password=None):
 
     add_triggers_to_check_values(db, TABLES)
     add_triggers_to_add_id(db, TABLES)
+    add_triggers_to_delete_orphan_files(db, TABLES)
 
     add_views(db)
 
@@ -309,6 +310,7 @@ def add_triggers_to_add_id(db, TABLES):
                 lg.debug(sql_cmd)
                 lg.warning(query.lastError().text())
 
+
 def add_experimenters(db, table_experimenters):
     """Add table with experimenters. We use a separate table so that we can
     point to them by index
@@ -331,3 +333,39 @@ def add_views(db):
     if not query.exec(sql_cmd):
         lg.debug(sql_cmd)
         lg.warning(query.lastError().text())
+
+
+def add_triggers_to_delete_orphan_files(db, TABLES):
+    if db.driverName() == 'QSQLITE':
+        triggers = trigger_for_orphan_files_sqlite(TABLES)
+    else:
+        triggers = trigger_for_orphan_files_mysql(TABLES)
+
+    for sql_cmd in triggers:
+        query = QSqlQuery(db)
+        if not query.exec(sql_cmd):
+            lg.debug(sql_cmd)
+            lg.warning(query.lastError().text())
+
+
+def trigger_for_orphan_files_sqlite(TABLES):
+    table_files = []
+    for table in TABLES:
+        if table.endswith('_files'):
+            table_files.append(table)
+
+    search = []
+    for table in table_files:
+        search.append(f'(SELECT file_id FROM {table} WHERE file_id = OLD.id LIMIT 1)')
+    search_tables = ' OR '.join(search)
+
+    for table in table_files:
+        sql_cmd = dedent(f"""\
+            CREATE TRIGGER delete_file_if_no_links
+            AFTER DELETE ON {table}
+            WHEN
+              NOT ({search_tables})
+            BEGIN
+              DELETE FROM files WHERE id = OLD.id ;
+            END""")
+        yield sql_cmd

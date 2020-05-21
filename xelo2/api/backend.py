@@ -238,9 +238,14 @@ class Table_with_files(Table):
         return File(db=self.db, id=file_id)
 
     def delete_file(self, file):
-        """TODO: add trigger to remove file, here we only remove the link in the table
+        """There should be a trigger that deletes the file when there are no pointers anymore
         """
-        QSqlQuery(f'DELETE FROM {self.t}s_files WHERE {self.t}_id = "{self.id}" AND file_id = "{file.id}"')
+        query = QSqlQuery(self.db)
+        query.prepare(f"DELETE FROM {self.t}s_files WHERE {self.t}_id = :id AND file_id = :file_id")
+        query.bindValue(':id', self.id)
+        query.bindValue(':file_id', file.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
 
 class NumpyTable(Table_with_files):

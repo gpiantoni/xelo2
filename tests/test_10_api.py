@@ -24,6 +24,9 @@ def test_api_subject():
     with raises(ValueError):
         Subject(db, 'does_not_exist')
 
+    with raises(ValueError):
+        Subject(db, id=999)
+
     subj_copy = Subject(db, 'rubble')
 
     assert subj == subj_copy
@@ -200,15 +203,14 @@ def test_api_files():
     assert file.path == TRC_PATH
     assert file.format == 'micromed'
 
-    """
+    db.close()
+    return
     subj.delete_file(file)
     assert len(subj.list_files()) == 0
 
     with raises(ValueError):
         subj.add_file('blackrock', TRC_PATH)
 
-    db.close()
-    """
 
 
 def test_api_sorting():
