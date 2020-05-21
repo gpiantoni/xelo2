@@ -2,7 +2,7 @@ from datetime import datetime, date
 from pytest import raises
 from numpy import empty
 
-from xelo2.api import Subject, list_subjects
+from xelo2.api import Subject, list_subjects, Electrodes, Channels
 from xelo2.api.backend import File
 from xelo2.api.filetype import parse_filetype
 from xelo2.database.create import open_database
@@ -222,32 +222,30 @@ def test_api_files():
 def test_api_sorting():
     db = open_database('QSQLITE', DB_PATH)
 
-    subj_2 = Subject.add(db, 'secondsubject')
+    subj_2 = Subject.add(db, 'skye')
     sess = subj_2.add_session('MRI')
-    sess.add_run(
-        'DTI',
-        start_time=datetime(2000, 1, 1, 1, 1),
-        duration=300,
-        )
-    sess.add_run(
-        'DTI',
-        start_time=datetime(2000, 1, 2, 1, 1),
-        )
+    run = sess.add_run('DTI')
+    run.start_time = datetime(2000, 1, 1, 1, 1)
+    run.duration = 300
+
+    run = sess.add_run('DTI')
+    run.start_time = datetime(2000, 1, 2, 1, 1)
     sess.add_run('DTI')
-    sess.add_run(
-        'DTI',
-        start_time=datetime(2000, 1, 2, 1, 1),
-        )
+    run = sess.add_run('DTI')
+    run.start_time = datetime(2000, 1, 2, 1, 1)
+
     assert len(sess.list_runs()) == 4
 
-    Subject.add('thirdsubject')
-    assert len(list_subjects()) == 3
+    Subject.add(db, 'chase')
+    assert len(list_subjects(db)) == 3
+
+    db.close()
 
 
 def test_api_electrodes_channels():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
-    elec = Electrodes()
+    elec = Electrodes.add(db)
     assert elec.CoordinateUnits == 'mm'
 
     array = elec.data
@@ -259,7 +257,6 @@ def test_api_electrodes_channels():
     array['x'] = range(10)
     array['material'] = 'platinum'
 
-    # TODO: unique electrode name vs unique group_id
     elec.data = array
     array = elec.data
 
@@ -268,9 +265,8 @@ def test_api_electrodes_channels():
     assert array['x'][-1] == 9
     assert array['material'][1] == 'platinum'
 
-    # TODO: unique channel name vs unique group_id
-    chan = Channels()
-    assert chan.Reference == 'n/a'
+    chan = Channels.add(db)
+    assert chan.Reference is None
 
     values = chan.empty(1)
     values['name'] = 'chan1'
@@ -278,9 +274,11 @@ def test_api_electrodes_channels():
     with raises(ValueError):
         chan.data = values
 
+    db.close()
+
 
 def test_api_electrodes_channels_attach():
-    db = open_database(DB_PATH)
+    db = open_database('QSQLITE', DB_PATH)
 
     subj = Subject.add('Subjwithieeg')
     sess = subj.add_session('OR')
@@ -325,4 +323,4 @@ def test_api_electrodes_channels_attach():
     recording.attach_channels(chan)
     recording.attach_electrodes(elec)
 
-    db.commit()
+    db.close()

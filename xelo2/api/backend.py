@@ -1,11 +1,9 @@
 from logging import getLogger
-from datetime import datetime
 from pathlib import Path
 
 from numpy import (
     array,
     character,
-    dtype,
     empty,
     floating,
     isnan,
@@ -13,11 +11,11 @@ from numpy import (
     issubdtype,
     )
 from PyQt5.QtSql import QSqlQuery
-from PyQt5.QtCore import QDateTime, QDate
 
 from ..database import TABLES
 from .utils import (
     construct_subtables,
+    get_dtypes,
     out_date,
     out_datetime,
     )
@@ -252,17 +250,21 @@ class NumpyTable(Table_with_files):
     """Note that self.id points to the ID of the group
     """
 
-    def __init__(self, id):
-        super().__init__(id)
+    def __init__(self, db, id):
+        super().__init__(db, id)
         self._tb_data = self.t.split('_')[0] + 's'
 
     @property
     def data(self):
-        dtypes = _get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(TABLES[self._tb_data])
         query_str = ", ".join(f"`{col}`" for col in dtypes.names)
-        values = []
-        query = QSqlQuery(f"""SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = {self.id}""")
+        query = QSqlQuery(self.db)
+        query.prepare(f"SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
+        values = []
         while query.next():
             row = []
             for name in dtypes.names:
@@ -277,26 +279,32 @@ class NumpyTable(Table_with_files):
 
     @data.setter
     def data(self, values):
+        """If values is None, it deletes all the events.
+        """
+        query = QSqlQuery(self.db)
+        query.prepare(f"DELETE FROM {self._tb_data} WHERE {self.t}_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
-        QSqlQuery(f"DELETE FROM {self._tb_data} WHERE {self.t}_id = '{self.id}'")
+        if values is None:
+            return
 
-        if values is not None:
-            for row in values:
-                column_str, values_str = _create_query(row)
-                query = QSqlQuery(f"""\
-                    INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
-                    VALUES ('{self.id}', {values_str})
-                    """)
-
-                if not query.isActive():
-                    print(query.lastQuery())
-                    err = query.lastError()
-                    raise ValueError(err.text())
+        for row in values:
+            column_str, values_str = _create_query(row)
+            query = QSqlQuery(self.db)  # column_str depends on values as well (no column when value is NaN)
+            sql_cmd = f"""\
+                INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
+                VALUES ('{self.id}', {values_str})
+                """
+            if not query.exec(sql_cmd):
+                print(sql_cmd)
+                raise ValueError(query.lastError().text())
 
     def empty(self, n_rows):
         """convenience function to get an empty array with empty values if
         necessary"""
-        dtypes = _get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(TABLES[self._tb_data])
 
         values = empty(n_rows, dtype=dtypes)
         for name in values.dtype.names:
@@ -304,37 +312,6 @@ class NumpyTable(Table_with_files):
                 values[name].fill(NaN)
 
         return values
-
-
-class Channels(NumpyTable):
-    t = 'channel_group'  # for Table.__getattr__
-
-    def __init__(self, id=None):
-        """Use ID if provided, otherwise create a new channel_group"""
-        if id is None:
-            query = QSqlQuery("""\
-                INSERT INTO channel_groups (`Reference`)
-                VALUES ("n/a")
-                """)
-            id = query.lastInsertId()
-
-        super().__init__(id)
-
-
-class Electrodes(NumpyTable):
-    t = 'electrode_group'  # for Table.__getattr__
-
-    def __init__(self, id=None):
-        """Use ID if provided, otherwise create a new electrode_group with
-        reasonable parameters"""
-        if id is None:
-            query = QSqlQuery("""\
-                INSERT INTO electrode_groups (`CoordinateSystem`, `CoordinateUnits`)
-                VALUES ("ACPC", "mm")
-                """)
-            id = query.lastInsertId()
-
-        super().__init__(id)
 
 
 class File(Table):
@@ -404,19 +381,6 @@ def _datetime(s):
         return 'null'
     else:
         return f'"{s:%Y-%m-%dT%H:%M:%S}"'
-
-
-def _datetime_out(out):
-    assert False
-    if out == 'null' or out == '':
-        return None
-    elif isinstance(out, QDateTime):
-        if not out.isValid():
-            return None
-        else:
-            return out.toPyDateTime()
-    else:
-        return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
 
 
 def _create_query(row):

@@ -4,4 +4,7 @@ from .frontend import (
     Session,
     Protocol,
     Run,
+    Recording,
+    Channels,
+    Electrodes,
     )

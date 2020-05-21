@@ -5,7 +5,7 @@ from numpy import (
     )
 
 from ..database import TABLES
-from .backend import Table_with_files
+from .backend import Table_with_files, NumpyTable
 from .utils import (
     find_subject_id,
     get_dtypes,
@@ -317,25 +317,28 @@ class Run(Table_with_files):
 
     @events.setter
     def events(self, values):
-
+        """If values is None, it deletes all the events.
+        """
         query = QSqlQuery(self.db)
         query.prepare('DELETE FROM events WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
             raise ValueError(query.lastError().text())
 
-        if values is not None:
-            query_str = ', '.join(f"`{x}`" for x in values.dtype.names)
+        if values is None:
+            return
 
-            for row in values:
-                values_str = ', '.join([f"'{x}'" for x in row])
-                query = QSqlQuery(self.db)
-                sql_cmd = f"""\
-                    INSERT INTO events (`run_id`, {query_str})
-                    VALUES ('{self.id}', {values_str})
-                    """
-                if not query.exec(sql_cmd):
-                    raise ValueError(query.lastError().text())
+        query_str = ', '.join(f"`{x}`" for x in values.dtype.names)
+
+        for row in values:
+            values_str = ', '.join([f"'{x}'" for x in row])
+            query = QSqlQuery(self.db)
+            sql_cmd = f"""\
+                INSERT INTO events (`run_id`, {query_str})
+                VALUES ('{self.id}', {values_str})
+                """
+            if not query.exec(sql_cmd):
+                raise ValueError(query.lastError().text())
 
     @property
     def experimenters(self):
@@ -450,3 +453,36 @@ class Recording(Table_with_files):
     def detach_channels(self):
         """Only recording_ieeg"""
         recording_attach('channel', self.id, group_id=None)
+
+
+class Channels(NumpyTable):
+    t = 'channel_group'  # for Table.__getattr__
+
+    @classmethod
+    def add(cls, db):
+        # add empty value to get new id
+        query = QSqlQuery(db)
+        query.prepare("INSERT INTO channel_groups (`Reference`) VALUES (NULL) ")
+        if query.exec():
+            id = query.lastInsertId()
+        else:
+            raise ValueError(query.lastError().text())
+
+        return cls(db, id)
+
+
+class Electrodes(NumpyTable):
+    t = 'electrode_group'  # for Table.__getattr__
+
+    @classmethod
+    def add(cls, db):
+        """Use ID if provided, otherwise create a new electrode_group with
+        reasonable parameters"""
+        query = QSqlQuery(db)
+        query.prepare("INSERT INTO electrode_groups (`CoordinateSystem`, `CoordinateUnits`) VALUES ('ACPC', 'mm')")
+        if query.exec():
+            id = query.lastInsertId()
+        else:
+            raise ValueError(query.lastError().text())
+
+        return cls(db, id)
