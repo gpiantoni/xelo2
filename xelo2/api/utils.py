@@ -92,7 +92,10 @@ def out_date(driver, out):
         else:
             return datetime.strptime(out, '%Y-%m-%d').date()
     else:
-        raise NotImplementedError('date in MYSQL')
+        if out.isValid():
+            return out.toPyDate()
+        else:
+            return None
 
 
 def out_datetime(driver, out):
@@ -102,8 +105,10 @@ def out_datetime(driver, out):
         else:
             return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
     else:
-        raise NotImplementedError('datetime in MYSQL')
-
+        if out.isValid():
+            return out.toPyDateTime()
+        else:
+            return None
     """
     def _datetime_out(out):
         assert False

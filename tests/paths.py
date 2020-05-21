@@ -9,6 +9,18 @@ GENERATED_DIR = DATA_DIR / 'generated'
 GENERATED_DIR.mkdir(exist_ok=True, parents=True)
 
 DB_PATH = GENERATED_DIR / 'sqlite.db'
+if False:
+    DB_ARGS = {
+        'db_type': 'QSQLITE',
+        'db_name': DB_PATH,
+        }
+else:
+    DB_ARGS = {
+        'db_type': 'QMYSQL',
+        'db_name': 'test2',
+        'username': 'giovanni',
+        'password': 'password'
+        }
 LOG_PATH = GENERATED_DIR / 'log_file.txt'
 
 EXAMPLE_DIR = DATA_DIR / 'example'

@@ -7,12 +7,11 @@ from xelo2.api.backend import File
 from xelo2.api.filetype import parse_filetype
 from xelo2.database.create import open_database
 
-from .paths import TRC_PATH, DB_PATH, T1_PATH
+from .paths import TRC_PATH, DB_ARGS, T1_PATH
 
 
 def test_api_subject():
-    db = open_database('QSQLITE', DB_PATH)
-    db.transaction()
+    db = open_database(**DB_ARGS)
 
     subj = Subject.add(db, 'rubble')
     assert subj.id == 1
@@ -38,12 +37,11 @@ def test_api_subject():
     assert len(subj.codes) == 2
     assert str(subj) == 'rubble, zuma'
 
-    db.commit()
     db.close()
 
 
 def test_api_session():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.add_session('MRI')
@@ -72,7 +70,8 @@ def test_api_session():
 
 
 def test_api_run():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
+
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
 
@@ -96,7 +95,7 @@ def test_api_run():
 
 
 def test_api_protocol():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     protocol_1 = subj.add_protocol('14-622')
@@ -135,7 +134,7 @@ def test_api_protocol():
 
 
 def test_api_recording():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -158,7 +157,7 @@ def test_api_recording():
 
 
 def test_api_experimenters():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -170,7 +169,7 @@ def test_api_experimenters():
 
 
 def test_api_events():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -195,7 +194,7 @@ def test_api_events():
 
 
 def test_api_files():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     with raises(ValueError):
         File(db, id=1)  # there should be no file
@@ -220,7 +219,7 @@ def test_api_files():
 
 
 def test_api_sorting():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj_2 = Subject.add(db, 'skye')
     sess = subj_2.add_session('MRI')
@@ -243,7 +242,7 @@ def test_api_sorting():
 
 
 def test_api_electrodes_channels():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     elec = Electrodes.add(db)
     assert elec.CoordinateUnits == 'mm'
@@ -278,7 +277,7 @@ def test_api_electrodes_channels():
 
 
 def test_api_electrodes_channels_attach():
-    db = open_database('QSQLITE', DB_PATH)
+    db = open_database(**DB_ARGS)
 
     subj = Subject.add(db, 'everest')
     sess = subj.add_session('OR')

@@ -87,6 +87,8 @@ def create_database(db_type, db_name, username=None, password=None):
             db_name.unlink()
 
     else:
+
+        _drop_create_mysql(db_name, username, password)
         db.setHostName('127.0.0.1')
         db.setUserName(username)
         if password is not None:
@@ -397,3 +399,18 @@ def trigger_for_orphan_files(TABLES, db_type):
                   END IF ;
                 END""")
         yield sql_cmd
+
+
+def _drop_create_mysql(db_name, username, password):
+    db = QSqlDatabase.addDatabase('QMYSQL', 'information_schema')
+
+    db.setHostName('127.0.0.1')
+    db.setUserName(username)
+    db.setPassword(password)
+    db.setDatabaseName('information_schema')
+    db.open()
+
+    q = QSqlQuery(db)
+    assert q.exec(f'DROP DATABASE {db_name};')
+    assert q.exec(f'CREATE DATABASE {db_name};')
+    db.close()
