@@ -280,12 +280,12 @@ def test_api_electrodes_channels():
 def test_api_electrodes_channels_attach():
     db = open_database('QSQLITE', DB_PATH)
 
-    subj = Subject.add('Subjwithieeg')
+    subj = Subject.add(db, 'everest')
     sess = subj.add_session('OR')
     run = sess.add_run('motor')
     recording = run.add_recording('ieeg')
 
-    elec = Electrodes()
+    elec = Electrodes.add(db)
     data = elec.empty(5)
     data['name'] = ['a0', 'bb', 'cc', 'dd', 'ee']
     data['x'] = range(5)
