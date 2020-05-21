@@ -109,19 +109,6 @@ def out_datetime(driver, out):
             return out.toPyDateTime()
         else:
             return None
-    """
-    def _datetime_out(out):
-        assert False
-        if out == 'null' or out == '':
-            return None
-        elif isinstance(out, QDateTime):
-            if not out.isValid():
-                return None
-            else:
-                return out.toPyDateTime()
-        else:
-            return datetime.strptime(out, '%Y-%m-%dT%H:%M:%S')
-    """
 
 def list_channels_electrodes(db, session_id, name='channel'):
 

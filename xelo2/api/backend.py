@@ -11,6 +11,8 @@ from numpy import (
     issubdtype,
     )
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QVariant
+import sip
 
 from ..database import TABLES
 from .utils import (
@@ -96,20 +98,26 @@ class Table():
         if not query.exec():
             raise ValueError(f'Could not get {key} from {table_name}')
 
+        # we need to use QVariant, because QMYSQL in PyQt5 does not distinguish between null and 0.0
+        # see https://www.riverbankcomputing.com/static/Docs/PyQt5/pyqt_qvariant.html
+        autoconversion = sip.enableautoconversion(QVariant, False)
         if query.next():
             out = query.value(key)
 
-            if out == '':
-                return None
+            if out.isNull():
+                out = None
 
             elif TABLES[table_name][key]['type'] == 'DATE':
-                return out_date(self.db.driverName(), out)
+                out = out_date(self.db.driverName(), out.value())
 
             elif TABLES[table_name][key]['type'] == 'DATETIME':
-                return out_datetime(self.db.driverName(), out)
+                out = out_datetime(self.db.driverName(), out.value())
 
             else:
-                return out
+                out = out.value()
+
+        sip.enableautoconversion(QVariant, autoconversion)
+        return out
 
     def __setattr__(self, key, value):
         """Set a value for a key at this row.
