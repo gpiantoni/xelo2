@@ -47,7 +47,7 @@ class Table():
         query.prepare(f'SELECT id FROM {self.t}s WHERE id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
         if not query.next():
             raise ValueError(f'Could not find id = {id} in table {self.t}s')
 
@@ -75,7 +75,7 @@ class Table():
         query.prepare(f"DELETE FROM {self.t}s WHERE id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         self.id = None
 
@@ -181,7 +181,7 @@ class Table_with_files(Table):
         query.prepare(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         out = []
         while query.next():
@@ -204,7 +204,7 @@ class Table_with_files(Table):
         query.prepare("SELECT id, format FROM files WHERE path = :path")
         query.bindValue(':path', str(path))
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         if query.next():
             file_id = query.value('id')
@@ -219,7 +219,7 @@ class Table_with_files(Table):
             query.bindValue(':format', format)
             query.bindValue(':path', str(path))
             if not query.exec():
-                raise ValueError(query.lastError().text())
+                raise SyntaxError(query.lastError().text())
 
             file_id = query.lastInsertId()
 
@@ -228,7 +228,7 @@ class Table_with_files(Table):
         query.bindValue(':id', self.id)
         query.bindValue(':file_id', file_id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         return File(db=self.db, id=file_id)
 
@@ -240,7 +240,7 @@ class Table_with_files(Table):
         query.bindValue(':id', self.id)
         query.bindValue(':file_id', file.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
 
 class NumpyTable(Table_with_files):
@@ -259,7 +259,7 @@ class NumpyTable(Table_with_files):
         query.prepare(f"SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         values = []
         while query.next():
@@ -282,7 +282,7 @@ class NumpyTable(Table_with_files):
         query.prepare(f"DELETE FROM {self._tb_data} WHERE {self.t}_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         if values is None:
             return
@@ -295,7 +295,6 @@ class NumpyTable(Table_with_files):
                 VALUES ('{self.id}', {values_str})
                 """
             if not query.exec(sql_cmd):
-                print(sql_cmd)
                 raise ValueError(query.lastError().text())
 
     def empty(self, n_rows):

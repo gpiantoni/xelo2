@@ -99,7 +99,7 @@ class Subject(Table_with_files):
             return Subject(db, id=id)
 
         else:
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
     @property
     def codes(self):
@@ -134,7 +134,7 @@ class Subject(Table_with_files):
         for code in set(codes):
             query.bindValue(':code', code)
             if not query.exec():
-                raise ValueError(query.lastError().text())
+                raise SyntaxError(query.lastError().text())
 
     def add_session(self, name):
 
@@ -147,7 +147,7 @@ class Subject(Table_with_files):
 
         session_id = query.lastInsertId()
         if session_id is None:
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         return Session(self.db, session_id, subject=self)
 
@@ -182,7 +182,7 @@ class Subject(Table_with_files):
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         list_of_protocols = []
         while query.next():
@@ -228,7 +228,7 @@ class Session(Table_with_files):
         query.prepare("SELECT runs.id FROM runs WHERE runs.session_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         list_of_runs = []
         while query.next():
@@ -277,7 +277,7 @@ class Run(Table_with_files):
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         list_of_recordings = []
         while query.next():
@@ -309,7 +309,7 @@ class Run(Table_with_files):
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         values = []
         while query.next():
@@ -326,7 +326,7 @@ class Run(Table_with_files):
         query.prepare('DELETE FROM events WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         if values is None:
             return
@@ -341,7 +341,7 @@ class Run(Table_with_files):
                 VALUES ('{self.id}', {values_str})
                 """
             if not query.exec(sql_cmd):
-                raise ValueError(query.lastError().text())
+                raise SyntaxError(query.lastError().text())
 
     @property
     def experimenters(self):
@@ -349,7 +349,7 @@ class Run(Table_with_files):
         query.prepare("SELECT name FROM experimenters JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id WHERE run_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         list_of_experimenters = []
         while query.next():
@@ -363,7 +363,7 @@ class Run(Table_with_files):
         query.prepare('DELETE FROM runs_experimenters WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         query_select = QSqlQuery(self.db)
         query_select.prepare("SELECT id FROM experimenters WHERE name = :experimenter")
@@ -375,13 +375,13 @@ class Run(Table_with_files):
         for exp in experimenters:
             query_select.bindValue(':experimenter', exp)
             if not query_select.exec():
-                raise ValueError(query_select.lastError().text())
+                raise SyntaxError(query_select.lastError().text())
 
             if query_select.next():
                 exp_id = query_select.value('id')
                 query.bindValue(':exp_id', exp_id)
                 if not query.exec():
-                    raise ValueError(query.lastError().text())
+                    raise SyntaxError(query.lastError().text())
 
             else:
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
@@ -402,7 +402,7 @@ class Run(Table_with_files):
         query.bindValue(':protocol_id', protocol.id)
 
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
     def list_protocols(self):
         query = QSqlQuery(self.db)
@@ -410,7 +410,7 @@ class Run(Table_with_files):
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         list_of_protocols = []
         while query.next():
@@ -469,7 +469,7 @@ class Channels(NumpyTable):
         if query.exec():
             id = query.lastInsertId()
         else:
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         return cls(db, id)
 
@@ -486,6 +486,6 @@ class Electrodes(NumpyTable):
         if query.exec():
             id = query.lastInsertId()
         else:
-            raise ValueError(query.lastError().text())
+            raise SyntaxError(query.lastError().text())
 
         return cls(db, id)
