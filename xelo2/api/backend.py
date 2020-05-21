@@ -31,6 +31,8 @@ class Table():
 
     Parameters
     ----------
+    db : instance of QSqlDatabase
+        currently open database
     id : int
         row index for an unspecified table
     """
@@ -42,6 +44,16 @@ class Table():
     def __init__(self, db, id):
         self.db = db
         self.id = id
+
+        # check if it exists at all
+        query = QSqlQuery(self.db)
+        query.prepare(f'SELECT id FROM {self.t}s WHERE id = :id')
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+        if not query.next():
+            raise ValueError(f'Could not find id = {id} in table {self.t}s')
+
         self.columns = columns(self.t)
         self.subtables = construct_subtables(self.t)
 
@@ -170,10 +182,15 @@ class Table_with_files(Table):
     def list_files(self):
         """List all the files associated with this object
         """
-        query = QSqlQuery(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = {self.id}")
+        query = QSqlQuery(self.db)
+        query.prepare(f"SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = :id")
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
+
         out = []
         while query.next():
-            out.append(File(query.value('file_id')))
+            out.append(File(self.db, query.value('file_id')))
         return out
 
     def add_file(self, format, path):
@@ -188,7 +205,11 @@ class Table_with_files(Table):
         """
         path = Path(path).resolve()
 
-        query = QSqlQuery(f"SELECT id, format FROM files WHERE path = '{path}'")
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id, format FROM files WHERE path = :path")
+        query.bindValue(':path', str(path))
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         if query.next():
             file_id = query.value('id')
@@ -198,16 +219,23 @@ class Table_with_files(Table):
                 raise ValueError(f'Input format "{format}" does not match the format "{format_in_table}" in the table for {path}')
 
         else:
-            QSqlQuery(f"""\
-                INSERT INTO files (`format`, `path`)
-                VALUES ("{format}", "{path.resolve()}")""")
+            query = QSqlQuery(self.db)
+            query.prepare("INSERT INTO files (`format`, `path`) VALUES (:format, :path)")
+            query.bindValue(':format', format)
+            query.bindValue(':path', str(path))
+            if not query.exec():
+                raise ValueError(query.lastError().text())
+
             file_id = query.lastInsertId()
 
-        query = QSqlQuery(f"""\
-            INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`)
-            VALUES ({self.id}, {file_id})""")
+        query = QSqlQuery(self.db)
+        query.prepare(f"INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`) VALUES (:id, :file_id)")
+        query.bindValue(':id', self.id)
+        query.bindValue(':file_id', file_id)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
-        return File(id=file_id)
+        return File(db=self.db, id=file_id)
 
     def delete_file(self, file):
         """TODO: add trigger to remove file, here we only remove the link in the table
@@ -307,14 +335,12 @@ class Electrodes(NumpyTable):
 class File(Table):
     t = 'file'
 
-    def __init__(self, id):
-        super().__init__(id)
+    def __init__(self, db, id):
+        super().__init__(db, id)
 
     @property
     def path(self):
         return Path(self.__getattr__('path')).resolve()
-
-
 
 
 def recording_get(group, recording_id):
