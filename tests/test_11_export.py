@@ -1,4 +1,4 @@
-from xelo2.database.create import open_database
+from xelo2.database.create import open_database, close_database
 from xelo2.io.export_db import export_database
 from xelo2.io.import_db import import_database
 from xelo2.api import list_subjects
@@ -13,12 +13,15 @@ def test_import_export():
 
     _add_items(db)  # add some random elements to test import and export
     export_database(db, EXPORT_0)
+    close_database(db)
 
     import_database(EXPORT_0, **DB_EXPORT)
+
+    db = open_database(**DB_EXPORT)
     export_database(db, EXPORT_1)
+    close_database(db)
 
     _compare_tables(EXPORT_0, EXPORT_1)
-    db.close()
 
 
 def _add_items(db):

@@ -4,7 +4,8 @@ from datetime import datetime, date
 from numpy import dtype, unique, genfromtxt
 
 from ..api import Subject, Channels, Electrodes
-from ..database.create import create_database, open_database
+from ..database.create import create_database, open_database, close_database
+from ..database.tables import TABLES
 
 from .export_db import FILE_LEVELS
 
@@ -54,7 +55,7 @@ def import_database(INPUT, db_type, db_name, username=None, password=None):
 
     _add_experimenters(INPUT / 'experimenters.tsv', IDS)
 
-    db.close()
+    close_database(db)
 
 
 def _add_experimenters(TSV_FILE, IDS):
@@ -112,14 +113,14 @@ def _get_dtype(TSV_FILE):
     DTYPE = []
     for h in header:
         table_name, column_name = h.split('.')
-        info = _get_table(table_name)[column_name]
+        col_info = TABLES[table_name][column_name]
 
-        if info is None or info['type'].startswith('TEXT'):
+        if col_info is None or col_info['type'].startswith('TEXT'):
             format_ = '<U4096'
-        elif info['type'] == 'FLOAT':
+        elif col_info['type'] == 'FLOAT':
             format_ = '<f8'
         else:
-            print(info)
+            print(col_info)
 
         DTYPE.append((column_name, format_))
 

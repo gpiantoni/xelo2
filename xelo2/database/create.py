@@ -58,6 +58,11 @@ def open_database(db_type, db_name, username=None, password=None):
     return db
 
 
+def close_database(db):
+    db.close()
+    QSqlDatabase.removeDatabase(db.connectionName())
+
+
 def create_database(db_type, db_name, username=None, password=None):
     """Create a default database using Qt framework
 
@@ -115,7 +120,7 @@ def create_database(db_type, db_name, username=None, password=None):
     add_views(db)
 
     db.commit()
-    db.close()
+    close_database(db)
 
 
 def create_statement_table(db, table_name, v):
