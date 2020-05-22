@@ -1,7 +1,5 @@
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
-from PyQt5.QtCore import QVariant
-import sip
 from numpy import (
     array,
     )
@@ -78,12 +76,13 @@ class Subject(Table_with_files):
             return ', '.join(codes)
 
     @classmethod
-    def add(cls, db, code):
+    def add(cls, db, code=None):
         """You can create an empty subject, with no code, but it's a bad idea
         """
-        id = find_subject_id(db, code)
-        if id is not None:
-            raise ValueError(f'Subject "{code}" already exists')
+        if code is not None:
+            id = find_subject_id(db, code)
+            if id is not None:
+                raise ValueError(f'Subject "{code}" already exists')
 
         # add empty value to get new id
         query = QSqlQuery(db)
@@ -93,15 +92,15 @@ class Subject(Table_with_files):
         else:
             raise ValueError(query.lastError().text())
 
-        query = QSqlQuery(db)
-        query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:subject_id, :code)")
-        query.bindValue(':subject_id', id)
-        query.bindValue(':code', code)
-        if query.exec():
-            return Subject(db, id=id)
+        if code is not None:
+            query = QSqlQuery(db)
+            query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:subject_id, :code)")
+            query.bindValue(':subject_id', id)
+            query.bindValue(':code', code)
+            if not query.exec():
+                raise SyntaxError(query.lastError().text())
 
-        else:
-            raise SyntaxError(query.lastError().text())
+        return Subject(db, id=id)
 
     @property
     def codes(self):

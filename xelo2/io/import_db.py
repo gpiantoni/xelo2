@@ -3,17 +3,16 @@ from collections import defaultdict
 from datetime import datetime, date
 from numpy import dtype, unique, genfromtxt
 
-# from ..api.structure import Subject, Channels, Electrodes
+from ..api import Subject, Channels, Electrodes
 from ..database.create import create_database, open_database
 
 from .export_db import FILE_LEVELS, _get_table
 
 
-def import_database(INPUT, db_file, username=None, password=None):
+def import_database(INPUT, db_type, db_name, username=None, password=None):
     INPUT = Path(INPUT)
-    create_database(db_file, username=username, password=password)
-    db = open_database(db_file, username=username, password=password)
-    # db.transaction()
+    create_database(db_type, db_name, username=username, password=password)
+    db = open_database(db_type, db_name, username=username, password=password)
 
     IDS = {
         'subjects': {},
@@ -26,11 +25,10 @@ def import_database(INPUT, db_file, username=None, password=None):
         }
 
     for chan_elec in ('channel', 'electrode'):
-        IDS[f'{chan_elec}s'] = _add_channels_electrodes(INPUT, chan_elec)
+        IDS[f'{chan_elec}s'] = _add_channels_electrodes(db, INPUT, chan_elec)
 
-    IDS = _import_main(
-        INPUT / 'main.tsv',
-        IDS)
+    IDS = _import_main(db, INPUT / 'main.tsv', IDS)
+
     _import_codes(
         INPUT / 'subject_codes.tsv',
         IDS)
@@ -56,7 +54,7 @@ def import_database(INPUT, db_file, username=None, password=None):
 
     _add_experimenters(INPUT / 'experimenters.tsv', IDS)
 
-    # db.commit()
+    db.close()
 
 
 def _add_experimenters(TSV_FILE, IDS):
@@ -81,7 +79,7 @@ def _read_tsv(TSV_FILE):
             yield d
 
 
-def _add_channels_electrodes(INPUT, NAME):
+def _add_channels_electrodes(db, INPUT, NAME):
     TSV_GROUP_FILE = INPUT / f'{NAME}_groups.tsv'
     TSV_DATA_FILE = INPUT / f'{NAME}s.tsv'
 
@@ -89,9 +87,9 @@ def _add_channels_electrodes(INPUT, NAME):
 
     for d in _read_tsv(TSV_GROUP_FILE):
         if NAME == 'channel':
-            item = Channels()
+            item = Channels.add(db)
         elif NAME == 'electrode':
-            item = Electrodes()
+            item = Electrodes.add(db)
 
         _setattr(item, f'{NAME}_groups', d)
         IDS[d[f'{NAME}_groups.id']] = item
@@ -182,14 +180,15 @@ def _import_codes(TSV_FILE, IDS):
         subj = IDS['subjects'][d['subject_codes.subject_id']]
         subj.codes = subj.codes + [d['subject_codes.code'], ]
 
-def _import_main(TSV_MAIN, IDS):
+
+def _import_main(db, TSV_MAIN, IDS):
 
     for d in _read_tsv(TSV_MAIN):
         if d['subjects.id'] in IDS['subjects']:
             subj = IDS['subjects'][d['subjects.id']]
 
         else:
-            subj = Subject.add()
+            subj = Subject.add(db)
             _setattr(subj, 'subjects', d)
             IDS['subjects'][d['subjects.id']] = subj
 

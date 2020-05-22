@@ -5,18 +5,17 @@ from xelo2.api import list_subjects
 
 from numpy import empty
 
-from .paths import DB_ARGS, EXPORT_0, EXPORT_1, EXPORT_DB, TRC_PATH
+from .paths import DB_ARGS, EXPORT_0, EXPORT_1, DB_EXPORT, TRC_PATH
 
 
 def test_import_export():
     db = open_database(**DB_ARGS)
 
     _add_items(db)  # add some random elements to test import and export
-    db.commit()
-    export_database(EXPORT_0)
+    export_database(db, EXPORT_0)
 
-    import_database(EXPORT_0, EXPORT_DB)
-    export_database(EXPORT_1)
+    import_database(EXPORT_0, **DB_EXPORT)
+    export_database(db, EXPORT_1)
 
     _compare_tables(EXPORT_0, EXPORT_1)
     db.close()

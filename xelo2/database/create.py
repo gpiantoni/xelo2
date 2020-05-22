@@ -411,6 +411,6 @@ def _drop_create_mysql(db_name, username, password):
     db.open()
 
     q = QSqlQuery(db)
-    assert q.exec(f'DROP DATABASE {db_name};')
+    assert q.exec(f'DROP DATABASE IF EXISTS {db_name};')
     assert q.exec(f'CREATE DATABASE {db_name};')
     db.close()

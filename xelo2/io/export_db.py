@@ -1,4 +1,6 @@
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QVariant
+import sip
 
 from ..database.queries import (
     prepare_query,
@@ -40,10 +42,11 @@ def export_database(db, OUTPUT):
 
 
 def _export_main(db, OUTPUT_TSV, query_str, columns):
-    print(query_str)
 
     query = QSqlQuery(db)
-    query.prepare(query_str)
+
+    if not query.exec(query_str):
+        raise SyntaxError(query.lastError().text())
 
     with OUTPUT_TSV.open('w+') as f:
 
@@ -54,6 +57,7 @@ def _export_main(db, OUTPUT_TSV, query_str, columns):
 
         f.write('\t'.join(HEADER) + '\n')
 
+        autoconversion = sip.enableautoconversion(QVariant, False)
         while query.next():
             values = []
             for table_name, column_names in columns.items():
@@ -61,26 +65,27 @@ def _export_main(db, OUTPUT_TSV, query_str, columns):
                 for column_name in column_names:
                     val = query.value(f'{table_name}.{column_name}')
 
-                    if TABLE_INFO[column_name] is None:  # id
-                        values.append(str(val))
+                    if TABLE_INFO[column_name] is None or 'foreign_key' in TABLE_INFO[column_name]:
+                        values.append(str(val.value()))
                     elif TABLE_INFO[column_name]['type'] == 'FLOAT':
-                        if val == '':
+                        if val.isNull():
                             values.append('')
                         else:
-                            values.append(f'{val:.6f}')
+                            values.append(f'{val.value():.6f}')
                     elif TABLE_INFO[column_name]['type'] == 'INTEGER':
-                        if val == '':
+                        if val.isNull():
                             values.append('')
                         else:
-                            values.append(f'{val:d}')
+                            values.append(f'{val.value():d}')
                     elif TABLE_INFO[column_name]['type'].startswith('TEXT'):
-                        values.append(val)
+                        values.append(val.value())
                     elif TABLE_INFO[column_name]['type'] in ('DATE', 'DATETIME'):
-                        values.append(val)
+                        values.append(val.value())
                     else:
                         print(TABLE_INFO[column_name]['type'])
 
             f.write('\t'.join([_str(x) for x in values]) + '\n')
+        sip.enableautoconversion(QVariant, autoconversion)
 
 
 def _str(s):
