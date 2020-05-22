@@ -2,11 +2,11 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QVariant
 import sip
 
+from ..database.tables import TABLES
 from ..database.queries import (
     prepare_query,
     prepare_query_files,
     prepare_query_experimenters,
-    _get_table,
     )
 
 
@@ -61,28 +61,28 @@ def _export_main(db, OUTPUT_TSV, query_str, columns):
         while query.next():
             values = []
             for table_name, column_names in columns.items():
-                TABLE_INFO = _get_table(table_name)
                 for column_name in column_names:
                     val = query.value(f'{table_name}.{column_name}')
+                    col_info = TABLES[table_name][column_name]
 
-                    if TABLE_INFO[column_name] is None or 'foreign_key' in TABLE_INFO[column_name]:
+                    if col_info is None or 'foreign_key' in col_info:
                         values.append(str(val.value()))
-                    elif TABLE_INFO[column_name]['type'] == 'FLOAT':
+                    elif col_info['type'] == 'FLOAT':
                         if val.isNull():
                             values.append('')
                         else:
                             values.append(f'{val.value():.6f}')
-                    elif TABLE_INFO[column_name]['type'] == 'INTEGER':
+                    elif col_info['type'] == 'INTEGER':
                         if val.isNull():
                             values.append('')
                         else:
                             values.append(f'{val.value():d}')
-                    elif TABLE_INFO[column_name]['type'].startswith('TEXT'):
+                    elif col_info['type'].startswith('TEXT') or col_info['type'].startswith('VARCHAR'):
                         values.append(val.value())
-                    elif TABLE_INFO[column_name]['type'] in ('DATE', 'DATETIME'):
+                    elif col_info['type'] in ('DATE', 'DATETIME'):
                         values.append(val.value())
                     else:
-                        print(TABLE_INFO[column_name]['type'])
+                        print(f'Cannot convert {table_name}.{column_name}')
 
             f.write('\t'.join([_str(x) for x in values]) + '\n')
         sip.enableautoconversion(QVariant, autoconversion)

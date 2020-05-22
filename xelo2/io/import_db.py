@@ -6,7 +6,7 @@ from numpy import dtype, unique, genfromtxt
 from ..api import Subject, Channels, Electrodes
 from ..database.create import create_database, open_database
 
-from .export_db import FILE_LEVELS, _get_table
+from .export_db import FILE_LEVELS
 
 
 def import_database(INPUT, db_type, db_name, username=None, password=None):
