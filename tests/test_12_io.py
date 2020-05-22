@@ -3,7 +3,7 @@ from datetime import datetime
 from xelo2.api import Subject, Run
 from xelo2.io.tsv import save_tsv, load_tsv
 from xelo2.io.parrec import add_parrec
-# from xelo2.io.ieeg import add_ieeg_to_sess
+from xelo2.io.ieeg import add_ieeg_to_sess
 from xelo2.database.create import open_database, close_database
 # rom xelo2.io.channels import create_channels
 
@@ -37,10 +37,9 @@ def test_import_parrec():
 
 
 def test_import_ieeg():
-    db = open_database(DB_PATH)
-    db.transaction()
+    db = open_database(**DB_ARGS)
 
-    subj = Subject('subjecttest')
+    subj = Subject(db, 'rubble')
     sess = subj.list_sessions()[1]
 
     n_runs = len(sess.list_runs())
@@ -51,4 +50,4 @@ def test_import_ieeg():
     chan = create_channels(TRC_PATH)
     rec.attach_channels(chan)
 
-    assert db.commit()
+    close_database(db)
