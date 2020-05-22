@@ -11,10 +11,6 @@ def load_tsv(fname, dtypes):
             values = l.strip('\n').split('\t')
             for h, v in zip(header, values):
                 if h == 'group':
-
-
-
-
                     h = 'groups'
                 if v == 'n/a':
                     if issubdtype(dtypes[h], floating):

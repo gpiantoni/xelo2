@@ -4,6 +4,19 @@ from numpy import round
 
 
 def add_parrec(par_file, sess=None, run=None, recording=None):
+    """Parse information from PAR file to a session, run or recording
+
+    Parameters
+    ----------
+    par_file : path
+        path to PAR file
+    sess : instance of Session
+
+    run : instance of Run
+
+    recording : instance of Recording
+
+    """
     hdr, image = parse_PAR_header(par_file.open())
 
     info = _get_MRI_info(hdr)
@@ -15,10 +28,12 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
     start_time = exam_date + timedelta(seconds=4 * 60 * hdr['acq_nr'])
 
     if run is None:
-        run = sess.add_run(info['task_name'], start_time)
-    else:
-        run.start_time = start_time
+        run = sess.add_run(info['task_name'])
+    elif run.task_name == 'rest':  # only change task_name if rest (default)
         run.task_name = info['task_name']
+
+    if run.start_time is None:
+        run.start_time = start_time
 
     if info['task_name'] == 'motor':
         if run.left_right is None:
@@ -32,7 +47,8 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         recording.modality = info['modality']
 
     recording.add_file('parrec', par_file)
-    recording.PulseSequenceType = hdr['tech']
+    if recording.PulseSequenceType:
+        recording.PulseSequenceType = hdr['tech']
 
     n_dyns = image['dynamic scan number'].max()
     if n_dyns == 1:
