@@ -3,11 +3,11 @@ from datetime import datetime
 from xelo2.api import Subject, Run
 from xelo2.io.tsv import save_tsv, load_tsv
 from xelo2.io.parrec import add_parrec
-from xelo2.io.ieeg import add_ieeg_to_sess
 from xelo2.database.create import open_database, close_database
-# rom xelo2.io.channels import create_channels
+from xelo2.io.ieeg import add_ieeg_to_sess
+from xelo2.io.channels import create_channels
 
-from .paths import TSV_PATH, T1_PATH, DB_PATH, TRC_PATH, DB_ARGS
+from .paths import TSV_PATH, T1_PATH, TRC_PATH, DB_ARGS
 
 
 def test_export_events():
@@ -47,7 +47,7 @@ def test_import_ieeg():
     assert len(sess.list_runs()) == n_runs + 1
 
     rec = run.list_recordings()[0]
-    chan = create_channels(TRC_PATH)
+    chan = create_channels(db, TRC_PATH)
     rec.attach_channels(chan)
 
     close_database(db)

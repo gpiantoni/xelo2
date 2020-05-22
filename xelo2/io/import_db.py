@@ -61,8 +61,8 @@ def import_database(INPUT, db_type, db_name, username=None, password=None):
 def _add_experimenters(TSV_FILE, IDS):
 
     EXP = defaultdict(list)
-    for l in _read_tsv(TSV_FILE):
-        EXP[l['runs_experimenters.run_id']].append(l['experimenters.name'])
+    for line in _read_tsv(TSV_FILE):
+        EXP[line['runs_experimenters.run_id']].append(line['experimenters.name'])
 
     for run_id, experimenters in EXP.items():
         IDS['runs'][run_id].experimenters = experimenters
@@ -73,8 +73,8 @@ def _read_tsv(TSV_FILE):
     with TSV_FILE.open() as f:
         header = f.readline()[:-1].split('\t')
 
-        for l in f:
-            values = l[:-1].split('\t')
+        for line in f:
+            values = line[:-1].split('\t')
             values = [None if v == '' else v for v in values]
             d = {k: v for k, v in zip(header, values)}
             yield d
@@ -140,8 +140,8 @@ def _attach_files(INPUT, level, IDS):
     TSV_FILE = INPUT / f'{level}s_files.tsv'
     for d in _read_tsv(TSV_FILE):
         item = IDS[f'{level}s'][d[f'{level}s_files.{level}_id']]
-        path_ = d[f'files.path']
-        format_ = d[f'files.format']
+        path_ = d['files.path']
+        format_ = d['files.format']
         item.add_file(format_, path_)
 
 
@@ -243,9 +243,12 @@ def _setattr(item, name, d):
             continue
 
         if k.startswith(f'{name}'):
-            if k.split('.')[1].startswith('date_of_'):  # TODO: it should look TABLES up
+            table_name, column_name = k.split('.')
+
+            col_info = TABLES[table_name][column_name]
+            if col_info['type'] == 'DATE':
                 v = date.fromisoformat(v)
-            elif k.split('.')[1].endswith('time'):  # TODO: it should look TABLES up
+            elif col_info['type'] == 'DATETIME':
                 v = datetime.fromisoformat(v)
 
             setattr(item, k.split('.')[1], v)

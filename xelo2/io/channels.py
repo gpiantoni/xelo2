@@ -6,20 +6,20 @@ from re import match
 ECOG_PATTERN = r'([A-Za-z ]+)\d+'
 
 
-def create_channels(ieeg_path):
+def create_channels(db, ieeg_path):
     if ieeg_path.suffix.lower() == '.trc':
-        return create_channels_trc(ieeg_path)
+        return create_channels_trc(db, ieeg_path)
     elif ieeg_path.suffix.lower() == '.nev' or ieeg_path.suffix.startswith('.ns'):
-        return create_channels_blackrock(ieeg_path)
+        return create_channels_blackrock(db, ieeg_path)
     else:
         print(f'Cannot extract channel labels from {ieeg_path}')
 
 
-def create_channels_trc(trc_path):
+def create_channels_trc(db, trc_path):
     d = Dataset(trc_path)
     trc_chans = d.header['orig']['chans']
 
-    chan = Channels()
+    chan = Channels.add(db)
     channels = chan.empty(len(trc_chans))
 
     labels = [ch['chan_name'] for ch in trc_chans]
@@ -42,13 +42,13 @@ def create_channels_trc(trc_path):
     return chan
 
 
-def create_channels_blackrock(blackrock_path):
+def create_channels_blackrock(db, blackrock_path):
     if blackrock_path.suffix == '.nev':
         blackrock_path = blackrock_path.with_suffix('.ns3')
     d = Dataset(blackrock_path)
     b_chans = d.header['orig']['ElectrodesInfo']
 
-    chan = Channels()
+    chan = Channels.add(db)
     channels = chan.empty(len(b_chans))
 
     labels = [ch['Label'] for ch in b_chans]

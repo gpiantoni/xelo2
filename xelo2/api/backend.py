@@ -175,7 +175,6 @@ class Table():
         query = QSqlQuery(self.db)
         query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id")
         query.bindValue(':id', self.id)
-        print('TODO')
 
         if not query.exec():
             raise ValueError(query.lastError().text())
