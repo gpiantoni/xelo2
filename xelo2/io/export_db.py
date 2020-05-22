@@ -16,6 +16,8 @@ FILE_LEVELS = ('subject', 'session', 'protocol', 'run', 'recording')
 def export_database(db, OUTPUT):
 
     OUTPUT.mkdir(exist_ok=True)
+    for tsv in OUTPUT.glob('*.tsv'):
+        tsv.unlink()
 
     TABLE_INFO = {
         'main.tsv': ('subjects', 'sessions', 'runs', 'recordings'),
