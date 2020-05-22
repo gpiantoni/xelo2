@@ -1,6 +1,8 @@
 from logging import getLogger
 from datetime import datetime
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QVariant
+import sip
 
 from numpy import (
     dtype,
@@ -110,6 +112,7 @@ def out_datetime(driver, out):
         else:
             return None
 
+
 def list_channels_electrodes(db, session_id, name='channel'):
 
     query = QSqlQuery(db)
@@ -124,12 +127,15 @@ def list_channels_electrodes(db, session_id, name='channel'):
     if not query.exec():
         lg.warning(query.lastError().text())
 
+    autoconversion = sip.enableautoconversion(QVariant, False)
     list_of_items = []
     while query.next():
         val = query.value(0)
-        if val == '':
+        if val.isNull():
             continue
-        list_of_items.append(int(val))
+        list_of_items.append(int(val.value()))
+
+    sip.enableautoconversion(QVariant, autoconversion)
     return list_of_items
 
 
@@ -140,14 +146,14 @@ def recording_get(db, group, recording_id):
     if not query.exec():
         lg.warning(query.lastError().text())
 
+    autoconversion = sip.enableautoconversion(QVariant, False)
+    out_value = None
     if query.next():
         out = query.value(f'{group}_group_id')
-        if out == '':
-            return None
-        else:
-            return out
-    else:
-        return None
+        if not out.isNull():
+            out_value = out.value()
+    sip.enableautoconversion(QVariant, autoconversion)
+    return out_value
 
 
 def recording_attach(db, group, recording_id, group_id=None):

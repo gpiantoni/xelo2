@@ -47,7 +47,7 @@ class Table():
         # check if it exists at all
         query = QSqlQuery(self.db)
         query.prepare(f'SELECT id FROM {self.t}s WHERE id = :id')
-        query.bindValue(':id', self.id)
+        query.bindValue(':id', id)
         if not query.exec():
             raise SyntaxError(query.lastError().text())
         if not query.next():
@@ -269,17 +269,19 @@ class NumpyTable(Table_with_files):
         if not query.exec():
             raise SyntaxError(query.lastError().text())
 
+        autoconversion = sip.enableautoconversion(QVariant, False)
         values = []
         while query.next():
             row = []
             for name in dtypes.names:
                 v = query.value(name)
-                if issubdtype(dtypes[name].type, floating) and v == '':
+                if issubdtype(dtypes[name].type, floating) and v.isNull():
                     v = NaN
-                row.append(v)
+                row.append(v.value())
 
             values.append(tuple(row))
 
+        sip.enableautoconversion(QVariant, autoconversion)
         return array(values, dtype=dtypes)
 
     @data.setter
