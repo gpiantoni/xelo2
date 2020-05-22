@@ -3,12 +3,12 @@ from numpy import empty
 
 from .utils import localize_blackrock
 from .events import read_events_from_ieeg
-from ..api.structure import _get_dtypes
+from ..api.utils import get_dtypes
 from ..database import TABLES
 from ..api.filetype import parse_filetype
 
 
-DTYPES = _get_dtypes(TABLES['events'])
+DTYPES = get_dtypes(TABLES['events'])
 
 
 def add_ieeg_to_sess(sess, ieeg_file):
@@ -17,7 +17,9 @@ def add_ieeg_to_sess(sess, ieeg_file):
     info = read_info_from_ieeg(ieeg_file)
 
     # default task is REST
-    run = sess.add_run('rest', info['start_time'], info['duration'])
+    run = sess.add_run('rest')
+    run.start_time = info['start_time']
+    run.duration = info['duration']
     rec = run.add_recording('ieeg')
     rec.duration = info['duration']
     rec.Manufacturer = info['manufacturer']

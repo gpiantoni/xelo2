@@ -167,7 +167,10 @@ def create_statement_table(db, table_name, v):
             foreign_keys.append(f'FOREIGN KEY ({col_name}) REFERENCES {ref_table}s (id) ON DELETE CASCADE')
 
         else:
-            cmd.append(f'{col_name} {col_info["type"]}')
+            sql_col = f'{col_name} {col_info["type"]}'
+            if 'default' in col_info:
+                sql_col += f' DEFAULT {col_info["default"]}'
+            cmd.append(sql_col)
 
     if len(v) == 2 and list(v)[0].endswith('_id') and list(v)[1].endswith('_id'):
         constraints.append(f'CONSTRAINT {table_name}_unique UNIQUE ({list(v)[0]}, {list(v)[1]})')
