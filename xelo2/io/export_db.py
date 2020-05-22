@@ -11,7 +11,7 @@ from ..database.queries import (
 FILE_LEVELS = ('subject', 'session', 'protocol', 'run', 'recording')
 
 
-def export_database(OUTPUT):
+def export_database(db, OUTPUT):
 
     OUTPUT.mkdir(exist_ok=True)
 
@@ -29,19 +29,21 @@ def export_database(OUTPUT):
 
     for file_name, list_of_tables in TABLE_INFO.items():
         query_str, columns = prepare_query(list_of_tables)
-        _export_main(OUTPUT / file_name, query_str, columns)
+        _export_main(db, OUTPUT / file_name, query_str, columns)
 
     for level in FILE_LEVELS:
         query_str, columns = prepare_query_files(level)
-        _export_main(OUTPUT / f'{level}s_files.tsv', query_str, columns)
+        _export_main(db, OUTPUT / f'{level}s_files.tsv', query_str, columns)
 
         query_str, columns = prepare_query_experimenters()
-        _export_main(OUTPUT / 'experimenters.tsv', query_str, columns)
+        _export_main(db, OUTPUT / 'experimenters.tsv', query_str, columns)
 
 
-def _export_main(OUTPUT_TSV, query_str, columns):
+def _export_main(db, OUTPUT_TSV, query_str, columns):
+    print(query_str)
 
-    query = QSqlQuery(query_str)
+    query = QSqlQuery(db)
+    query.prepare(query_str)
 
     with OUTPUT_TSV.open('w+') as f:
 

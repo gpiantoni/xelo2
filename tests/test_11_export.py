@@ -5,13 +5,13 @@ from xelo2.api import list_subjects
 
 from numpy import empty
 
-from .paths import DB_PATH, EXPORT_0, EXPORT_1, EXPORT_DB, TRC_PATH
+from .paths import DB_ARGS, EXPORT_0, EXPORT_1, EXPORT_DB, TRC_PATH
 
 
 def test_import_export():
-    db = open_database(DB_PATH)
+    db = open_database(**DB_ARGS)
 
-    _add_items()  # add some random elements to test import and export
+    _add_items(db)  # add some random elements to test import and export
     db.commit()
     export_database(EXPORT_0)
 
@@ -19,10 +19,11 @@ def test_import_export():
     export_database(EXPORT_1)
 
     _compare_tables(EXPORT_0, EXPORT_1)
+    db.close()
 
 
-def _add_items():
-    subj = list_subjects()[2]
+def _add_items(db):
+    subj = list_subjects(db)[2]
     subj.add_file('micromed', TRC_PATH)
 
     sess = subj.list_sessions()[0]

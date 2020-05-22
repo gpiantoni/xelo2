@@ -11,4 +11,8 @@ def test_create():
 
 def test_open():
     db = open_database(**DB_ARGS)
-    assert len(db.tables(QSql.AllTables)) == 32
+    if DB_ARGS['db_type'] == 'QSQLITE':
+        n_tables = 34  # extra system tables in SQLITE
+    else:
+        n_tables = 32
+    assert len(db.tables(QSql.AllTables)) == n_tables
