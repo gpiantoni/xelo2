@@ -163,9 +163,11 @@ class Table():
             table_name = f'{self.t}s'
             id_name = 'id'
 
-        if key.startswith('date_of_'):  # TODO: it should look TABLES up
+        if 'foreign_key' in TABLES[table_name][key]:  # foreign_key
+            value = _null(value)
+        elif TABLES[table_name][key]['type'] == 'DATE':
             value = _date(value)
-        elif key.endswith('time'):  # TODO: it should look TABLES up
+        elif TABLES[table_name][key]['type'] == 'DATETIME':
             value = _datetime(value)
         else:
             value = _null(value)
@@ -173,6 +175,7 @@ class Table():
         query = QSqlQuery(self.db)
         query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id")
         query.bindValue(':id', self.id)
+        print('TODO')
 
         if not query.exec():
             raise ValueError(query.lastError().text())
@@ -276,8 +279,9 @@ class NumpyTable(Table_with_files):
             for name in dtypes.names:
                 v = query.value(name)
                 if issubdtype(dtypes[name].type, floating) and v.isNull():
-                    v = NaN
-                row.append(v.value())
+                    row.append(NaN)
+                else:
+                    row.append(v.value())
 
             values.append(tuple(row))
 
