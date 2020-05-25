@@ -19,7 +19,7 @@ def create_menubar(main):
     menu_db = menubar.addMenu('Database')
 
     action_connect = QAction('Connect', main)
-    action_connect.setEnabled(False)
+    action_connect.triggered.connect(main.sql_access)
     menu_db.addAction(action_connect)
 
     action_commit = QAction('Commit', main)

@@ -75,17 +75,14 @@ lg = getLogger(__name__)
 
 
 class Interface(QMainWindow):
+    """TODO: disable everything until you load database"""
+    db = None
     test = False
     unsaved_changes = False
 
-    def __init__(self, db_name, username=None, password=None):
-
-        self.db_name = db_name
-        self.username = username
-        self.password = password
+    def __init__(self):
 
         super().__init__()
-        self.setWindowTitle(str(db_name))
         create_menubar(self)
         create_shortcuts(self)
 
@@ -280,12 +277,13 @@ class Interface(QMainWindow):
 
         self.search = Search()
 
-        self.sql_access()
         self.show()
 
     def sql_access(self):
         """This is where you access the database
         """
+        # self.setWindowTitle(str(db_name))
+
         self.sql = open_database(self.db_name, username=self.username, password=self.password)
         self.sql.transaction()
 
@@ -323,8 +321,8 @@ class Interface(QMainWindow):
         code_to_select : str
             code of the subject to select
         """
-        for l in self.lists.values():
-            l.clear()
+        for line in self.lists.values():
+            line.clear()
 
         to_select = None
         if self.subjsort.isChecked():
