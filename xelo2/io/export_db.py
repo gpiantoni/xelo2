@@ -67,22 +67,33 @@ def _export_main(db, OUTPUT_TSV, query_str, columns):
                     val = query.value(f'{table_name}.{column_name}')
                     col_info = TABLES[table_name][column_name]
 
-                    if col_info is None or 'foreign_key' in col_info:
+                    if val.isNull():
+                        values.append('')
+
+                    elif col_info is None or 'foreign_key' in col_info:
                         values.append(str(val.value()))
+
                     elif col_info['type'] == 'FLOAT':
-                        if val.isNull():
-                            values.append('')
-                        else:
-                            values.append(f'{val.value():.6f}')
+                        values.append(f'{val.value():.6f}')
+
                     elif col_info['type'] == 'INTEGER':
-                        if val.isNull():
-                            values.append('')
-                        else:
-                            values.append(f'{val.value():d}')
+                        values.append(f'{val.value():d}')
+
                     elif col_info['type'].startswith('TEXT') or col_info['type'].startswith('VARCHAR'):
                         values.append(val.value())
-                    elif col_info['type'] in ('DATE', 'DATETIME'):
-                        values.append(val.value())
+
+                    elif col_info['type'] == 'DATE':
+                        if db.driverName() == 'QMYSQL':
+                            values.append(val.value().toString('yyyy-MM-dd'))
+                        else:
+                            values.append(val.value())
+
+                    elif col_info['type'] == 'DATETIME':
+                        if db.driverName() == 'QMYSQL':
+                            values.append(val.value().toString('yyyy-MM-dd hh:mm:ss'))
+                        else:
+                            values.append(val.value())
+
                     else:
                         print(f'Cannot convert {table_name}.{column_name}')
 
@@ -94,4 +105,4 @@ def _str(s):
     if s is None:
         return ''
     else:
-        return s
+        return str(s)

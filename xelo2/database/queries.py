@@ -57,6 +57,8 @@ def prepare_query_with_column_names(table_names):
     for k, v in columns.items():
         column_names.extend(f'`{k}`.`{v0}`' for v0 in v if not v0.endswith('id'))  # do not use id
     sql_cmd = query_str.replace('*', ', '.join(column_names))
+    sql_cmd += ' ORDER BY ' + ', '.join(column_names)
+
     return sql_cmd
 
 
