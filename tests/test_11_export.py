@@ -3,7 +3,8 @@ from xelo2.io.export_db import export_database
 from xelo2.io.import_db import import_database
 from xelo2.api import list_subjects
 
-from numpy import empty
+from numpy import empty, lexsort, where, genfromtxt
+from numpy.testing import assert_array_equal
 
 from .paths import DB_ARGS, EXPORT_0, EXPORT_1, DB_EXPORT, TRC_PATH
 
@@ -11,7 +12,7 @@ from .paths import DB_ARGS, EXPORT_0, EXPORT_1, DB_EXPORT, TRC_PATH
 def test_import_export():
     db = open_database(**DB_ARGS)
 
-    if False:
+    if True:
         _add_items(db)  # add some random elements to test import and export
     export_database(db, EXPORT_0)
     close_database(db)
@@ -56,15 +57,35 @@ def _compare_table(PATH_0, PATH_1):
         n_lines_1 = sum(1 for line in f)
     assert n_lines_0 == n_lines_1
 
-    with PATH_0.open() as f0, PATH_1.open() as f1:
-        header = f0.readline()[:-1].split('\t')
-        header = f1.readline()[:-1].split('\t')
-        id_codes = [i for i, h in enumerate(header) if h.endswith('id') or h == 'electrode_groups.IntendedFor']
+    t0 = genfromtxt(PATH_0, delimiter='\t', dtype='U', encoding='utf8')
+    if t0.ndim == 1:
+        t0 = t0[None, :]
+    t1 = genfromtxt(PATH_1, delimiter='\t', dtype='U', encoding='utf8')
+    if t1.ndim == 1:
+        t1 = t1[None, :]
 
-        for l0, l1 in zip(f0, f1):
-            l0 = l0[:-1].split('\t')
-            l1 = l1[:-1].split('\t')
-            different = [i for i, (v0, v1) in enumerate(zip(l0, l1)) if v0 != v1 and i not in id_codes]
-            if len(different) > 0:
-                raise ValueError(f'Table {PATH_0.stem} do not match')
+    assert_array_equal(t0[0, :], t1[0, :])
+    header = t0[0, :]
 
+    # ignore id columns
+    cols = [i for i, h in enumerate(header) if not h.endswith('id') and not h == 'electrode_groups.IntendedFor']
+
+    X0 = _sort(t0[1:, cols])
+    X1 = _sort(t1[1:, cols])
+
+    # find which columns are not in agreement
+    bad_cols = where((X0 != X1).sum(axis=0) > 0)[0]
+
+    error = []
+    for bad_col in bad_cols:
+        error.append(header[cols][bad_col])
+        bad_values = X0[:, bad_col] != X1[:, bad_col]
+        error.append(', '.join(X0[bad_values, bad_col]))
+        error.append(', '.join(X1[bad_values, bad_col]))
+
+    if error:
+        raise ValueError('\n'.join(error))
+
+
+def _sort(X):
+    return X[lexsort(X.T), :]
