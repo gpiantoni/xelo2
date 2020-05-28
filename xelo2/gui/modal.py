@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QFormLayout,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -13,9 +14,11 @@ from PyQt5.QtWidgets import (
     QMenu,
     QPushButton,
     QSizePolicy,
+    QStackedLayout,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
+    QWidget,
     )
 from PyQt5.QtCore import Qt
 
@@ -260,3 +263,89 @@ class Popup_Protocols(QPushButton):
 
     def set_title(self):
         self.setText(', '.join(_protocol_name(x) for x in self.run.list_protocols()))
+
+
+class AccessDatabase(QDialog):
+    EMPTY_PUSHBUTTON = '(click to select file)'
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.db_type = QComboBox()
+        self.db_type.addItems(['mysql / mariadb', 'sqlite'])
+        self.db_type.currentTextChanged.connect(self.switch_dbtype)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        self.db_name = QLineEdit()
+        self.username = QLineEdit()
+        self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
+
+        layout = QFormLayout()
+        layout.addRow('Database Name', self.db_name)
+        layout.addRow('Username', self.username)
+        layout.addRow('Password', self.password)
+        mysql = QWidget()
+        mysql.setLayout(layout)
+
+        self.sqlite_path = QPushButton(self.EMPTY_PUSHBUTTON)
+        self.sqlite_path.clicked.connect(self.select_file)
+        layout = QFormLayout()
+        layout.addRow('Path to Database', self.sqlite_path)
+        sqlite = QWidget()
+        sqlite.setLayout(layout)
+
+        self.stacked = QStackedLayout()
+        self.stacked.addWidget(mysql)
+        self.stacked.addWidget(sqlite)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.db_type)
+        layout.addLayout(self.stacked)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+    def switch_dbtype(self, selected):
+        if selected == 'sqlite':
+            self.stacked.setCurrentIndex(1)
+        else:
+            self.stacked.setCurrentIndex(0)
+
+    def select_file(self):
+        out = QFileDialog.getOpenFileName(
+            self,
+            'Open SQLITE database',
+            None,
+            "SQLITE database (*.*)")[0]
+        if out != '':
+            self.sqlite_path.setText(out)
+
+
+def parse_accessdatabase(parent):
+    self = AccessDatabase(parent)
+    result = self.exec()
+    DB_ARGS = {}
+    if result:
+        if self.stacked.currentIndex() == 0:
+            DB_ARGS['db_type'] = 'QMYSQL'
+            db_name = self.db_name.text()
+            if db_name == '':
+                return None
+            else:
+                DB_ARGS['db_name'] = db_name
+            DB_ARGS['username'] = self.username.text()
+            DB_ARGS['password'] = self.password.text()
+        else:
+            DB_ARGS['db_type'] = 'QSQLITE'
+            db_name = self.sqlite_path.text()
+            if db_name == self.EMPTY_PUSHBUTTON:
+                return None
+            else:
+                DB_ARGS['db_name'] = db_name
+
+        return DB_ARGS

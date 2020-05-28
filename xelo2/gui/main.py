@@ -43,9 +43,11 @@ def main():
 
     if args.sqlite is not None:
         sqlite = Path(args.sqlite).resolve()
-        w = Interface(sqlite)
+        w = Interface('QSQLITE', sqlite)
+    elif args.mysql is not None:
+        w = Interface('QMYSQL', args.mysql, args.username, args.password)
     else:
-        w = Interface(args.mysql, args.username, args.password)
+        w = Interface()
 
     app.exec()
 

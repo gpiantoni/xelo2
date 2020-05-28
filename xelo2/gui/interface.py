@@ -66,7 +66,14 @@ from ..io.tsv import load_tsv, save_tsv
 
 from .utils import LEVELS, _protocol_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
-from .modal import NewFile, Popup_Experimenters, Popup_Protocols, CompareEvents
+from .modal import (
+    NewFile,
+    Popup_Experimenters,
+    Popup_Protocols,
+    CompareEvents,
+    parse_accessdatabase,
+    )
+
 
 EXTRA_LEVELS = ('channels', 'electrodes')
 
@@ -80,7 +87,7 @@ class Interface(QMainWindow):
     test = False
     unsaved_changes = False
 
-    def __init__(self):
+    def __init__(self, db_type=None, db_name=None, username=None, password=None):
 
         super().__init__()
         create_menubar(self)
@@ -279,25 +286,30 @@ class Interface(QMainWindow):
 
         self.show()
 
-    def sql_access(self):
+        if db_type is None:
+            DB_ARGS = parse_accessdatabase(self)
+            if DB_ARGS is None:
+                return
+        else:
+            self.sql_access(db_type, db_name, username, password)
+
+    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
         """This is where you access the database
         """
-        # self.setWindowTitle(str(db_name))
+        self.db = open_database(db_type, db_name, username, password)
+        self.db.transaction()
 
-        self.sql = open_database(self.db_name, username=self.username, password=self.password)
-        self.sql.transaction()
-
-        self.events_model = QSqlTableModel(self)
+        self.events_model = QSqlTableModel(self, self.db)
         self.events_model.setTable('events')
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
-        self.channels_model = QSqlTableModel(self)
+        self.channels_model = QSqlTableModel(self, self.db)
         self.channels_model.setTable('channels')
         self.channels_view.setModel(self.channels_model)
         self.channels_view.hideColumn(0)
 
-        self.electrodes_model = QSqlTableModel(self)
+        self.electrodes_model = QSqlTableModel(self, self.db)
         self.electrodes_model.setTable('electrodes')
         self.electrodes_view.setModel(self.electrodes_model)
         self.electrodes_view.hideColumn(0)
@@ -305,12 +317,15 @@ class Interface(QMainWindow):
         self.list_subjects()
 
     def sql_commit(self):
+        return
+
         self.sql.commit()
 
         self.setWindowTitle(self.sqlite_file.stem)
         self.unsaved_changes = False
 
     def sql_rollback(self):
+        return
         self.sql.rollback()
         self.unsaved_changes = False
         self.setWindowTitle(self.sqlite_file.stem)
@@ -335,10 +350,8 @@ class Interface(QMainWindow):
                 'alphabetical': False,
                 'reverse': True,
                 }
-        for subj in list_subjects(**args):
+        for subj in list_subjects(self.db, **args):
             item = QListWidgetItem(str(subj))
-            if subj.complete == 'yes':
-                done(item)
             if subj.id in self.search.subjects:
                 highlight(item)
             item.setData(Qt.UserRole, subj)
@@ -391,8 +404,6 @@ class Interface(QMainWindow):
 
         for sess in subj.list_sessions():
             item = QListWidgetItem_time(sess, _session_name(sess))
-            if sess.complete == 'yes':
-                done(item)
             if sess.id in self.search.sessions:
                 highlight(item)
             self.lists['sessions'].addItem(item)
@@ -401,8 +412,6 @@ class Interface(QMainWindow):
         for protocol in subj.list_protocols():
             item = QListWidgetItem(_protocol_name(protocol))
             item.setData(Qt.UserRole, protocol)
-            if protocol.complete == 'yes':
-                done(item)
             self.lists['protocols'].addItem(item)
         self.lists['protocols'].setCurrentRow(0)
 
@@ -418,8 +427,6 @@ class Interface(QMainWindow):
 
         for run in sess.list_runs():
             item = QListWidgetItem_time(run, f'{run.task_name}')
-            if run.complete == 'yes':
-                done(item)
             if run.id in self.search.runs:
                 highlight(item)
             self.lists['runs'].addItem(item)
@@ -438,8 +445,6 @@ class Interface(QMainWindow):
         for recording in run.list_recordings():
             item = QListWidgetItem(recording.modality)
             item.setData(Qt.UserRole, recording)
-            if recording.complete == 'yes':
-                done(item)
             if recording.id in self.search.recordings:
                 highlight(item)
             self.lists['recordings'].addItem(item)
@@ -1469,10 +1474,6 @@ def highlight(item):
     font = item.font()
     font.setBold(True)
     item.setFont(font)
-
-
-def done(item):
-    item.setForeground(Qt.green)
 
 
 class QListWidgetItem_time(QListWidgetItem):

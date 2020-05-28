@@ -12,8 +12,7 @@ from .paths import DB_ARGS, EXPORT_0, EXPORT_1, DB_EXPORT, TRC_PATH
 def test_import_export():
     db = open_database(**DB_ARGS)
 
-    if False:
-        _add_items(db)  # add some random elements to test import and export
+    _add_items(db)  # add some random elements to test import and export
     export_database(db, EXPORT_0)
     close_database(db)
 

@@ -2,12 +2,12 @@ from datetime import datetime
 
 from xelo2.database.create import open_database, close_database
 from xelo2.api import Subject, Channels
-# from xelo2.gui.interface import Interface
+from xelo2.gui.interface import Interface
 
 from .paths import DB_ARGS
 
 
-def test_add_items():
+def notest_add_items():
     """useful when testing GUI"""
     db = open_database(**DB_ARGS)
 
@@ -29,5 +29,5 @@ def test_add_items():
 
 
 def test_open_interface(qtbot):
-    main = Interface(DB_PATH)
+    main = Interface(**DB_ARGS)
     qtbot.addWidget(main)
