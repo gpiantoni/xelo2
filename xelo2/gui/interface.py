@@ -1340,8 +1340,6 @@ def table_widget(table, obj, parent=None):
 
     d = {}
     for v in table:
-        if v.endswith('id') or v == 'subtables' or v == 'when':
-            continue
 
         item = table[v]
         value = getattr(obj, v)

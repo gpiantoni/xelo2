@@ -83,20 +83,20 @@ class Table():
 
     def __getattr__(self, key):
 
-        if key in self.subtables:
-            table_name = self.subtables[key]
-            id_name = f'{self.t}_id'
+        if key not in self.columns:
+            raise ValueError(f'{key} is not stored in this {self.t}')
 
-        else:
-            table_name = f'{self.t}s'
-            id_name = 'id'
+        table_name = self.columns[key]
+        id_name = 'id'
+        if table_name != (self.t + 's'):  # for subtables, use foreign key
+            id_name = f'{self.t}_id'
 
         query = QSqlQuery(self.db)
         query.prepare(f"SELECT {key} FROM {table_name} WHERE {id_name} = :id")
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise ValueError(f'Could not get {key} from {table_name}')
+            raise SyntaxError(query.lastError().error())
 
         # we need to use QVariant, because QMYSQL in PyQt5 does not distinguish between null and 0.0
         # see https://www.riverbankcomputing.com/static/Docs/PyQt5/pyqt_qvariant.html
@@ -115,6 +115,9 @@ class Table():
 
             else:
                 out = out.value()
+        else:
+            lg.warning(f'Could not get {key} from {table_name}')
+            out = None
 
         sip.enableautoconversion(QVariant, autoconversion)
         return out
@@ -155,13 +158,13 @@ class Table():
             super().__setattr__(key, value)
             return
 
-        if key in self.subtables:
-            table_name = self.subtables[key]
-            id_name = f'{self.t}_id'
+        if key not in self.columns:
+            raise ValueError(f'{key} is not stored in this {self.t}')
 
-        else:
-            table_name = f'{self.t}s'
-            id_name = 'id'
+        table_name = self.columns[key]
+        id_name = 'id'
+        if table_name != (self.t + 's'):  # for subtables, use foreign key
+            id_name = f'{self.t}_id'
 
         if 'foreign_key' in TABLES[table_name][key]:  # foreign_key
             value = _null(value)

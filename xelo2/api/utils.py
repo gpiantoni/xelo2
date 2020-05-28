@@ -13,6 +13,36 @@ from ..database import TABLES
 lg = getLogger(__name__)
 
 
+def get_attributes(obj):
+    """For each main object (Subject, Session etc), it returns the name of the
+    attribute, the information about that attribute (type, full name), and the
+    actual value.
+
+    Parameters
+    ----------
+    obj  : instance of Subject, Session, Run, Protocol, Recording
+        one of the main objects
+
+    Yields
+    ------
+    str
+        name of the attribute
+    dict
+        information about the dictionary, such as "name" (full name, with spaces),
+        "type" (SQL type), "values" (optional, acceptable values)
+    value
+        actual value of the attribute for that object
+    """
+    for column, table in obj.columns.items():
+        condition = TABLES[table].get('when', None)
+        if condition is not None:  # if subtable
+            if getattr(obj, condition['parameter']) not in condition['value']:
+                continue  # does not match the WHEN condition
+        col_info = TABLES[table][column]
+        value = getattr(obj, column)
+        yield column, col_info, value
+
+
 def collect_columns(t):
     """For each attribute, this function looks up in which table the information
     is stored.
@@ -31,7 +61,6 @@ def collect_columns(t):
     attr_tables = {}
     for k, v in TABLES.items():
         if k == table or v.get('when', {}).get('parent', '') == table:
-            print(k)
             for k0, v0 in v.items():
                 if v0 is None or k0 == 'when':
                     continue
