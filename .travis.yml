@@ -8,10 +8,6 @@ addons:
     packages:
     - x11-utils
     - libxkbcommon-x11-0
-    - python3-pyqt5.qtsql
-    - libqt5sql5-mysql
-
-  mariadb: '10.3'
 
 services: xvfb
 
@@ -30,14 +26,10 @@ cache:
 install: 
   - pip install -U pip
   - pip install -U numpy
-  - pip install nibabel pandas wonambi bidso
+  - pip install PyQt5 nibabel pandas wonambi bidso
   - pip install -U pytest pytest-cov pytest-qt codecov 
   - pip install -U sphinx 
   - pip install -e .
-
-before_scripts:
-  - sudo mysql -e "create user giovanni@localhost IDENTIFIED BY 'password';"
-  - sudo mysql -e 'grant all on test2.* to giovanni@localhost;'
 
 script:
   - pytest --cov=xelo2 tests/ -vv
