@@ -90,7 +90,7 @@ def _export_main(db, OUTPUT_TSV, query_str, columns):
 
                     elif col_info['type'] == 'DATETIME':
                         if db.driverName() == 'QMYSQL':
-                            values.append(val.value().toString('yyyy-MM-dd hh:mm:ss'))
+                            values.append(val.value().toString('yyyy-MM-ddThh:mm:ss'))
                         else:
                             values.append(val.value())
 
