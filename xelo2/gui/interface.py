@@ -285,6 +285,7 @@ class Interface(QMainWindow):
 
         self.search = Search()
 
+        self.statusBar()
         self.show()
 
         if db_type is None:
@@ -644,7 +645,7 @@ class Interface(QMainWindow):
 
         self.t_files.blockSignals(False)
 
-    def changed(self, obj, value, x):
+    def changed(self, obj, column, x):
         if isinstance(x, QDate):
             x = x.toPyDate()
         elif isinstance(x, QDateTime):
@@ -655,7 +656,7 @@ class Interface(QMainWindow):
 
             x = f'{x}'
 
-        setattr(obj, value, x)
+        setattr(obj, column, x)
         self.modified()
 
     def show_events(self, item):
@@ -958,7 +959,6 @@ class Interface(QMainWindow):
         data_path = QFileDialog.getExistingDirectory()
         if data_path == '':
             return
-        lg.warning(repr(subset))
 
         progress = QProgressDialog('', 'Cancel', 0, len(subset['runs']), self)
         progress.setWindowTitle('Converting to BIDS')
@@ -1309,34 +1309,33 @@ class Interface(QMainWindow):
 
 
 def list_parameters(obj, parent=None):
-    v= None
 
     d = {}
     for col_name, col_info, value in get_attributes(obj):
 
         if col_info['type'].startswith('DATETIME'):
             w = make_datetime(value)
-            w.dateTimeChanged.connect(partial(parent.changed, obj, v))
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
 
         elif col_info['type'].startswith('DATE'):
             w = make_date(value)
-            w.dateChanged.connect(partial(parent.changed, obj, v))
+            w.dateChanged.connect(partial(parent.changed, obj, col_name))
 
         elif col_info['type'].startswith('FLOAT'):
             w = make_float(value)
-            w.valueChanged.connect(partial(parent.changed, obj, v))
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
         elif col_info['type'].startswith('INTEGER'):
             w = make_integer(value)
-            w.valueChanged.connect(partial(parent.changed, obj, v))
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
         elif col_info['type'].startswith('TEXT'):
             if 'values' in col_info:
                 w = make_combobox(value, col_info['values'])
-                w.currentTextChanged.connect(partial(parent.changed, obj, v))
+                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
             else:
                 w = make_edit(value)
-                w.editingFinished.connect(partial(parent.changed, obj, v, w))
+                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
 
         else:
             raise ValueError(f'unknown type "{col_info["type"]}"')
