@@ -53,6 +53,7 @@ from PyQt5.QtSql import (
     )
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
+from ..api.utils import get_attributes
 from ..database.create import TABLES, open_database
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
@@ -505,47 +506,18 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
+            parameters.update(list_parameters(obj, self))
 
-            parameters.update(table_widget(TABLES[k], obj, self))
-
-            if k == 'subjects':
-                pass
-
-            elif k == 'protocols':
-                pass
-
-            elif k == 'sessions':
-
-                if obj.name == 'IEMU':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_iemu'], obj, self))
-
-                elif obj.name == 'OR':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_or'], obj, self))
-
-                elif obj.name == 'MRI':
-                    parameters.update(table_widget(TABLES[k]['subtables']['sessions_mri'], obj, self))
-
-            elif k == 'runs':
-
+            if k == 'runs':
                 w = Popup_Experimenters(obj, self)
                 parameters.update({'Experimenters': w})
                 w = Popup_Protocols(obj, self)
                 parameters.update({'Protocols': w})
 
-                # this should be read from tables.json
-                if obj.task_name == 'mario':
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_mario'], obj, self))
-
-                if obj.task_name in ('motor', 'somatosensory'):
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_sensorimotor'], obj, self))
-
-                if obj.task_name in ('picnam', 'verb'):
-                    parameters.update(table_widget(TABLES[k]['subtables']['runs_speak'], obj, self))
-
             elif k == 'recordings':
 
                 if obj.modality == 'ieeg':
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_ieeg'], obj, self))
+                    parameters.update(list_parameters(obj, self))
 
                     sess = self.current('sessions')
 
@@ -574,10 +546,10 @@ class Interface(QMainWindow):
                     parameters.update({'Electrodes': w})
 
                 if obj.modality in ('bold', 'epi'):
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_epi'], obj, self))
+                    parameters.update(list_parameters(obj, self))
 
                 if obj.run.session.name == 'MRI':
-                    parameters.update(table_widget(TABLES[k]['subtables']['recordings_mri'], obj, self))
+                    parameters.update(list_parameters(obj, self))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -707,7 +679,7 @@ class Interface(QMainWindow):
         elif item.t == 'electrode_group':
             self.elec_form.blockSignals(True)
 
-            parameters = table_widget(TABLES['electrode_groups'], item, self)
+            parameters = list_parameters(item, self)
             self.elec_form.setRowCount(len(parameters))
             for i, kv in enumerate(parameters.items()):
                 k, v = kv
@@ -1336,56 +1308,54 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def table_widget(table, obj, parent=None):
+def list_parameters(obj, parent=None):
+    v= None
 
     d = {}
-    for v in table:
+    for col_name, col_info, value in get_attributes(obj):
 
-        item = table[v]
-        value = getattr(obj, v)
-
-        if item['type'].startswith('DATETIME'):
-            w = make_datetime(item, value)
+        if col_info['type'].startswith('DATETIME'):
+            w = make_datetime(value)
             w.dateTimeChanged.connect(partial(parent.changed, obj, v))
 
-        elif item['type'].startswith('DATE'):
-            w = make_date(item, value)
+        elif col_info['type'].startswith('DATE'):
+            w = make_date(value)
             w.dateChanged.connect(partial(parent.changed, obj, v))
 
-        elif item['type'].startswith('FLOAT'):
-            w = make_float(item, value)
+        elif col_info['type'].startswith('FLOAT'):
+            w = make_float(value)
             w.valueChanged.connect(partial(parent.changed, obj, v))
 
-        elif item['type'].startswith('INTEGER'):
-            w = make_integer(item, value)
+        elif col_info['type'].startswith('INTEGER'):
+            w = make_integer(value)
             w.valueChanged.connect(partial(parent.changed, obj, v))
 
-        elif item['type'].startswith('TEXT'):
-            if 'values' in item:
-                w = make_combobox(item, value)
+        elif col_info['type'].startswith('TEXT'):
+            if 'values' in col_info:
+                w = make_combobox(value, col_info['values'])
                 w.currentTextChanged.connect(partial(parent.changed, obj, v))
             else:
-                w = make_edit(item, value)
+                w = make_edit(value)
                 w.editingFinished.connect(partial(parent.changed, obj, v, w))
 
         else:
-            raise ValueError(f'unknown type "{item["type"]}"')
+            raise ValueError(f'unknown type "{col_info["type"]}"')
 
-        if 'doc' in item:
-            w.setToolTip(item['doc'])
+        if 'doc' in col_info:
+            w.setToolTip(col_info['doc'])
 
-        d[item['name']] = w
+        d[col_info['name']] = w
 
     return d
 
 
-def make_edit(table, value):
+def make_edit(value):
     w = QLineEdit()
     w.insert(value)
     return w
 
 
-def make_integer(table, value):
+def make_integer(value):
     w = QSpinBox()
     w.setRange(-2e7, 2e7)
 
@@ -1401,7 +1371,7 @@ def make_integer(table, value):
     return w
 
 
-def make_float(table, value):
+def make_float(value):
     w = QDoubleSpinBox()
     w.setDecimals(3)
     w.setRange(-1e8, 1e8)
@@ -1422,16 +1392,16 @@ def make_float(table, value):
     return w
 
 
-def make_combobox(table, value):
+def make_combobox(value, possible_values):
     w = QComboBox()
-    values = ['Unknown / Unspecified', ] + table['values']
+    values = ['Unknown / Unspecified', ] + possible_values
     w.addItems(values)
     w.setCurrentText(value)
 
     return w
 
 
-def make_date(table, value):
+def make_date(value):
     w = QDateEdit()
     w.setCalendarPopup(True)
     w.setDisplayFormat('dd MMM yyyy')
@@ -1446,10 +1416,10 @@ def make_date(table, value):
     return w
 
 
-def make_datetime(table, value):
+def make_datetime(value):
     w = QDateTimeEdit()
     w.setCalendarPopup(True)
-    w.setDisplayFormat('dd MMM yyyy HH:mm:ss')
+    w.setDisplayFormat('dd MM yyyy HH:mm:ss')
     if value is None:
         w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
         palette = QPalette()
