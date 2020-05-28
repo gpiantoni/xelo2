@@ -1,8 +1,13 @@
-# from xelo2.bids.root import prepare_subset, create_bids
+from xelo2.bids.root import prepare_subset, create_bids
+from xelo2.database.create import open_database, close_database
 
-from .paths import BIDS_DIR
+from .paths import BIDS_DIR, DB_ARGS
 
 
 def test_bids():
-    subsets = prepare_subset('subjects.id == "1"')
-    create_bids(BIDS_DIR, deface=False, subset=subsets)
+    db = open_database(**DB_ARGS)
+
+    subsets = prepare_subset(db, "subjects.id = '1'")
+    create_bids(db, BIDS_DIR, deface=False, subset=subsets)
+
+    close_database(db)

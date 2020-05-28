@@ -24,14 +24,13 @@ from .templates import (
 lg = getLogger(__name__)
 
 
-def prepare_subset(where, subset=None):
+def prepare_subset(db, where, subset=None):
 
     query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
-    query = QSqlQuery(f"""{query_str} WHERE {where}""")
-
-    err = query.lastError()
-    if err.isValid():
-        raise ValueError(err.databaseText())
+    query = QSqlQuery(db)
+    query.prepare(f"""{query_str} WHERE {where}""")
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
 
     if subset is None:
         subset = {'subjects': [], 'sessions': [], 'runs': []}
@@ -44,10 +43,10 @@ def prepare_subset(where, subset=None):
     return subset
 
 
-def create_bids(data_path, deface=True, subset=None, progress=None):
+def create_bids(db, data_path, deface=True, subset=None, progress=None):
 
     if subset is not None:
-        subset = add_intended_for(subset)
+        subset = add_intended_for(db, subset)
 
         subset_subj = set(subset['subjects'])
         subset_sess = set(subset['sessions'])
@@ -65,7 +64,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
 
     i = 0
     participants = []
-    for subj in list_subjects():
+    for subj in list_subjects(db):
         bids_name = {
             'sub': None,
             'ses': None,
@@ -88,7 +87,7 @@ def create_bids(data_path, deface=True, subset=None, progress=None):
         reference_date = min(reference_dates)
         if reference_date is None:
             lg.warning(f'You need to add date_of_signature to the METC of {subj.codes}')
-            lg.info(f'Using date of the first task performed by the subject')
+            lg.info('Using date of the first task performed by the subject')
             reference_date = min([x.start_time for x in subj.list_sessions()]).date()
 
         lg.info(f'Adding {subj.codes}')
@@ -281,12 +280,12 @@ def get_bids_acquisition(run):
     raise ValueError(f'I cannot determine BIDS folder for {repr(run)}')
 
 
-def add_intended_for(subset):
+def add_intended_for(db, subset):
     """Electrodes also need the reference T1w images, so we add it here"""
 
     reference_t1w = []
     for run_id in subset['runs']:
-        run = Run(id=run_id)
+        run = Run(db, id=run_id)
         for rec in run.list_recordings():
             electrodes = rec.electrodes
             if electrodes is not None:

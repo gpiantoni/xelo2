@@ -8,6 +8,7 @@ addons:
     packages:
     - x11-utils
     - libxkbcommon-x11-0
+  mariadb: '10.3'
 
 services: xvfb
 
@@ -22,6 +23,10 @@ env:
 cache: 
  - directories:
    - $HOME/.cache/pip
+
+before_scripts:
+  - sudo mysql -e 'create user giovanni@localhost;'
+  - sudo mysql -e 'grant all on test2.* to giovanni@localhost;'
 
 install: 
   - pip install -U pip
