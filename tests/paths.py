@@ -1,5 +1,6 @@
 from pathlib import Path
 from shutil import rmtree
+from os import environ
 from .utils import create_random_rec
 
 
@@ -9,7 +10,7 @@ GENERATED_DIR = DATA_DIR / 'generated'
 GENERATED_DIR.mkdir(exist_ok=True, parents=True)
 
 DB_PATH = GENERATED_DIR / 'sqlite.db'
-if True:
+if environ.get('TRAVIS', False):
     DB_ARGS = {
         'db_type': 'QSQLITE',
         'db_name': DB_PATH,
