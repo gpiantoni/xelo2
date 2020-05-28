@@ -13,7 +13,7 @@ from ..database import TABLES
 lg = getLogger(__name__)
 
 
-def construct_subtables(t):
+def collect_columns(t):
     """For each attribute, this function looks up in which table the information
     is stored.
 
@@ -30,12 +30,13 @@ def construct_subtables(t):
     table = t + 's'
     attr_tables = {}
     for k, v in TABLES.items():
-        if not k.startswith(table + '_'):
-            continue
-        for k0, v0 in v.items():
-            if v0 is None or k0 == 'when':
-                continue
-            attr_tables[k0] = k
+        if k == table or v.get('when', {}).get('parent', '') == table:
+            print(k)
+            for k0, v0 in v.items():
+                if v0 is None or k0 == 'when':
+                    continue
+                attr_tables[k0] = k
+
     return attr_tables
 
 

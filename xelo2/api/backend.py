@@ -16,7 +16,7 @@ import sip
 
 from ..database import TABLES
 from .utils import (
-    construct_subtables,
+    collect_columns,
     get_dtypes,
     out_date,
     out_datetime,
@@ -38,7 +38,7 @@ class Table():
     """
     db = None  # instance of database
     t = ''
-    subtables = {}
+    columns = {}
 
     def __init__(self, db, id):
         self.db = db
@@ -53,7 +53,7 @@ class Table():
         if not query.next():
             raise ValueError(f'Could not find id = {id} in table {self.t}s')
 
-        self.subtables = construct_subtables(self.t)
+        self.columns = collect_columns(self.t)
 
     def __str__(self):
         return f'<{self.t} (#{self.id})>'
@@ -138,7 +138,7 @@ class Table():
             'db',
             'id',
             't',
-            'subtables',
+            'columns',
             'experimenters',
             'codes',
             'subject',

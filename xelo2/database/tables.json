@@ -78,6 +78,7 @@
   "sessions_iemu": {
     "session_id": null,
     "when": {
+      "parent": "sessions",
       "parameter": "name",
       "value": [
         "IEMU"
@@ -95,6 +96,7 @@
   "sessions_or": {
     "session_id": null,
     "when": {
+      "parent": "sessions",
       "parameter": "name",
       "value": [
         "OR"
@@ -108,6 +110,7 @@
   "sessions_mri": {
     "session_id": null,
     "when": {
+      "parent": "sessions",
       "parameter": "name",
       "value": [
         "MRI"
@@ -280,6 +283,7 @@
   "runs_mario": {
     "run_id": null,
     "when": {
+      "parent": "runs",
       "parameter": "task_name",
       "value": [
         "mario"
@@ -293,6 +297,7 @@
   "runs_speak": {
     "run_id": null,
     "when": {
+      "parent": "runs",
       "parameter": "task_name",
       "value": [
         "picnam",
@@ -311,6 +316,7 @@
   "runs_sensorimotor": {
     "run_id": null,
     "when": {
+      "parent": "runs",
       "parameter": "task_name",
       "value": [
         "somatosensory",
@@ -618,6 +624,7 @@
   "recordings_mri": {
     "recording_id": null,
     "when": {
+      "parent": "recordings",
       "parameter": "modality",
       "value": [
         "bold",
@@ -644,6 +651,7 @@
   "recordings_epi": {
     "recording_id": null,
     "when": {
+      "parent": "recordings",
       "parameter": "modality",
       "value": [
         "bold",
@@ -692,6 +700,7 @@
     "channel_group_id": null,
     "electrode_group_id": null,
     "when": {
+      "parent": "recordings",
       "parameter": "modality",
       "value": [
         "ieeg"
