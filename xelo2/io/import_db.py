@@ -11,6 +11,21 @@ from .export_db import FILE_LEVELS
 
 
 def import_database(INPUT, db_type, db_name, username=None, password=None):
+    """
+    Parameters
+    ----------
+    INPUT : str or Path
+        path to the folders with tsv
+    db_type : str
+        driver to use (QSQLITE or QMYSQL)
+    db_name : str
+        path to database (QSQLITE) or database name (QMYSQL)
+    username : str
+        user name to open database
+    password : str
+        password to open database
+    """
+
     INPUT = Path(INPUT)
     create_database(db_type, db_name, username=username, password=password)
     db = open_database(db_type, db_name, username=username, password=password)
