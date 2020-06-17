@@ -55,6 +55,9 @@ def open_database(db_type, db_name, username=None, password=None):
         assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
         assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
+    if not db.isOpen():
+        raise ValueError('Could not open database')
+
     return db
 
 

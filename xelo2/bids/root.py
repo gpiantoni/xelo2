@@ -48,6 +48,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     if subset is not None:
         subset = add_intended_for(db, subset)
 
+
         subset_subj = set(subset['subjects'])
         subset_sess = set(subset['sessions'])
         subset_run = set(subset['runs'])
