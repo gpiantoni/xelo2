@@ -24,42 +24,42 @@ class Summary(QDialog):
         lay = QFormLayout()
         lay.addRow(
             '# Subjects',
-            _info('SELECT COUNT(id) FROM subjects'))
+            _info(parent.db, 'SELECT COUNT(id) FROM subjects'))
         for session_name in TABLES['sessions']['name']['values']:
             lay.addRow(
                 f'# Subjects with {session_name} session',
-                _info(f'SELECT COUNT(DISTINCT subject_id) FROM sessions WHERE name == "{session_name}"'))
+                _info(parent.db, f'SELECT COUNT(DISTINCT subject_id) FROM sessions WHERE name = "{session_name}"'))
         lay.addRow(
-            f'# Subjects with both MRI and IEMU sessions',
-            _info("""
+            '# Subjects with both MRI and IEMU sessions',
+            _info(parent.db, """
                 SELECT COUNT(id) FROM subjects
-                WHERE subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'IEMU')
-                AND subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name == 'MRI')"""))
+                WHERE subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name = 'IEMU')
+                AND subjects.id in (SELECT subject_id FROM sessions WHERE sessions.name = 'MRI')"""))
         lay.addRow(
             '# IEMU sessions',
-            _info(f'SELECT COUNT(DISTINCT sessions.id) FROM sessions WHERE name == "IEMU"'))
+            _info(parent.db, 'SELECT COUNT(DISTINCT sessions.id) FROM sessions WHERE name = "IEMU"'))
         for chan_elec in ('channel', 'electrode'):
             lay.addRow(
                 f'# IEMU sessions with {chan_elec}s',
-                _info(f"""
+                _info(parent.db, f"""
                     SELECT COUNT(DISTINCT(sessions.id)) FROM sessions
-                    LEFT JOIN runs ON runs.session_id == sessions.id
-                    LEFT JOIN recordings ON recordings.run_id == runs.id
-                    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id == recordings.id
-                    WHERE sessions.name == 'IEMU'
+                    LEFT JOIN runs ON runs.session_id = sessions.id
+                    LEFT JOIN recordings ON recordings.run_id = runs.id
+                    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id = recordings.id
+                    WHERE sessions.name = 'IEMU'
                     AND recordings_ieeg.{chan_elec}_group_id IS NOT NULL"""))
         lay.addRow(
             '# Runs',
-            _info('SELECT COUNT(id) FROM runs'))
+            _info(parent.db, 'SELECT COUNT(id) FROM runs'))
         lay.addRow(
             '# Runs with events',
-            _info('SELECT COUNT(id) FROM runs WHERE id IN (SELECT run_id FROM events)'))
+            _info(parent.db, 'SELECT COUNT(id) FROM runs WHERE id IN (SELECT run_id FROM events)'))
         lay.addRow(
             '# Runs with recordings',
-            _info('SELECT COUNT(DISTINCT run_id) FROM recordings'))
+            _info(parent.db, 'SELECT COUNT(DISTINCT run_id) FROM recordings'))
         lay.addRow(
             '# iEEG Recordings',
-            _info('SELECT COUNT(id) FROM recordings WHERE recordings.modality == "ieeg"'))
+            _info(parent.db, 'SELECT COUNT(id) FROM recordings WHERE recordings.modality = "ieeg"'))
 
         ok_button = QDialogButtonBox(QDialogButtonBox.Ok)
         ok_button.accepted.connect(self.accept)
@@ -73,8 +73,9 @@ class Summary(QDialog):
         self.activateWindow()
 
 
-def _info(s):
-    query = QSqlQuery(s)
+def _info(db, s):
+    query = QSqlQuery(db)
+    assert query.exec(s)
     label = QLabel()
     label.setAlignment(Qt.AlignRight)
     if query.next():

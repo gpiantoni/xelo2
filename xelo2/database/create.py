@@ -158,7 +158,7 @@ def create_statement_table(db, table_name, v):
             else:
                 foreign_key = col_name
 
-            if 'when' in v:  # if sub-table, then make sure it's unique
+            if 'when' in v and col_name == list(v)[0]:  # if sub-table, then make sure that the first index is unique (but not the other ones)
                 cmd.append(f'{col_name} INTEGER UNIQUE')
             else:
                 cmd.append(f'{col_name} INTEGER')

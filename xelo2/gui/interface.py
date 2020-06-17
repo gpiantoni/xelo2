@@ -900,7 +900,7 @@ class Interface(QMainWindow):
         QDesktopServices.openUrl(url_file)
 
     def export_tsv(self):
-        export_database(Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
+        export_database(self.db, Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
 
         """
         tsv_path = QFileDialog.getExistingDirectory()

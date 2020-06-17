@@ -148,7 +148,9 @@ def _attach_events(TSV_FILE, IDS):
     EVENTS = genfromtxt(TSV_FILE, dtype=DTYPE, skip_header=1, delimiter='\t')
     for run_id in unique(EVENTS['run_id']):
         run = IDS['runs'][run_id]
-        run.events = EVENTS[EVENTS['run_id'] == run_id]
+
+        events = EVENTS[EVENTS['run_id'] == run_id]
+        run.events = _rm_field(events, 'run_id')
 
 
 def _attach_files(INPUT, level, IDS):
