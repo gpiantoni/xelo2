@@ -298,12 +298,12 @@ def add_intended_for(db, subset):
         return subset
 
     elif len(reference_t1w) == 1:
-        run_id_sql = f'runs.id == {reference_t1w[0]}'
+        run_id_sql = f'runs.id = {reference_t1w[0]}'
 
     else:
         run_id_sql = 'runs.id IN (' + ', '.join(str(x) for x in reference_t1w) + ')'
 
-    return prepare_subset(run_id_sql, subset)
+    return prepare_subset(db, run_id_sql, subset=subset)
 
 
 def _make_README(data_path):

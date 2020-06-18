@@ -107,10 +107,10 @@ class Table():
             if out.isNull():
                 out = None
 
-            elif TABLES[table_name][key]['type'] == 'DATE':
+            elif TABLES[table_name][key].get('type', '') == 'DATE':
                 out = out_date(self.db.driverName(), out.value())
 
-            elif TABLES[table_name][key]['type'] == 'DATETIME':
+            elif TABLES[table_name][key].get('type', '') == 'DATETIME':
                 out = out_datetime(self.db.driverName(), out.value())
 
             else:
