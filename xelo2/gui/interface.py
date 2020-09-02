@@ -319,11 +319,10 @@ class Interface(QMainWindow):
         self.list_subjects()
 
     def sql_commit(self):
-        return
 
-        self.sql.commit()
+        self.db.commit()
 
-        self.setWindowTitle(self.sqlite_file.stem)
+        self.setWindowTitle('')
         self.unsaved_changes = False
 
     def sql_rollback(self):
@@ -1033,7 +1032,7 @@ class Interface(QMainWindow):
         if ok and text != '':
             if level == 'subjects':
                 code = text.strip()
-                Subject.add(code)
+                Subject.add(self.db, code)
                 self.list_subjects(code)
 
             elif level == 'sessions':
@@ -1239,7 +1238,7 @@ class Interface(QMainWindow):
         if not ieeg_files[0].path.exists():
             return
 
-        chan = create_channels(ieeg_files[0].path)
+        chan = create_channels(self.db, ieeg_files[0].path)
         if chan is None:
             return
         chan.name = '(imported)'
@@ -1403,7 +1402,7 @@ def make_combobox(value, possible_values):
 def make_date(value):
     w = QDateEdit()
     w.setCalendarPopup(True)
-    w.setDisplayFormat('dd MMM yyyy')
+    w.setDisplayFormat('dd/MM/yyyy')
     if value is None:
         w.setDate(date(1900, 1, 1))
         palette = QPalette()
@@ -1418,7 +1417,7 @@ def make_date(value):
 def make_datetime(value):
     w = QDateTimeEdit()
     w.setCalendarPopup(True)
-    w.setDisplayFormat('dd MM yyyy HH:mm:ss')
+    w.setDisplayFormat('dd/MM/yyyy HH:mm:ss')
     if value is None:
         w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
         palette = QPalette()
