@@ -18,10 +18,6 @@ def create_menubar(main):
     # FILE
     menu_db = menubar.addMenu('Database')
 
-    action_connect = QAction('Connect', main)
-    action_connect.triggered.connect(main.sql_access)
-    menu_db.addAction(action_connect)
-
     action_commit = QAction('Commit', main)
     action_commit.triggered.connect(main.sql_commit)
     menu_db.addAction(action_commit)

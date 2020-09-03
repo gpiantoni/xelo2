@@ -290,8 +290,9 @@ class Interface(QMainWindow):
 
         if db_type is None:
             DB_ARGS = parse_accessdatabase(self)
-            if DB_ARGS is None:
-                return
+            if DB_ARGS is not None:
+                self.sql_access(**DB_ARGS)
+
         else:
             self.sql_access(db_type, db_name, username, password)
 
@@ -321,15 +322,15 @@ class Interface(QMainWindow):
     def sql_commit(self):
 
         self.db.commit()
-
         self.setWindowTitle('')
         self.unsaved_changes = False
+        self.db.transaction()
 
     def sql_rollback(self):
-        return
-        self.sql.rollback()
+        self.db.rollback()
         self.unsaved_changes = False
-        self.setWindowTitle(self.sqlite_file.stem)
+        self.setWindowTitle('')
+        self.db.transaction()
         self.list_subjects()
 
     def list_subjects(self, code_to_select=None):
