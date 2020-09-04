@@ -490,3 +490,33 @@ class Electrodes(NumpyTable):
             raise SyntaxError(query.lastError().text())
 
         return cls(db, id)
+
+
+def list_experimenters(db):
+    query = QSqlQuery(db)
+    query.prepare("SELECT name FROM experimenters ORDER BY name")
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    out = []
+    while query.next():
+        out.append(query.value('name'))
+
+    return out
+
+
+def list_allowed_values(db, table_name, column_name):
+    query = QSqlQuery(db)
+    query.prepare("SELECT allowed_value FROM allowed_values WHERE table_name = :table_name AND column_name = :column_name ORDER BY allowed_value")
+    query.bindValue(':table_name', table_name)
+    query.bindValue(':column_name', column_name)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    out = []
+    while query.next():
+        out.append(query.value('allowed_value'))
+
+    return out

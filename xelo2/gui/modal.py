@@ -25,9 +25,9 @@ from PyQt5.QtCore import Qt
 from functools import partial
 from numpy import issubdtype, floating, integer
 
-from ..database import TABLES
 from .utils import LEVELS, _protocol_name
 from ..api.filetype import parse_filetype
+from ..api.frontend import list_experimenters, list_allowed_values
 from ..io.ieeg import read_info_from_ieeg
 
 lg = getLogger(__name__)
@@ -52,7 +52,7 @@ class NewFile(QDialog):
         browse = QPushButton('Browse ...')
         browse.clicked.connect(self.browse)
         self.format = QComboBox()
-        self.format.addItems(['Unknown', ] + TABLES['files']['format']['values'])
+        self.format.addItems(['Unknown', ] + list_allowed_values(parent.db, 'files', 'format'))
 
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
@@ -207,7 +207,7 @@ class Popup_Experimenters(QPushButton):
 
         self.menu = QMenu(self)
         current_experimenters = run.experimenters
-        for name in TABLES['experimenters']['name']['values']:
+        for name in list_experimenters(parent.db):
             action = QAction(name, self)
             action.setCheckable(True)
             if name in current_experimenters:
