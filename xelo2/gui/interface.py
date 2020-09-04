@@ -458,10 +458,10 @@ class Interface(QMainWindow):
             if level in ('channels', 'electrodes'):
                 l.clear()
 
-        self.channels_model.setFilter('channel_group_id == 0')
+        self.channels_model.setFilter('channel_group_id = 0')
         self.channels_model.select()
         self.channels_view.setEnabled(False)
-        self.electrodes_model.setFilter('electrode_group_id == 0')
+        self.electrodes_model.setFilter('electrode_group_id = 0')
         self.electrodes_model.select()
         self.electrodes_view.setEnabled(False)
 
@@ -660,7 +660,7 @@ class Interface(QMainWindow):
         self.modified()
 
     def show_events(self, item):
-        self.events_model.setFilter(f'run_id == {item.id}')
+        self.events_model.setFilter(f'run_id = {item.id}')
         self.events_model.select()
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
@@ -674,7 +674,7 @@ class Interface(QMainWindow):
 
         if item.t == 'channel_group':
             self.channels_view.setEnabled(True)
-            self.channels_model.setFilter(f'channel_group_id == {item.id}')
+            self.channels_model.setFilter(f'channel_group_id = {item.id}')
             self.channels_model.select()
 
         elif item.t == 'electrode_group':
@@ -690,7 +690,7 @@ class Interface(QMainWindow):
             self.elec_form.blockSignals(False)
 
             self.electrodes_view.setEnabled(True)
-            self.electrodes_model.setFilter(f'electrode_group_id == {item.id}')
+            self.electrodes_model.setFilter(f'electrode_group_id = {item.id}')
             self.electrodes_model.select()
 
     def exporting(self, checked=None, subj=None, sess=None, run=None):
