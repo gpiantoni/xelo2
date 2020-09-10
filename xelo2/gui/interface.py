@@ -944,12 +944,17 @@ class Interface(QMainWindow):
 
         subset = {'subjects': [], 'sessions': [], 'runs': []}
         run_ids = '(' + ', '.join([str(x['run_id']) for x in self.exports]) + ')'
-        query = QSqlQuery(f"""\
+
+        query = QSqlQuery(self.db)
+        query.prepare(f"""\
             SELECT subjects.id, sessions.id, runs.id FROM runs
-            JOIN sessions ON sessions.id == runs.session_id
-            JOIN subjects ON subjects.id == sessions.subject_id
+            JOIN sessions ON sessions.id = runs.session_id
+            JOIN subjects ON subjects.id = sessions.subject_id
             WHERE runs.id IN {run_ids}
             """)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
 
         while query.next():
             subset['subjects'].append(query.value(0))
@@ -965,7 +970,7 @@ class Interface(QMainWindow):
         progress.setMinimumDuration(0)
         progress.setWindowModality(Qt.WindowModal)
 
-        create_bids(Path(data_path), deface=False, subset=subset, progress=progress)
+        create_bids(self.db, Path(data_path), deface=False, subset=subset, progress=progress)
         progress.setValue(len(subset['runs']))
 
     def new_item(self, checked=None, level=None):
