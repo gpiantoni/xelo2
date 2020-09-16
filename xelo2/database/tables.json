@@ -257,7 +257,7 @@
     },
     "start_time": {
       "name": "Start Time",
-      "type": "DATETIME"
+      "type": "DATETIME(3)"
     },
     "duration": {
       "name": "Duration",

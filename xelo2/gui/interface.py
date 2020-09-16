@@ -1423,7 +1423,7 @@ def make_date(value):
 def make_datetime(value):
     w = QDateTimeEdit()
     w.setCalendarPopup(True)
-    w.setDisplayFormat('dd/MM/yyyy HH:mm:ss')
+    w.setDisplayFormat('dd/MM/yyyy HH:mm:ss.zzz')
     if value is None:
         w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
         palette = QPalette()
