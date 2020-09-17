@@ -1,3 +1,7 @@
+"""There might be ways to get rid of TABLES and rely only on the description
+of SQL but it's really hard. The risk however is that TABLES in python
+gets out of sync with the tables definition in SQL"""
+
 from logging import getLogger
 from datetime import datetime
 from PyQt5.QtSql import QSqlQuery
