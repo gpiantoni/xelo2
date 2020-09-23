@@ -13,7 +13,7 @@ lg = getLogger(__name__)
 
 
 def convert_ieeg(run, rec, dest_path, name, intendedfor):
-    start_time = run.start_time + timedelta(seconds=rec.onset)
+    start_time = run.start_time + timedelta(seconds=rec.offset)
 
     # use rec duration if possible, otherwise use run duration
     if rec.duration is not None:

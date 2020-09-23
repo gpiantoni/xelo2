@@ -609,16 +609,11 @@
         "stim"
       ]
     },
-    "onset": {
-      "name": "onset",
-      "doc": "Start of the recording in s, relative to the start of the run. To read the data, it will use the run.start_time + recording.onset to find the start time in the recorded file. So, this onset would also take into account the time difference between recording system.",
+    "offset": {
+      "name": "offset",
+      "doc": "Offset between the run time and the time stamp in the dataset file. When you use only one recording system (say Micromed), there is no issue but if you use two recording systems (Micromed, Blackrock, Dataglove), you can use this value to correct the offset in the clock",
       "type": "FLOAT",
       "default": 0
-    },
-    "duration": {
-      "name": "duration",
-      "doc": "Duration of the recording in s",
-      "type": "FLOAT"
     }
   },
   "recordings_mri": {
