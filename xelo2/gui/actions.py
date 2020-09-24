@@ -140,26 +140,34 @@ def create_shortcuts(main):
 
 SEARCH_STATEMENT = """\
     SELECT subjects.id, sessions.id, runs.id, recordings.id FROM subjects
-    LEFT JOIN sessions ON sessions.subject_id == subjects.id
-    LEFT JOIN sessions_mri ON sessions_mri.session_id == sessions.id
-    LEFT JOIN runs ON runs.session_id == sessions.id
-    LEFT JOIN recordings ON recordings.run_id == runs.id
-    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id == recordings.id
+    LEFT JOIN sessions ON sessions.subject_id = subjects.id
+    LEFT JOIN sessions_mri ON sessions_mri.session_id = sessions.id
+    LEFT JOIN runs ON runs.session_id = sessions.id
+    LEFT JOIN recordings ON recordings.run_id = runs.id
+    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id = recordings.id
     WHERE """
 
 
 class Search():
+    subjects = []
+    sessions = []
+    runs = []
+    recordings = []
+    previous = ''
 
-    def __init__(self, where=None):
+    def __init__(self):
+        pass
+
+    def where(self, db, where):
         """TODO: where is not sanitized!!!"""
 
         self.clear()
-        if where is None:
-            return
-
         self.previous = where
 
-        query = QSqlQuery(SEARCH_STATEMENT + where)
+        query = QSqlQuery(db)
+        query.prepare(SEARCH_STATEMENT + where)
+        if not query.exec():
+            raise ValueError(query.lastError().text())
 
         while query.next():
             self.subjects.append(query.value(0))

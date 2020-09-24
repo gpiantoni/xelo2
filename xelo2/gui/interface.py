@@ -920,7 +920,7 @@ class Interface(QMainWindow):
             )
 
         if ok and text != '':
-            self.search = Search(text)
+            self.search.where(self.db, text)
             self.list_subjects()
 
     def sql_search_clear(self):

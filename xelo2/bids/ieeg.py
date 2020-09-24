@@ -15,12 +15,7 @@ lg = getLogger(__name__)
 def convert_ieeg(run, rec, dest_path, name, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.offset)
 
-    # use rec duration if possible, otherwise use run duration
-    if rec.duration is not None:
-        duration = rec.duration
-    else:
-        duration = run.duration
-    end_time = start_time + timedelta(seconds=duration)
+    end_time = start_time + timedelta(seconds=run.duration)
 
     file = find_one_file(rec, ('blackrock', 'micromed', 'bci2000'))
     if file is None:

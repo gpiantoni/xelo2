@@ -40,9 +40,9 @@ def convert_physio(rec, dest_path, name):
         else:
             return
 
-        hdr['StartTime'] = rec.onset
+        hdr['StartTime'] = rec.offset
         if 'time' in tsv.columns:
-            tsv['time'] += rec.onset
+            tsv['time'] += rec.offset
 
     if name['rec'] is None:
         lg.warning(f'No file associated with physio recording')
