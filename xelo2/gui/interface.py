@@ -1059,12 +1059,12 @@ class Interface(QMainWindow):
 
             elif level in ('channels', 'electrodes'):
                 if level in 'channels':
-                    chan = Channels()
+                    chan = Channels.add(self.db)
                     chan.name = text
                     current_recording.attach_channels(chan)
 
                 elif level in 'electrodes':
-                    elec = Electrodes()
+                    elec = Electrodes.add(self.db)
                     elec.name = text
                     current_recording.attach_electrodes(elec)
 
@@ -1276,7 +1276,7 @@ class Interface(QMainWindow):
             print('you need to do this manually')
             return
 
-        elec = Electrodes()
+        elec = Electrodes.add(self.db)
         elec_data = elec.empty(n_chan)
         elec_data['name'] = chan_data['name'][idx]
         elec_data['x'] = xyz[:, 0]
@@ -1318,7 +1318,10 @@ def list_parameters(obj, parent=None):
     d = {}
     for col_name, col_info, value in get_attributes(obj):
 
-        if col_info['type'].startswith('DATETIME'):
+        if col_info is None or 'type' not in col_info:
+            continue
+
+        elif col_info['type'].startswith('DATETIME'):
             w = make_datetime(value)
             w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
 
