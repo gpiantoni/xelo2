@@ -21,7 +21,7 @@ def read_events_from_ieeg(run, rec, file):
 
     markers = d.read_markers()
 
-    start_t = (run.start_time - d.header['start_time']).total_seconds() + rec.onset
+    start_t = (run.start_time - d.header['start_time']).total_seconds() + rec.offset
     if run.duration is not None:
         end_t = start_t + run.duration
     else:
