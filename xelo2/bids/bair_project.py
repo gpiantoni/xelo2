@@ -4,8 +4,19 @@ from json import dump
 
 
 TASK_TYPES = {
-    'visual': [],
-    'motor': [],
+    'visual': [
+        'spatialobject',
+        'spatialpattern',
+        'temporalpattern',
+        'prf',
+        'hrfpattern',
+        ],
+    'motor': [
+        'fingermapping',
+        'gestures',
+        'boldfinger',
+        'boldsat',
+        ],
     'tactile': [
         'vtsprf',
         'vtstemporalpattern',
