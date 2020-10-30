@@ -208,7 +208,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                         intendedfor[run.id] = relative_filename
                         run_files.append({
                             'filename': relative_filename,
-                            'acq_time': _set_date_to_1900(reference_date, run.start_time).isoformat(),
+                            'acq_time': _set_date_to_1900(reference_date, run.start_time).isoformat(timespec='seconds'),
                             })
 
             if len(run_files) == 0:
