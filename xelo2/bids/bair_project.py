@@ -1,7 +1,7 @@
 from itertools import chain
 from bidso.utils import replace_underscore
 from json import dump
-from re import sub
+from re import sub, match
 
 
 TASK_TYPES = {
@@ -112,7 +112,7 @@ def _add_coordsystem(bids_ieeg):
         "iEEGCoordinateProcessingReference": "PMID: 19836416"
         }
 
-    anat_dir = bids_ieeg.parents[2] / 'ses-umcu3t01' / 'anat'
+    anat_dir = bids_ieeg.parents[2] / 'ses-umcu3t1' / 'anat'
     anat_t1w = list(anat_dir.glob('*_run-1_T1w.nii.gz'))
     if len(anat_t1w) != 1:
         print(f'{len(anat_t1w)} T1w images found in {anat_dir}')
@@ -127,6 +127,9 @@ def _add_coordsystem(bids_ieeg):
 
 
 def _find_hdgrid(subj_path):
+    if match(r'sub-umcu\d+', subj_path.stem):
+        return 'n/a'
+
     if len(list(subj_path.rglob('*/*/*_acq-blackrock_*'))) > 0:
         return 'yes'
 
