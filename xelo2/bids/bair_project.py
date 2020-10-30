@@ -1,6 +1,7 @@
 from itertools import chain
 from bidso.utils import replace_underscore
 from json import dump
+from re import sub
 
 
 TASK_TYPES = {
@@ -42,21 +43,22 @@ def add_umcu_to_sub_ses(bids_dir):
     for tsv_file in TEXT_FILES:
         with tsv_file.open() as f:
             txt = f.read()
-        txt = txt.replace('sub-', 'sub-umcu')
-        txt = txt.replace('ses-', 'ses-umcu')
+        txt = sub('sub-(?!umcu)', 'sub-umcu', txt)
+        txt = sub('ses-', 'ses-umcu', txt)
         with tsv_file.open('w') as f:
             f.write(txt)
 
     for subj_path in bids_dir.glob('sub-*'):
-        new_subj_path = subj_path.parent / (subj_path.name.replace('sub-', 'sub-umcu'))
+        new_subj_path = subj_path.parent / sub('sub-(?!umcu)', 'sub-umcu', subj_path.name)
         subj_path.rename(new_subj_path)
 
         for sess_path in new_subj_path.glob('ses-*'):
-            new_sess_path = sess_path.parent / (sess_path.name.replace('ses-', 'ses-umcu'))
+            new_sess_path = sess_path.parent / sub('ses-', 'ses-umcu', sess_path.name)
             sess_path.rename(new_sess_path)
 
     for old_file in bids_dir.glob('**/*.*'):
-        new_name = old_file.name.replace('sub-', 'sub-umcu').replace('ses-', 'ses-umcu')
+        new_name = sub('sub-(?!umcu)', 'sub-umcu', old_file.name)
+        new_name = sub('ses-', 'ses-umcu', new_name)
         old_file.rename(old_file.parent / new_name)
 
 

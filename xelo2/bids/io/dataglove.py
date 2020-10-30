@@ -1,4 +1,4 @@
-from pandas import read_csv
+from pandas import read_csv, to_datetime
 from logging import getLogger
 
 
@@ -16,6 +16,11 @@ def parse_dataglove_log(dg_file):
         'left': 0,
         }
     with dg_file.open() as f:
+
+        skiprows = 0
+        log_format = 'qttasks'
+        names = ['time', 'thumb', 'index', 'middle', 'ring', 'little']
+
         for i, l in enumerate(f):
 
             possible_hand['right'] += l.lower().count('right')
@@ -24,12 +29,14 @@ def parse_dataglove_log(dg_file):
             if 'event' in l:
                 skiprows = i
                 log_format = 'neurobs'  # log from presentation
+                names = None
 
             if 'Onset:' in l:
                 skiprows = i
                 log_format = 'finger_mapping'  # log from finger mapping c-code
+                names = None
 
-    df = read_csv(dg_file, skiprows=skiprows, delimiter=r'\s+')
+    df = read_csv(dg_file, skiprows=skiprows, delimiter=r'\s+', names=names)
 
     """convert the log file into df with columns:
     time, left thumb, left index, ..., right thumb, ..., right little
@@ -38,8 +45,11 @@ def parse_dataglove_log(dg_file):
     """
     if log_format == 'neurobs':
         df, hdr['StartTime'] = _fix_neurobs_log(df)
-    else:
+    elif log_format == 'finger_mapping':
         df = _fix_fingermapping(df)
+    elif log_format == 'qttasks':
+        df, hdr['StartTime'] = _fix_qttask(df)
+        possible_hand['right'] = 1  # assume it's right-hand TODO: how to estimate which hand
 
     df['time'] = df['time'].apply(lambda x: x / 1000)
 
@@ -58,6 +68,15 @@ def parse_dataglove_log(dg_file):
     hdr['Columns'] = list(df.columns)
 
     return df, hdr
+
+
+def _fix_qttask(df):
+    t = to_datetime(df['time'])
+    start_time = t[0]
+    t = t - t[0]
+    df['time'] = t.dt.total_seconds()
+    return df, start_time
+
 
 def _fix_neurobs_log(df):
     df.set_index('event', inplace=True)
