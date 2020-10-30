@@ -21,6 +21,12 @@ from .templates import (
     JSON_SESSIONS,
     )
 
+# protocols
+PROTOCOL_HEALTHY = [
+    '16-816',
+    ]
+
+
 lg = getLogger(__name__)
 
 
@@ -84,7 +90,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
             lg.warning(f'You need to add at least one research protocol for {subj.codes}')
             reference_dates = [datetime.now().date(), ]
 
-        reference_date = min(reference_dates)
+        reference_date = max(reference_dates)
         if reference_date is None:
             lg.warning(f'You need to add date_of_signature to the METC of {subj.codes}')
             lg.info('Using date of the first task performed by the subject')
@@ -107,11 +113,16 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
             age = (reference_date - subj.date_of_birth).days // 365.2425
             age = f'{age:.0f}'
 
+        patient_or_healthy = 'patient'
+        for p in subj.list_protocols():
+            if p.metc in PROTOCOL_HEALTHY:
+                patient_or_healthy = 'healthy'
+
         participants.append({
             'participant_id': bids_name['sub'],
             'sex': subj.sex,
             'age': age,
-            'group': 'patient',
+            'group': patient_or_healthy,
             })
 
         sess_count = defaultdict(int)
