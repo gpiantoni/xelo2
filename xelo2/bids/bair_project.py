@@ -70,12 +70,13 @@ def add_info_to_participants(bids_path):
         hdr = f.readline()
         txt.append(hdr[:-1] + '\tsite\thigh_density_grid\tvisual\tmotor\ttactile\tacq_date_shift')
 
-        for l in f:
-            subj = l.split('\t')[0]
+        for line in f:
+            subj = line.split('\t')[0]
             txt.append(
-                l[:-1]
+                line[:-1]
                 + '\tUMCU'
-                + '\tno'
+                + '\t'
+                + _find_hdgrid(bids_path / subj)
                 + '\t'
                 + _find_task_type(bids_path / subj, 'visual')
                 + '\t'
@@ -124,6 +125,12 @@ def _add_coordsystem(bids_ieeg):
     with coordsys_file.open('w') as f:
         dump(D, f, indent=2)
 
+
+def _find_hdgrid(subj_path):
+    if len(list(subj_path.rglob('*/*/*_acq-blackrock_*'))) > 0:
+        return 'yes'
+
+    return 'no'
 
 def _find_task_type(subj_path, task_type):
     for t in TASK_TYPES[task_type]:
