@@ -1,16 +1,23 @@
 from logging import getLogger
 from pathlib import Path
+from nibabel.parrec import parse_PAR_header
 from nibabel.cmdline.parrec2nii import get_opt_parser, proc_file, verbose
 from tempfile import mkdtemp
 
 lg = getLogger(__name__)
 
+MR_TYPES = {
+    0: 'magnitude',
+    3: 'phase',
+    }
 
 def convert_parrec_nibabel(par_file):
     """
 
     """
     input_par = Path(par_file).resolve()
+    hdr = parse_PAR(input_par)
+
     tmp_dir = mkdtemp()
     lg.debug(f'Temporary directory for PAR/REC conversion: {tmp_dir}')
 
@@ -29,4 +36,27 @@ def convert_parrec_nibabel(par_file):
 
     output = next(Path(tmp_dir).glob('*.nii.gz'))
 
-    return output
+    return output, hdr
+
+
+def parse_PAR(par_file):
+    """Get some useful information from PAR file. It's quite slow but reading
+    the PAR file twice seems the best solution.
+
+    Returns
+    -------
+    dict
+        "n_dynamics" : int
+            actual number of recorded dynamics (not the planned number of dyns)
+    """
+    out = {}
+    with par_file.open() as f:
+        hdr, info = parse_PAR_header(f)
+
+    out['n_dynamics'] = info['dynamic scan number'].max()
+    try:
+        out['image_types'] = [MR_TYPES[x] for x in unique(info['image_type_mr'])]
+    except KeyError as key:
+        raise ValueError('Unrecognized "image_type_mr" in PAR file. Please add it to MR_TYPES in this function')
+
+    return out

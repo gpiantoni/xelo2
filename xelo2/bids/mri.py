@@ -23,11 +23,12 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
     file = find_one_file(rec, ('parrec', ))
     if file is not None:
-        input_nii = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path)
         move(input_nii, output_nii)
 
     else:
         file = find_one_file(rec, ('nifti', ))
+        PAR = None
         if file is None:
             return None
 
@@ -47,6 +48,9 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         select(output_nii, 'first')
 
     _fix_tr(output_nii, rec.RepetitionTime)
+
+    if PAR is not None and 'phase' in PAR['image_types']:
+        select(output_nii, 'firsthalf')
 
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
         run_deface(output_nii)
