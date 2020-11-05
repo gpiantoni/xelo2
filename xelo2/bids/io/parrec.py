@@ -1,5 +1,6 @@
 from logging import getLogger
 from pathlib import Path
+from numpy import unique
 from nibabel.parrec import parse_PAR_header
 from nibabel.cmdline.parrec2nii import get_opt_parser, proc_file, verbose
 from tempfile import mkdtemp

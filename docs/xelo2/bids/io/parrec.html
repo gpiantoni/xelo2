@@ -26,17 +26,25 @@
 </summary>
 <pre><code class="python">from logging import getLogger
 from pathlib import Path
+from numpy import unique
+from nibabel.parrec import parse_PAR_header
 from nibabel.cmdline.parrec2nii import get_opt_parser, proc_file, verbose
 from tempfile import mkdtemp
 
 lg = getLogger(__name__)
 
+MR_TYPES = {
+    0: &#39;magnitude&#39;,
+    3: &#39;phase&#39;,
+    }
 
 def convert_parrec_nibabel(par_file):
     &#34;&#34;&#34;
 
     &#34;&#34;&#34;
     input_par = Path(par_file).resolve()
+    hdr = parse_PAR(input_par)
+
     tmp_dir = mkdtemp()
     lg.debug(f&#39;Temporary directory for PAR/REC conversion: {tmp_dir}&#39;)
 
@@ -55,7 +63,30 @@ def convert_parrec_nibabel(par_file):
 
     output = next(Path(tmp_dir).glob(&#39;*.nii.gz&#39;))
 
-    return output</code></pre>
+    return output, hdr
+
+
+def parse_PAR(par_file):
+    &#34;&#34;&#34;Get some useful information from PAR file. It&#39;s quite slow but reading
+    the PAR file twice seems the best solution.
+
+    Returns
+    -------
+    dict
+        &#34;n_dynamics&#34; : int
+            actual number of recorded dynamics (not the planned number of dyns)
+    &#34;&#34;&#34;
+    out = {}
+    with par_file.open() as f:
+        hdr, info = parse_PAR_header(f)
+
+    out[&#39;n_dynamics&#39;] = info[&#39;dynamic scan number&#39;].max()
+    try:
+        out[&#39;image_types&#39;] = [MR_TYPES[x] for x in unique(info[&#39;image_type_mr&#39;])]
+    except KeyError as key:
+        raise ValueError(&#39;Unrecognized &#34;image_type_mr&#34; in PAR file. Please add it to MR_TYPES in this function&#39;)
+
+    return out</code></pre>
 </details>
 </section>
 <section>
@@ -79,6 +110,8 @@ def convert_parrec_nibabel(par_file):
 
     &#34;&#34;&#34;
     input_par = Path(par_file).resolve()
+    hdr = parse_PAR(input_par)
+
     tmp_dir = mkdtemp()
     lg.debug(f&#39;Temporary directory for PAR/REC conversion: {tmp_dir}&#39;)
 
@@ -97,7 +130,46 @@ def convert_parrec_nibabel(par_file):
 
     output = next(Path(tmp_dir).glob(&#39;*.nii.gz&#39;))
 
-    return output</code></pre>
+    return output, hdr</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.io.parrec.parse_PAR"><code class="name flex">
+<span>def <span class="ident">parse_PAR</span></span>(<span>par_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get some useful information from PAR file. It's quite slow but reading
+the PAR file twice seems the best solution.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>"n_dynamics" : int
+actual number of recorded dynamics (not the planned number of dyns)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_PAR(par_file):
+    &#34;&#34;&#34;Get some useful information from PAR file. It&#39;s quite slow but reading
+    the PAR file twice seems the best solution.
+
+    Returns
+    -------
+    dict
+        &#34;n_dynamics&#34; : int
+            actual number of recorded dynamics (not the planned number of dyns)
+    &#34;&#34;&#34;
+    out = {}
+    with par_file.open() as f:
+        hdr, info = parse_PAR_header(f)
+
+    out[&#39;n_dynamics&#39;] = info[&#39;dynamic scan number&#39;].max()
+    try:
+        out[&#39;image_types&#39;] = [MR_TYPES[x] for x in unique(info[&#39;image_type_mr&#39;])]
+    except KeyError as key:
+        raise ValueError(&#39;Unrecognized &#34;image_type_mr&#34; in PAR file. Please add it to MR_TYPES in this function&#39;)
+
+    return out</code></pre>
 </details>
 </dd>
 </dl>
@@ -119,6 +191,7 @@ def convert_parrec_nibabel(par_file):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="xelo2.bids.io.parrec.convert_parrec_nibabel" href="#xelo2.bids.io.parrec.convert_parrec_nibabel">convert_parrec_nibabel</a></code></li>
+<li><code><a title="xelo2.bids.io.parrec.parse_PAR" href="#xelo2.bids.io.parrec.parse_PAR">parse_PAR</a></code></li>
 </ul>
 </li>
 </ul>

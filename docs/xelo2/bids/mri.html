@@ -49,11 +49,12 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
     file = find_one_file(rec, (&#39;parrec&#39;, ))
     if file is not None:
-        input_nii = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path)
         move(input_nii, output_nii)
 
     else:
         file = find_one_file(rec, (&#39;nifti&#39;, ))
+        PAR = None
         if file is None:
             return None
 
@@ -74,6 +75,12 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
     _fix_tr(output_nii, rec.RepetitionTime)
 
+    if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
+        phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
+        lg.info(f&#39;Splitting phase info to {phase_nii.name}&#39;)
+        phase = select(output_nii, &#39;split&#39;)
+        phase.to_filename(phase_nii)
+
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
 
@@ -88,9 +95,24 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
 def select(nii, slicing):
     img = niload(nii)
+    half = int(img.shape[3] / 2)
+    secondhalf = None
+
     if slicing == &#39;first&#39;:
         img = img.slicer[:, :, :, 0]
+
+    elif slicing == &#39;firsthalf&#39;:
+        img = img.slicer[:, :, :, :half]
+
+    elif slicing == &#39;secondhalf&#39;:
+        img = img.slicer[:, :, :, half:]
+
+    elif slicing == &#39;split&#39;:
+        secondhalf = img.slicer[:, :, :, half:]
+        img = img.slicer[:, :, :, :half]
+
     img.to_filename(nii)
+    return secondhalf
 
 
 def _fix_tr(nii, RepetitionTime):
@@ -174,11 +196,12 @@ def gz(input_file, output_file):
 
     file = find_one_file(rec, (&#39;parrec&#39;, ))
     if file is not None:
-        input_nii = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path)
         move(input_nii, output_nii)
 
     else:
         file = find_one_file(rec, (&#39;nifti&#39;, ))
+        PAR = None
         if file is None:
             return None
 
@@ -198,6 +221,12 @@ def gz(input_file, output_file):
         select(output_nii, &#39;first&#39;)
 
     _fix_tr(output_nii, rec.RepetitionTime)
+
+    if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
+        phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
+        lg.info(f&#39;Splitting phase info to {phase_nii.name}&#39;)
+        phase = select(output_nii, &#39;split&#39;)
+        phase.to_filename(phase_nii)
 
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
@@ -271,9 +300,24 @@ def gz(input_file, output_file):
 </summary>
 <pre><code class="python">def select(nii, slicing):
     img = niload(nii)
+    half = int(img.shape[3] / 2)
+    secondhalf = None
+
     if slicing == &#39;first&#39;:
         img = img.slicer[:, :, :, 0]
-    img.to_filename(nii)</code></pre>
+
+    elif slicing == &#39;firsthalf&#39;:
+        img = img.slicer[:, :, :, :half]
+
+    elif slicing == &#39;secondhalf&#39;:
+        img = img.slicer[:, :, :, half:]
+
+    elif slicing == &#39;split&#39;:
+        secondhalf = img.slicer[:, :, :, half:]
+        img = img.slicer[:, :, :, :half]
+
+    img.to_filename(nii)
+    return secondhalf</code></pre>
 </details>
 </dd>
 </dl>
