@@ -314,14 +314,16 @@ def add_triggers_to_add_id(db, TABLES):
                 lg.warning(query.lastError().text())
 
             if db.driverName() == 'QSQLITE':
+                parent_id = f'{parent_table[:-1]}_id'
                 sql_cmd = dedent(f"""\
                     CREATE TRIGGER replace_id_to_subtable_{table_name}
                     BEFORE UPDATE ON {parent_table}
                     WHEN
                       NEW.{WHEN['parameter']} <> OLD.{WHEN['parameter']} AND
-                      NEW.{WHEN['parameter']} {sql_in(WHEN['value'])}
+                      NEW.{WHEN['parameter']} {sql_in(WHEN['value'])} AND
+                      NEW.id NOT IN (SELECT {parent_id} FROM {table_name})
                     BEGIN
-                      INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                      INSERT INTO {table_name} ({parent_id}) VALUES (NEW.id) ;
                     END;""")
 
             else:
