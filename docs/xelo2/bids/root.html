@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>xelo2.bids.root API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>xelo2.bids.root</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from json import dump
+from pathlib import Path
+from copy import copy as c
+from collections import defaultdict
+from logging import getLogger
+from datetime import date, datetime
+from shutil import copy, rmtree
+
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtSql import QSqlQuery
+
+from ..api import list_subjects, Run
+from .mri import convert_mri
+from .ieeg import convert_ieeg
+from .physio import convert_physio
+from .events import convert_events
+from ..io.export_db import prepare_query
+from .utils import rename_task
+from .templates import (
+    JSON_PARTICIPANTS,
+    JSON_SESSIONS,
+    )
+
+# protocols
+PROTOCOL_HEALTHY = [
+    &#39;16-816&#39;,
+    ]
+
+
+lg = getLogger(__name__)
+
+
+def prepare_subset(db, where, subset=None):
+
+    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
+    query = QSqlQuery(db)
+    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    if subset is None:
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+
+    while query.next():
+        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
+        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
+        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
+
+    return subset
+
+
+def create_bids(db, data_path, deface=True, subset=None, progress=None):
+
+    if subset is not None:
+        subset = add_intended_for(db, subset)
+
+        subset_subj = set(subset[&#39;subjects&#39;])
+        subset_sess = set(subset[&#39;sessions&#39;])
+        subset_run = set(subset[&#39;runs&#39;])
+
+    data_path = Path(data_path)
+    if data_path.exists():
+        rmtree(data_path, ignore_errors=True)
+    data_path.mkdir(parents=True, exist_ok=True)
+
+    # the dataset_description.json is used by find_root, in some subscripts
+    _make_dataset_description(data_path)
+
+    intendedfor = {}
+
+    i = 0
+    participants = []
+    for subj in list_subjects(db):
+        bids_name = {
+            &#39;sub&#39;: None,
+            &#39;ses&#39;: None,
+            &#39;task&#39;: None,
+            &#39;acq&#39;: None,
+            &#39;rec&#39;: None,
+            &#39;dir&#39;: None,
+            &#39;run&#39;: None,
+            &#39;rec&#39;: None,
+            }
+        if subset is not None and subj.id not in subset_subj:
+            continue
+
+        # use relative date based on date_of_signature
+        reference_dates = [p.date_of_signature for p in subj.list_protocols()]
+        if len(reference_dates) == 0:
+            lg.warning(f&#39;You need to add at least one research protocol for {subj.codes}&#39;)
+            reference_dates = [datetime.now().date(), ]
+
+        reference_date = max(reference_dates)
+        if reference_date is None:
+            lg.warning(f&#39;You need to add date_of_signature to the METC of {subj.codes}&#39;)
+            lg.info(&#39;Using date of the first task performed by the subject&#39;)
+            reference_date = min([x.start_time for x in subj.list_sessions()]).date()
+
+        lg.info(f&#39;Adding {subj.codes}&#39;)
+        codes = subj.codes
+        if len(codes) == 0:
+            code = &#39;id{subj.id}&#39;  # use id if code is empty
+        else:
+            code = codes[0]
+        bids_name[&#39;sub&#39;] = &#39;sub-&#39; + code
+        subj_path = data_path / bids_name[&#39;sub&#39;]
+        subj_path.mkdir(parents=True, exist_ok=True)
+
+        if subj.date_of_birth is None:
+            lg.warning(f&#39;You need to add date_of_birth to {subj.codes}&#39;)
+            age = &#39;n/a&#39;
+        else:
+            age = (reference_date - subj.date_of_birth).days // 365.2425
+            age = f&#39;{age:.0f}&#39;
+
+        patient_or_healthy = &#39;patient&#39;
+        for p in subj.list_protocols():
+            if p.metc in PROTOCOL_HEALTHY:
+                patient_or_healthy = &#39;healthy&#39;
+
+        participants.append({
+            &#39;participant_id&#39;: bids_name[&#39;sub&#39;],
+            &#39;sex&#39;: subj.sex,
+            &#39;age&#39;: age,
+            &#39;group&#39;: patient_or_healthy,
+            })
+
+        sess_count = defaultdict(int)
+        sess_files = []
+        for sess in subj.list_sessions():
+            sess_count[_make_sess_name(sess)] += 1  # also count the sessions which are not included
+            if subset is not None and sess.id not in subset_sess:
+                continue
+
+            bids_name[&#39;ses&#39;] = f&#39;ses-{_make_sess_name(sess)}{sess_count[_make_sess_name(sess)]}&#39;
+            sess_path = subj_path / bids_name[&#39;ses&#39;]
+            sess_path.mkdir(parents=True, exist_ok=True)
+            lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]}&#39;)
+
+            sess_files.append({
+                &#39;session_id&#39;: bids_name[&#39;ses&#39;],
+                &#39;resection&#39;: &#39;n/a&#39;,
+                &#39;implantation&#39;: &#39;no&#39;,
+                &#39;breathing_challenge&#39;: &#39;no&#39;,
+                })
+            if sess.name in (&#39;IEMU&#39;, &#39;OR&#39;, &#39;CT&#39;):
+                sess_files[-1][&#39;implantation&#39;] = &#39;yes&#39;
+
+            run_count = defaultdict(int)
+            run_files = []
+            for run in sess.list_runs():
+                run_count[run.task_name] += 1  # also count the runs which are not included
+
+                if subset is not None and run.id not in subset_run:
+                    continue
+
+                if len(run.list_recordings()) == 0:
+                    lg.warning(f&#39;No recordings for {subj.codes}/{run.task_name}&#39;)
+                    continue
+
+                if progress is not None:
+                    progress.setValue(i)
+                    i += 1
+                    progress.setLabelText(f&#39;Exporting &#34;{subj.codes}&#34; / &#34;{sess.name}&#34; / &#34;{run.task_name}&#34;&#39;)
+                    QGuiApplication.processEvents()
+
+                    if progress.wasCanceled():
+                        return
+
+                acquisition = get_bids_acquisition(run)
+                bids_name[&#39;run&#39;] = f&#39;run-{run_count[run.task_name]}&#39;
+
+                if acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                    bids_name[&#39;task&#39;] = f&#39;task-{rename_task(run.task_name)}&#39;
+                else:
+                    bids_name[&#39;task&#39;] = None
+                mod_path = sess_path / acquisition
+                mod_path.mkdir(parents=True, exist_ok=True)
+                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} / {bids_name[&#34;run&#34;]}&#39;)
+
+                data_name = None
+                for rec in run.list_recordings():
+
+                    if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
+                        data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
+
+                    elif rec.modality == &#39;ieeg&#39;:
+                        if run.duration is None:
+                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run.task_name}&#39;)
+                            continue
+                        data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
+
+                    elif rec.modality == &#39;physio&#39;:
+                        if data_name is None:
+                            lg.warning(&#39;physio only works after another recording modality&#39;)
+                        else:
+                            convert_physio(rec, mod_path, c(bids_name))
+
+                    else:
+                        lg.warning(f&#39;Unknown modality {rec.modality} for {rec}&#39;)
+                        continue
+
+                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                        convert_events(run, mod_path, c(bids_name))
+
+                    if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
+                        relative_filename = str(data_name.relative_to(data_path))
+                        intendedfor[run.id] = relative_filename
+                        run_files.append({
+                            &#39;filename&#39;: relative_filename,
+                            &#39;acq_time&#39;: _set_date_to_1900(reference_date, run.start_time).isoformat(timespec=&#39;seconds&#39;),
+                            })
+
+            if len(run_files) == 0:
+                continue
+            tsv_file = sess_path / f&#39;{bids_name[&#34;sub&#34;]}_{bids_name[&#34;ses&#34;]}_scans.tsv&#39;
+            if run_files:
+                _list_scans(tsv_file, run_files)
+
+        tsv_file = subj_path / f&#39;{bids_name[&#34;sub&#34;]}_sessions.tsv&#39;
+        if sess_files:
+            _list_scans(tsv_file, sess_files)
+
+        json_sessions = tsv_file.with_suffix(&#39;.json&#39;)
+        copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
+
+    # here the rest
+    _make_README(data_path)
+    tsv_file = data_path / &#39;participants.tsv&#39;
+    _list_scans(tsv_file, participants)
+    json_participants = tsv_file.with_suffix(&#39;.json&#39;)
+    copy(JSON_PARTICIPANTS, json_participants)
+
+
+def _list_scans(tsv_file, scans):
+
+    with tsv_file.open(&#39;w&#39;) as f:
+        f.write(&#39;\t&#39;.join(scans[0].keys()) + &#39;\n&#39;)
+        for scan in scans:
+            for k, v in scan.items():
+                if v is None:
+                    scan[k] = &#39;n/a&#39;
+            f.write(&#39;\t&#39;.join(scan.values()) + &#39;\n&#39;)
+
+
+def _make_dataset_description(data_path):
+    &#34;&#34;&#34;Generate general description of the dataset
+
+    Parameters
+    ----------
+    data_path : Path
+        root BIDS directory
+    &#34;&#34;&#34;
+
+    d = {
+        &#34;Name&#34;: data_path.name,
+        &#34;BIDSVersion&#34;: &#34;1.2.1&#34;,
+        &#34;License&#34;: &#34;CCBY&#34;,
+        &#34;Authors&#34;: [
+            &#34;Giovanni Piantoni&#34;,
+            &#34;Nick Ramsey&#34;,
+            &#34;Natalia Petridou&#34;,
+            ],
+        &#34;Acknowledgements&#34;: &#34;&#34;,
+        &#34;HowToAcknowledge&#34;: &#39;&#39;,
+        &#34;Funding&#34;: [
+            &#34;NIH R01 MH111417&#34;,
+            ],
+        &#34;ReferencesAndLinks&#34;: [&#34;&#34;, ],
+        &#34;DatasetDOI&#34;: &#34;&#34;
+        }
+
+    with (data_path / &#39;dataset_description.json&#39;).open(&#39;w&#39;) as f:
+        dump(d, f, ensure_ascii=False, indent=&#39; &#39;)
+
+
+def get_bids_acquisition(run):
+    for recording in run.list_recordings():
+        modality = recording.modality
+        if modality == &#39;ieeg&#39;:
+            return &#39;ieeg&#39;
+        elif modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;FLAIR&#39;, &#39;PD&#39;, &#39;angio&#39;):
+            return &#39;anat&#39;
+        elif modality in (&#39;bold&#39;, &#39;phase&#39;):
+            return &#39;func&#39;
+        elif modality in (&#39;epi&#39;, ):
+            return &#39;fmap&#39;
+        elif modality in (&#39;ct&#39;, ):
+            return &#39;ct&#39;
+
+    raise ValueError(f&#39;I cannot determine BIDS folder for {repr(run)}&#39;)
+
+
+def add_intended_for(db, subset):
+    &#34;&#34;&#34;Electrodes also need the reference T1w images, so we add it here&#34;&#34;&#34;
+
+    reference_t1w = []
+    for run_id in subset[&#39;runs&#39;]:
+        run = Run(db, id=run_id)
+        for rec in run.list_recordings():
+            electrodes = rec.electrodes
+            if electrodes is not None:
+                t1w_id = electrodes.IntendedFor
+                if t1w_id is not None:
+                    reference_t1w.append(t1w_id)
+
+    if len(reference_t1w) == 0:
+        return subset
+
+    elif len(reference_t1w) == 1:
+        run_id_sql = f&#39;runs.id = {reference_t1w[0]}&#39;
+
+    else:
+        run_id_sql = &#39;runs.id IN (&#39; + &#39;, &#39;.join(str(x) for x in reference_t1w) + &#39;)&#39;
+
+    return prepare_subset(db, run_id_sql, subset=subset)
+
+
+def _make_README(data_path):
+
+    with (data_path / &#39;README&#39;).open(&#39;w&#39;) as f:
+        f.write(&#39;Converted with xelo2&#39;)
+
+    # this is necessary to work around this issue
+    # https://github.com/bids-standard/bids-specification/issues/209
+    with (data_path / &#39;.bidsignore&#39;).open(&#39;w&#39;) as f:
+        f.write(&#39;sub-*/ses-*/ieeg/*_physio.tsv.gz\n&#39;)
+        f.write(&#39;sub-*/ses-*/ieeg/*_physio.json\n&#39;)
+
+
+def _set_date_to_1900(base_date, datetime_of_interest):
+    if datetime_of_interest is None:  # run.start_time is null
+        return datetime(1900, 1, 1, 0, 0, 0)
+    else:
+        return datetime.combine(
+            date(1900, 1, 1) + (datetime_of_interest.date() - base_date),
+            datetime_of_interest.time())
+
+
+def _make_sess_name(sess):
+    if sess.name == &#39;MRI&#39;:
+        MagneticFieldStrength = sess.MagneticFieldStrength
+        if MagneticFieldStrength is None:
+            lg.warning(f&#39;Please specify Magnetic Field Strength for {sess}&#39;)
+            sess_name = &#39;mri&#39;
+        elif MagneticFieldStrength == &#39;1.5T&#39;:  # we cannot use 1.5 in session name
+            sess_name = &#39;mri&#39;
+        else:
+            sess_name = MagneticFieldStrength.lower()
+    else:
+        sess_name = sess.name.lower()
+    return sess_name</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="xelo2.bids.root.add_intended_for"><code class="name flex">
+<span>def <span class="ident">add_intended_for</span></span>(<span>db, subset)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Electrodes also need the reference T1w images, so we add it here</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_intended_for(db, subset):
+    &#34;&#34;&#34;Electrodes also need the reference T1w images, so we add it here&#34;&#34;&#34;
+
+    reference_t1w = []
+    for run_id in subset[&#39;runs&#39;]:
+        run = Run(db, id=run_id)
+        for rec in run.list_recordings():
+            electrodes = rec.electrodes
+            if electrodes is not None:
+                t1w_id = electrodes.IntendedFor
+                if t1w_id is not None:
+                    reference_t1w.append(t1w_id)
+
+    if len(reference_t1w) == 0:
+        return subset
+
+    elif len(reference_t1w) == 1:
+        run_id_sql = f&#39;runs.id = {reference_t1w[0]}&#39;
+
+    else:
+        run_id_sql = &#39;runs.id IN (&#39; + &#39;, &#39;.join(str(x) for x in reference_t1w) + &#39;)&#39;
+
+    return prepare_subset(db, run_id_sql, subset=subset)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.root.create_bids"><code class="name flex">
+<span>def <span class="ident">create_bids</span></span>(<span>db, data_path, deface=True, subset=None, progress=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_bids(db, data_path, deface=True, subset=None, progress=None):
+
+    if subset is not None:
+        subset = add_intended_for(db, subset)
+
+        subset_subj = set(subset[&#39;subjects&#39;])
+        subset_sess = set(subset[&#39;sessions&#39;])
+        subset_run = set(subset[&#39;runs&#39;])
+
+    data_path = Path(data_path)
+    if data_path.exists():
+        rmtree(data_path, ignore_errors=True)
+    data_path.mkdir(parents=True, exist_ok=True)
+
+    # the dataset_description.json is used by find_root, in some subscripts
+    _make_dataset_description(data_path)
+
+    intendedfor = {}
+
+    i = 0
+    participants = []
+    for subj in list_subjects(db):
+        bids_name = {
+            &#39;sub&#39;: None,
+            &#39;ses&#39;: None,
+            &#39;task&#39;: None,
+            &#39;acq&#39;: None,
+            &#39;rec&#39;: None,
+            &#39;dir&#39;: None,
+            &#39;run&#39;: None,
+            &#39;rec&#39;: None,
+            }
+        if subset is not None and subj.id not in subset_subj:
+            continue
+
+        # use relative date based on date_of_signature
+        reference_dates = [p.date_of_signature for p in subj.list_protocols()]
+        if len(reference_dates) == 0:
+            lg.warning(f&#39;You need to add at least one research protocol for {subj.codes}&#39;)
+            reference_dates = [datetime.now().date(), ]
+
+        reference_date = max(reference_dates)
+        if reference_date is None:
+            lg.warning(f&#39;You need to add date_of_signature to the METC of {subj.codes}&#39;)
+            lg.info(&#39;Using date of the first task performed by the subject&#39;)
+            reference_date = min([x.start_time for x in subj.list_sessions()]).date()
+
+        lg.info(f&#39;Adding {subj.codes}&#39;)
+        codes = subj.codes
+        if len(codes) == 0:
+            code = &#39;id{subj.id}&#39;  # use id if code is empty
+        else:
+            code = codes[0]
+        bids_name[&#39;sub&#39;] = &#39;sub-&#39; + code
+        subj_path = data_path / bids_name[&#39;sub&#39;]
+        subj_path.mkdir(parents=True, exist_ok=True)
+
+        if subj.date_of_birth is None:
+            lg.warning(f&#39;You need to add date_of_birth to {subj.codes}&#39;)
+            age = &#39;n/a&#39;
+        else:
+            age = (reference_date - subj.date_of_birth).days // 365.2425
+            age = f&#39;{age:.0f}&#39;
+
+        patient_or_healthy = &#39;patient&#39;
+        for p in subj.list_protocols():
+            if p.metc in PROTOCOL_HEALTHY:
+                patient_or_healthy = &#39;healthy&#39;
+
+        participants.append({
+            &#39;participant_id&#39;: bids_name[&#39;sub&#39;],
+            &#39;sex&#39;: subj.sex,
+            &#39;age&#39;: age,
+            &#39;group&#39;: patient_or_healthy,
+            })
+
+        sess_count = defaultdict(int)
+        sess_files = []
+        for sess in subj.list_sessions():
+            sess_count[_make_sess_name(sess)] += 1  # also count the sessions which are not included
+            if subset is not None and sess.id not in subset_sess:
+                continue
+
+            bids_name[&#39;ses&#39;] = f&#39;ses-{_make_sess_name(sess)}{sess_count[_make_sess_name(sess)]}&#39;
+            sess_path = subj_path / bids_name[&#39;ses&#39;]
+            sess_path.mkdir(parents=True, exist_ok=True)
+            lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]}&#39;)
+
+            sess_files.append({
+                &#39;session_id&#39;: bids_name[&#39;ses&#39;],
+                &#39;resection&#39;: &#39;n/a&#39;,
+                &#39;implantation&#39;: &#39;no&#39;,
+                &#39;breathing_challenge&#39;: &#39;no&#39;,
+                })
+            if sess.name in (&#39;IEMU&#39;, &#39;OR&#39;, &#39;CT&#39;):
+                sess_files[-1][&#39;implantation&#39;] = &#39;yes&#39;
+
+            run_count = defaultdict(int)
+            run_files = []
+            for run in sess.list_runs():
+                run_count[run.task_name] += 1  # also count the runs which are not included
+
+                if subset is not None and run.id not in subset_run:
+                    continue
+
+                if len(run.list_recordings()) == 0:
+                    lg.warning(f&#39;No recordings for {subj.codes}/{run.task_name}&#39;)
+                    continue
+
+                if progress is not None:
+                    progress.setValue(i)
+                    i += 1
+                    progress.setLabelText(f&#39;Exporting &#34;{subj.codes}&#34; / &#34;{sess.name}&#34; / &#34;{run.task_name}&#34;&#39;)
+                    QGuiApplication.processEvents()
+
+                    if progress.wasCanceled():
+                        return
+
+                acquisition = get_bids_acquisition(run)
+                bids_name[&#39;run&#39;] = f&#39;run-{run_count[run.task_name]}&#39;
+
+                if acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                    bids_name[&#39;task&#39;] = f&#39;task-{rename_task(run.task_name)}&#39;
+                else:
+                    bids_name[&#39;task&#39;] = None
+                mod_path = sess_path / acquisition
+                mod_path.mkdir(parents=True, exist_ok=True)
+                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} / {bids_name[&#34;run&#34;]}&#39;)
+
+                data_name = None
+                for rec in run.list_recordings():
+
+                    if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
+                        data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
+
+                    elif rec.modality == &#39;ieeg&#39;:
+                        if run.duration is None:
+                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run.task_name}&#39;)
+                            continue
+                        data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
+
+                    elif rec.modality == &#39;physio&#39;:
+                        if data_name is None:
+                            lg.warning(&#39;physio only works after another recording modality&#39;)
+                        else:
+                            convert_physio(rec, mod_path, c(bids_name))
+
+                    else:
+                        lg.warning(f&#39;Unknown modality {rec.modality} for {rec}&#39;)
+                        continue
+
+                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                        convert_events(run, mod_path, c(bids_name))
+
+                    if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
+                        relative_filename = str(data_name.relative_to(data_path))
+                        intendedfor[run.id] = relative_filename
+                        run_files.append({
+                            &#39;filename&#39;: relative_filename,
+                            &#39;acq_time&#39;: _set_date_to_1900(reference_date, run.start_time).isoformat(timespec=&#39;seconds&#39;),
+                            })
+
+            if len(run_files) == 0:
+                continue
+            tsv_file = sess_path / f&#39;{bids_name[&#34;sub&#34;]}_{bids_name[&#34;ses&#34;]}_scans.tsv&#39;
+            if run_files:
+                _list_scans(tsv_file, run_files)
+
+        tsv_file = subj_path / f&#39;{bids_name[&#34;sub&#34;]}_sessions.tsv&#39;
+        if sess_files:
+            _list_scans(tsv_file, sess_files)
+
+        json_sessions = tsv_file.with_suffix(&#39;.json&#39;)
+        copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
+
+    # here the rest
+    _make_README(data_path)
+    tsv_file = data_path / &#39;participants.tsv&#39;
+    _list_scans(tsv_file, participants)
+    json_participants = tsv_file.with_suffix(&#39;.json&#39;)
+    copy(JSON_PARTICIPANTS, json_participants)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.root.get_bids_acquisition"><code class="name flex">
+<span>def <span class="ident">get_bids_acquisition</span></span>(<span>run)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_bids_acquisition(run):
+    for recording in run.list_recordings():
+        modality = recording.modality
+        if modality == &#39;ieeg&#39;:
+            return &#39;ieeg&#39;
+        elif modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;FLAIR&#39;, &#39;PD&#39;, &#39;angio&#39;):
+            return &#39;anat&#39;
+        elif modality in (&#39;bold&#39;, &#39;phase&#39;):
+            return &#39;func&#39;
+        elif modality in (&#39;epi&#39;, ):
+            return &#39;fmap&#39;
+        elif modality in (&#39;ct&#39;, ):
+            return &#39;ct&#39;
+
+    raise ValueError(f&#39;I cannot determine BIDS folder for {repr(run)}&#39;)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.root.prepare_subset"><code class="name flex">
+<span>def <span class="ident">prepare_subset</span></span>(<span>db, where, subset=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare_subset(db, where, subset=None):
+
+    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
+    query = QSqlQuery(db)
+    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    if subset is None:
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+
+    while query.next():
+        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
+        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
+        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
+
+    return subset</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="xelo2.bids" href="index.html">xelo2.bids</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="xelo2.bids.root.add_intended_for" href="#xelo2.bids.root.add_intended_for">add_intended_for</a></code></li>
+<li><code><a title="xelo2.bids.root.create_bids" href="#xelo2.bids.root.create_bids">create_bids</a></code></li>
+<li><code><a title="xelo2.bids.root.get_bids_acquisition" href="#xelo2.bids.root.get_bids_acquisition">get_bids_acquisition</a></code></li>
+<li><code><a title="xelo2.bids.root.prepare_subset" href="#xelo2.bids.root.prepare_subset">prepare_subset</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

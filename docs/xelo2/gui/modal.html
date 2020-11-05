@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>xelo2.gui.modal API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>xelo2.gui.modal</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from logging import getLogger
+from pathlib import Path
+from PyQt5.QtWidgets import (
+    QAction,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QSizePolicy,
+    QStackedLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+    )
+from PyQt5.QtCore import Qt
+
+from functools import partial
+from numpy import issubdtype, floating, integer
+
+from .utils import LEVELS, _protocol_name
+from ..api.filetype import parse_filetype
+from ..api.frontend import list_experimenters, list_allowed_values
+from ..io.ieeg import read_info_from_ieeg
+
+lg = getLogger(__name__)
+
+
+class NewFile(QDialog):
+
+    def __init__(self, parent, file_obj=None, level_obj=None, filename=None):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.level = QComboBox()
+        self.level.addItems([level[:-1].capitalize() for level in LEVELS])
+
+        if level_obj is not None:
+            self.level.setEnabled(False)  # do not allow changing level here
+            self.level.setCurrentText(level_obj.t.capitalize())
+
+        self.filepath = QLineEdit()
+        self.filepath.setFixedWidth(800)
+        self.filepath.editingFinished.connect(self.set_filetype)
+        browse = QPushButton(&#39;Browse ...&#39;)
+        browse.clicked.connect(self.browse)
+        self.format = QComboBox()
+        self.format.addItems([&#39;Unknown&#39;, ] + list_allowed_values(parent.db, &#39;files&#39;, &#39;format&#39;))
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        layout_file = QHBoxLayout()
+        layout_file.addWidget(self.filepath)
+        layout_file.addWidget(browse)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.level)
+        layout.addLayout(layout_file)
+        layout.addWidget(self.format)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+        if file_obj is not None:
+            # self.level.setCurrentText(file_obj)
+            self.filepath.setText(str(file_obj.path))
+            self.format.setCurrentText(file_obj.format)
+
+        if filename is not None:
+            self.filepath.setText(filename)
+            self.set_filetype()
+            self.filepath.setEnabled(False)
+            self.set_filetype(filename)
+
+    def browse(self):
+        filename, _ = QFileDialog.getOpenFileName(self, &#39;Select File&#39;)
+
+        if filename:
+            self.filepath.setText(filename)
+            self.set_filetype(filename)
+
+    def set_filetype(self, filename=None):
+        if filename is None:
+            filename = Path(self.filepath.text()).resolve()
+
+        try:
+            filetype = parse_filetype(filename)
+
+        except ValueError as err:
+            lg.debug(err)
+            print(err)
+
+        else:
+            self.format.setCurrentText(filetype)
+
+def _prepare_values(run, info):
+    run_duration = run.duration
+    if run_duration is None:
+        run_duration = 0
+
+    VALUES = [
+        [
+            &#39;&#39;,
+            &#39;Current Values&#39;,
+            &#39;Imported Values&#39;
+        ],
+        [
+            &#39;Start Time&#39;,
+            strftime(run.start_time),
+            strftime(info[&#39;start_time&#39;]),
+        ],
+        [
+            &#39;Duration&#39;,
+            f&#39;{run_duration:.3f} s&#39;,
+            f&#39;{info[&#34;duration&#34;]:.3f} s&#39;,
+        ],
+        [
+            &#39;# Events&#39;,
+            f&#39;{len(run.events)}&#39;,
+            f&#39;{len(info[&#34;events&#34;])}&#39;,
+            ],
+        ]
+
+    return VALUES
+
+
+def strftime(t):
+    &#34;&#34;&#34;This is the most accurate way to get milliseconds, without microseconds&#34;&#34;&#34;
+    return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;
+
+
+class CompareEvents(QDialog):
+    def __init__(self, parent, run, ieeg_file):
+        super().__init__(parent)
+
+        self.info = read_info_from_ieeg(ieeg_file)
+
+        layout = QGridLayout(self)
+
+        VALUES = _prepare_values(run, self.info)
+        for i0, vals in enumerate(VALUES):
+            for i1, value in enumerate(vals):
+                label = QLabel(value)
+                label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                layout.addWidget(label, i0, i1)
+
+        layout.addWidget(make_table(run.events), i0 + 1, 1)
+        layout.addWidget(make_table(self.info[&#39;events&#39;]), i0 + 1, 2)
+
+        self.old = QPushButton(&#39;Keep old events&#39;)
+        self.old.clicked.connect(self.reject)
+        self.new = QPushButton(&#39;Use new events&#39;)
+        self.new.clicked.connect(self.accept)
+        layout.addWidget(self.old, i0 + 2, 1)
+        layout.addWidget(self.new, i0 + 2, 2)
+
+        self.setLayout(layout)
+
+
+def make_table(ev):
+    t0 = QTableWidget()
+    t0.horizontalHeader().setStretchLastSection(True)
+    t0.setColumnCount(len(ev.dtype.names))
+    t0.setHorizontalHeaderLabels(ev.dtype.names)
+    t0.verticalHeader().setVisible(False)
+    n_rows = min(len(ev), 10)
+    t0.setRowCount(n_rows)
+
+    for i0, name in enumerate(ev.dtype.names):
+        for i1 in range(n_rows):
+            v = ev[name][i1]
+
+            if issubdtype(ev.dtype[name].type, floating):
+                v = f&#39;{v:.3f}&#39;
+
+            elif issubdtype(ev.dtype[name].type, integer):
+                v = f&#39;{v}&#39;
+
+            item = QTableWidgetItem(v)
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            t0.setItem(i1, i0, item)
+
+    table = t0
+    table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+    table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    table.resizeColumnsToContents()
+    table.setFixedSize(
+        table.horizontalHeader().length() + table.verticalHeader().width(),
+        table.verticalHeader().length() + table.horizontalHeader().height())
+
+    return t0
+
+
+class Popup_Experimenters(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        self.menu = QMenu(self)
+        current_experimenters = run.experimenters
+        for name in list_experimenters(parent.db):
+            action = QAction(name, self)
+            action.setCheckable(True)
+            if name in current_experimenters:
+                action.setChecked(True)
+            action.toggled.connect(self.action_toggle)
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked):
+
+        names = []
+        for action in self.menu.actions():
+            if action.isChecked():
+                names.append(action.text())
+
+        self.run.experimenters = names
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(&#39;, &#39;.join(self.run.experimenters))
+
+
+class Popup_Protocols(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        subject = run.session.subject
+
+        current_protocols = [metc.id for metc in run.list_protocols()]
+        self.menu = QMenu(self)
+        for metc in subject.list_protocols():
+            action = QAction(_protocol_name(metc), self)
+            action.setCheckable(True)
+            if metc.id in current_protocols:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, metc=metc))
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked, metc):
+        if checked:
+            self.run.attach_protocol(metc)
+        else:
+            self.run.detach_protocol(metc)
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(&#39;, &#39;.join(_protocol_name(x) for x in self.run.list_protocols()))
+
+
+class AccessDatabase(QDialog):
+    EMPTY_PUSHBUTTON = &#39;(click to select file)&#39;
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.db_type = QComboBox()
+        self.db_type.addItems([&#39;mysql / mariadb&#39;, &#39;sqlite&#39;])
+        self.db_type.currentTextChanged.connect(self.switch_dbtype)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        self.db_name = QLineEdit()
+        self.username = QLineEdit()
+        self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
+
+        layout = QFormLayout()
+        layout.addRow(&#39;Database Name&#39;, self.db_name)
+        layout.addRow(&#39;Username&#39;, self.username)
+        layout.addRow(&#39;Password&#39;, self.password)
+        mysql = QWidget()
+        mysql.setLayout(layout)
+
+        self.sqlite_path = QPushButton(self.EMPTY_PUSHBUTTON)
+        self.sqlite_path.clicked.connect(self.select_file)
+        layout = QFormLayout()
+        layout.addRow(&#39;Path to Database&#39;, self.sqlite_path)
+        sqlite = QWidget()
+        sqlite.setLayout(layout)
+
+        self.stacked = QStackedLayout()
+        self.stacked.addWidget(mysql)
+        self.stacked.addWidget(sqlite)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.db_type)
+        layout.addLayout(self.stacked)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+    def switch_dbtype(self, selected):
+        if selected == &#39;sqlite&#39;:
+            self.stacked.setCurrentIndex(1)
+        else:
+            self.stacked.setCurrentIndex(0)
+
+    def select_file(self):
+        out = QFileDialog.getOpenFileName(
+            self,
+            &#39;Open SQLITE database&#39;,
+            None,
+            &#34;SQLITE database (*.*)&#34;)[0]
+        if out != &#39;&#39;:
+            self.sqlite_path.setText(out)
+
+
+def parse_accessdatabase(parent):
+    self = AccessDatabase(parent)
+    result = self.exec()
+    DB_ARGS = {}
+    if result:
+        if self.stacked.currentIndex() == 0:
+            DB_ARGS[&#39;db_type&#39;] = &#39;QMYSQL&#39;
+            db_name = self.db_name.text()
+            if db_name == &#39;&#39;:
+                return None
+            else:
+                DB_ARGS[&#39;db_name&#39;] = db_name
+            DB_ARGS[&#39;username&#39;] = self.username.text()
+            DB_ARGS[&#39;password&#39;] = self.password.text()
+        else:
+            DB_ARGS[&#39;db_type&#39;] = &#39;QSQLITE&#39;
+            db_name = self.sqlite_path.text()
+            if db_name == self.EMPTY_PUSHBUTTON:
+                return None
+            else:
+                DB_ARGS[&#39;db_name&#39;] = db_name
+
+        return DB_ARGS</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="xelo2.gui.modal.make_table"><code class="name flex">
+<span>def <span class="ident">make_table</span></span>(<span>ev)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_table(ev):
+    t0 = QTableWidget()
+    t0.horizontalHeader().setStretchLastSection(True)
+    t0.setColumnCount(len(ev.dtype.names))
+    t0.setHorizontalHeaderLabels(ev.dtype.names)
+    t0.verticalHeader().setVisible(False)
+    n_rows = min(len(ev), 10)
+    t0.setRowCount(n_rows)
+
+    for i0, name in enumerate(ev.dtype.names):
+        for i1 in range(n_rows):
+            v = ev[name][i1]
+
+            if issubdtype(ev.dtype[name].type, floating):
+                v = f&#39;{v:.3f}&#39;
+
+            elif issubdtype(ev.dtype[name].type, integer):
+                v = f&#39;{v}&#39;
+
+            item = QTableWidgetItem(v)
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            t0.setItem(i1, i0, item)
+
+    table = t0
+    table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+    table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    table.resizeColumnsToContents()
+    table.setFixedSize(
+        table.horizontalHeader().length() + table.verticalHeader().width(),
+        table.verticalHeader().length() + table.horizontalHeader().height())
+
+    return t0</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.parse_accessdatabase"><code class="name flex">
+<span>def <span class="ident">parse_accessdatabase</span></span>(<span>parent)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_accessdatabase(parent):
+    self = AccessDatabase(parent)
+    result = self.exec()
+    DB_ARGS = {}
+    if result:
+        if self.stacked.currentIndex() == 0:
+            DB_ARGS[&#39;db_type&#39;] = &#39;QMYSQL&#39;
+            db_name = self.db_name.text()
+            if db_name == &#39;&#39;:
+                return None
+            else:
+                DB_ARGS[&#39;db_name&#39;] = db_name
+            DB_ARGS[&#39;username&#39;] = self.username.text()
+            DB_ARGS[&#39;password&#39;] = self.password.text()
+        else:
+            DB_ARGS[&#39;db_type&#39;] = &#39;QSQLITE&#39;
+            db_name = self.sqlite_path.text()
+            if db_name == self.EMPTY_PUSHBUTTON:
+                return None
+            else:
+                DB_ARGS[&#39;db_name&#39;] = db_name
+
+        return DB_ARGS</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.strftime"><code class="name flex">
+<span>def <span class="ident">strftime</span></span>(<span>t)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is the most accurate way to get milliseconds, without microseconds</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def strftime(t):
+    &#34;&#34;&#34;This is the most accurate way to get milliseconds, without microseconds&#34;&#34;&#34;
+    return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="xelo2.gui.modal.AccessDatabase"><code class="flex name class">
+<span>class <span class="ident">AccessDatabase</span></span>
+<span>(</span><span>parent)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QDialog(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AccessDatabase(QDialog):
+    EMPTY_PUSHBUTTON = &#39;(click to select file)&#39;
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.db_type = QComboBox()
+        self.db_type.addItems([&#39;mysql / mariadb&#39;, &#39;sqlite&#39;])
+        self.db_type.currentTextChanged.connect(self.switch_dbtype)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        self.db_name = QLineEdit()
+        self.username = QLineEdit()
+        self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
+
+        layout = QFormLayout()
+        layout.addRow(&#39;Database Name&#39;, self.db_name)
+        layout.addRow(&#39;Username&#39;, self.username)
+        layout.addRow(&#39;Password&#39;, self.password)
+        mysql = QWidget()
+        mysql.setLayout(layout)
+
+        self.sqlite_path = QPushButton(self.EMPTY_PUSHBUTTON)
+        self.sqlite_path.clicked.connect(self.select_file)
+        layout = QFormLayout()
+        layout.addRow(&#39;Path to Database&#39;, self.sqlite_path)
+        sqlite = QWidget()
+        sqlite.setLayout(layout)
+
+        self.stacked = QStackedLayout()
+        self.stacked.addWidget(mysql)
+        self.stacked.addWidget(sqlite)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.db_type)
+        layout.addLayout(self.stacked)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+    def switch_dbtype(self, selected):
+        if selected == &#39;sqlite&#39;:
+            self.stacked.setCurrentIndex(1)
+        else:
+            self.stacked.setCurrentIndex(0)
+
+    def select_file(self):
+        out = QFileDialog.getOpenFileName(
+            self,
+            &#39;Open SQLITE database&#39;,
+            None,
+            &#34;SQLITE database (*.*)&#34;)[0]
+        if out != &#39;&#39;:
+            self.sqlite_path.setText(out)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="xelo2.gui.modal.AccessDatabase.EMPTY_PUSHBUTTON"><code class="name">var <span class="ident">EMPTY_PUSHBUTTON</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.modal.AccessDatabase.select_file"><code class="name flex">
+<span>def <span class="ident">select_file</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select_file(self):
+    out = QFileDialog.getOpenFileName(
+        self,
+        &#39;Open SQLITE database&#39;,
+        None,
+        &#34;SQLITE database (*.*)&#34;)[0]
+    if out != &#39;&#39;:
+        self.sqlite_path.setText(out)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.AccessDatabase.switch_dbtype"><code class="name flex">
+<span>def <span class="ident">switch_dbtype</span></span>(<span>self, selected)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def switch_dbtype(self, selected):
+    if selected == &#39;sqlite&#39;:
+        self.stacked.setCurrentIndex(1)
+    else:
+        self.stacked.setCurrentIndex(0)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="xelo2.gui.modal.CompareEvents"><code class="flex name class">
+<span>class <span class="ident">CompareEvents</span></span>
+<span>(</span><span>parent, run, ieeg_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QDialog(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CompareEvents(QDialog):
+    def __init__(self, parent, run, ieeg_file):
+        super().__init__(parent)
+
+        self.info = read_info_from_ieeg(ieeg_file)
+
+        layout = QGridLayout(self)
+
+        VALUES = _prepare_values(run, self.info)
+        for i0, vals in enumerate(VALUES):
+            for i1, value in enumerate(vals):
+                label = QLabel(value)
+                label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                layout.addWidget(label, i0, i1)
+
+        layout.addWidget(make_table(run.events), i0 + 1, 1)
+        layout.addWidget(make_table(self.info[&#39;events&#39;]), i0 + 1, 2)
+
+        self.old = QPushButton(&#39;Keep old events&#39;)
+        self.old.clicked.connect(self.reject)
+        self.new = QPushButton(&#39;Use new events&#39;)
+        self.new.clicked.connect(self.accept)
+        layout.addWidget(self.old, i0 + 2, 1)
+        layout.addWidget(self.new, i0 + 2, 2)
+
+        self.setLayout(layout)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+</dd>
+<dt id="xelo2.gui.modal.NewFile"><code class="flex name class">
+<span>class <span class="ident">NewFile</span></span>
+<span>(</span><span>parent, file_obj=None, level_obj=None, filename=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QDialog(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NewFile(QDialog):
+
+    def __init__(self, parent, file_obj=None, level_obj=None, filename=None):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.level = QComboBox()
+        self.level.addItems([level[:-1].capitalize() for level in LEVELS])
+
+        if level_obj is not None:
+            self.level.setEnabled(False)  # do not allow changing level here
+            self.level.setCurrentText(level_obj.t.capitalize())
+
+        self.filepath = QLineEdit()
+        self.filepath.setFixedWidth(800)
+        self.filepath.editingFinished.connect(self.set_filetype)
+        browse = QPushButton(&#39;Browse ...&#39;)
+        browse.clicked.connect(self.browse)
+        self.format = QComboBox()
+        self.format.addItems([&#39;Unknown&#39;, ] + list_allowed_values(parent.db, &#39;files&#39;, &#39;format&#39;))
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        layout_file = QHBoxLayout()
+        layout_file.addWidget(self.filepath)
+        layout_file.addWidget(browse)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.level)
+        layout.addLayout(layout_file)
+        layout.addWidget(self.format)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+        if file_obj is not None:
+            # self.level.setCurrentText(file_obj)
+            self.filepath.setText(str(file_obj.path))
+            self.format.setCurrentText(file_obj.format)
+
+        if filename is not None:
+            self.filepath.setText(filename)
+            self.set_filetype()
+            self.filepath.setEnabled(False)
+            self.set_filetype(filename)
+
+    def browse(self):
+        filename, _ = QFileDialog.getOpenFileName(self, &#39;Select File&#39;)
+
+        if filename:
+            self.filepath.setText(filename)
+            self.set_filetype(filename)
+
+    def set_filetype(self, filename=None):
+        if filename is None:
+            filename = Path(self.filepath.text()).resolve()
+
+        try:
+            filetype = parse_filetype(filename)
+
+        except ValueError as err:
+            lg.debug(err)
+            print(err)
+
+        else:
+            self.format.setCurrentText(filetype)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.modal.NewFile.browse"><code class="name flex">
+<span>def <span class="ident">browse</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def browse(self):
+    filename, _ = QFileDialog.getOpenFileName(self, &#39;Select File&#39;)
+
+    if filename:
+        self.filepath.setText(filename)
+        self.set_filetype(filename)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.NewFile.set_filetype"><code class="name flex">
+<span>def <span class="ident">set_filetype</span></span>(<span>self, filename=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_filetype(self, filename=None):
+    if filename is None:
+        filename = Path(self.filepath.text()).resolve()
+
+    try:
+        filetype = parse_filetype(filename)
+
+    except ValueError as err:
+        lg.debug(err)
+        print(err)
+
+    else:
+        self.format.setCurrentText(filetype)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="xelo2.gui.modal.Popup_Experimenters"><code class="flex name class">
+<span>class <span class="ident">Popup_Experimenters</span></span>
+<span>(</span><span>run, parent)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QPushButton(parent: QWidget = None)
+QPushButton(str, parent: QWidget = None)
+QPushButton(QIcon, str, parent: QWidget = None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Popup_Experimenters(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        self.menu = QMenu(self)
+        current_experimenters = run.experimenters
+        for name in list_experimenters(parent.db):
+            action = QAction(name, self)
+            action.setCheckable(True)
+            if name in current_experimenters:
+                action.setChecked(True)
+            action.toggled.connect(self.action_toggle)
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked):
+
+        names = []
+        for action in self.menu.actions():
+            if action.isChecked():
+                names.append(action.text())
+
+        self.run.experimenters = names
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(&#39;, &#39;.join(self.run.experimenters))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QPushButton</li>
+<li>PyQt5.QtWidgets.QAbstractButton</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.modal.Popup_Experimenters.action_toggle"><code class="name flex">
+<span>def <span class="ident">action_toggle</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def action_toggle(self, checked):
+
+    names = []
+    for action in self.menu.actions():
+        if action.isChecked():
+            names.append(action.text())
+
+    self.run.experimenters = names
+
+    self.set_title()
+    self.showMenu()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.Popup_Experimenters.set_title"><code class="name flex">
+<span>def <span class="ident">set_title</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_title(self):
+    self.setText(&#39;, &#39;.join(self.run.experimenters))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="xelo2.gui.modal.Popup_Protocols"><code class="flex name class">
+<span>class <span class="ident">Popup_Protocols</span></span>
+<span>(</span><span>run, parent)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QPushButton(parent: QWidget = None)
+QPushButton(str, parent: QWidget = None)
+QPushButton(QIcon, str, parent: QWidget = None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Popup_Protocols(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        subject = run.session.subject
+
+        current_protocols = [metc.id for metc in run.list_protocols()]
+        self.menu = QMenu(self)
+        for metc in subject.list_protocols():
+            action = QAction(_protocol_name(metc), self)
+            action.setCheckable(True)
+            if metc.id in current_protocols:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, metc=metc))
+            self.menu.addAction(action)
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked, metc):
+        if checked:
+            self.run.attach_protocol(metc)
+        else:
+            self.run.detach_protocol(metc)
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        self.setText(&#39;, &#39;.join(_protocol_name(x) for x in self.run.list_protocols()))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QPushButton</li>
+<li>PyQt5.QtWidgets.QAbstractButton</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.modal.Popup_Protocols.action_toggle"><code class="name flex">
+<span>def <span class="ident">action_toggle</span></span>(<span>self, checked, metc)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def action_toggle(self, checked, metc):
+    if checked:
+        self.run.attach_protocol(metc)
+    else:
+        self.run.detach_protocol(metc)
+
+    self.set_title()
+    self.showMenu()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.Popup_Protocols.set_title"><code class="name flex">
+<span>def <span class="ident">set_title</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_title(self):
+    self.setText(&#39;, &#39;.join(_protocol_name(x) for x in self.run.list_protocols()))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="xelo2.gui" href="index.html">xelo2.gui</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.make_table" href="#xelo2.gui.modal.make_table">make_table</a></code></li>
+<li><code><a title="xelo2.gui.modal.parse_accessdatabase" href="#xelo2.gui.modal.parse_accessdatabase">parse_accessdatabase</a></code></li>
+<li><code><a title="xelo2.gui.modal.strftime" href="#xelo2.gui.modal.strftime">strftime</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="xelo2.gui.modal.AccessDatabase" href="#xelo2.gui.modal.AccessDatabase">AccessDatabase</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.AccessDatabase.EMPTY_PUSHBUTTON" href="#xelo2.gui.modal.AccessDatabase.EMPTY_PUSHBUTTON">EMPTY_PUSHBUTTON</a></code></li>
+<li><code><a title="xelo2.gui.modal.AccessDatabase.select_file" href="#xelo2.gui.modal.AccessDatabase.select_file">select_file</a></code></li>
+<li><code><a title="xelo2.gui.modal.AccessDatabase.switch_dbtype" href="#xelo2.gui.modal.AccessDatabase.switch_dbtype">switch_dbtype</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.CompareEvents" href="#xelo2.gui.modal.CompareEvents">CompareEvents</a></code></h4>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.NewFile" href="#xelo2.gui.modal.NewFile">NewFile</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.NewFile.browse" href="#xelo2.gui.modal.NewFile.browse">browse</a></code></li>
+<li><code><a title="xelo2.gui.modal.NewFile.set_filetype" href="#xelo2.gui.modal.NewFile.set_filetype">set_filetype</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.Popup_Experimenters" href="#xelo2.gui.modal.Popup_Experimenters">Popup_Experimenters</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.Popup_Experimenters.action_toggle" href="#xelo2.gui.modal.Popup_Experimenters.action_toggle">action_toggle</a></code></li>
+<li><code><a title="xelo2.gui.modal.Popup_Experimenters.set_title" href="#xelo2.gui.modal.Popup_Experimenters.set_title">set_title</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.Popup_Protocols" href="#xelo2.gui.modal.Popup_Protocols">Popup_Protocols</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.Popup_Protocols.action_toggle" href="#xelo2.gui.modal.Popup_Protocols.action_toggle">action_toggle</a></code></li>
+<li><code><a title="xelo2.gui.modal.Popup_Protocols.set_title" href="#xelo2.gui.modal.Popup_Protocols.set_title">set_title</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

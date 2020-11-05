@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>xelo2.bids.io.dataglove API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>xelo2.bids.io.dataglove</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from pandas import read_csv, to_datetime
+from logging import getLogger
+
+
+lg = getLogger(__name__)
+
+
+def parse_dataglove_log(dg_file):
+    hdr = {
+        &#39;SamplingFrequency&#39;: None,
+        &#39;StartTime&#39;: 0,
+    }
+
+    possible_hand = {
+        &#39;right&#39;: 0,
+        &#39;left&#39;: 0,
+        }
+    with dg_file.open() as f:
+
+        skiprows = 0
+        log_format = &#39;qttasks&#39;
+        names = [&#39;time&#39;, &#39;thumb&#39;, &#39;index&#39;, &#39;middle&#39;, &#39;ring&#39;, &#39;little&#39;]
+
+        for i, l in enumerate(f):
+
+            possible_hand[&#39;right&#39;] += l.lower().count(&#39;right&#39;)
+            possible_hand[&#39;left&#39;] += l.lower().count(&#39;left&#39;)
+
+            if &#39;event&#39; in l:
+                skiprows = i
+                log_format = &#39;neurobs&#39;  # log from presentation
+                names = None
+
+            if &#39;Onset:&#39; in l:
+                skiprows = i
+                log_format = &#39;finger_mapping&#39;  # log from finger mapping c-code
+                names = None
+
+    df = read_csv(dg_file, skiprows=skiprows, delimiter=r&#39;\s+&#39;, names=names)
+
+    &#34;&#34;&#34;convert the log file into df with columns:
+    time, left thumb, left index, ..., right thumb, ..., right little
+
+    with &#39;time&#39; im ms
+    &#34;&#34;&#34;
+    if log_format == &#39;neurobs&#39;:
+        df, hdr[&#39;StartTime&#39;] = _fix_neurobs_log(df)
+    elif log_format == &#39;finger_mapping&#39;:
+        df = _fix_fingermapping(df)
+    elif log_format == &#39;qttasks&#39;:
+        df, hdr[&#39;StartTime&#39;] = _fix_qttask(df)
+        possible_hand[&#39;right&#39;] = 1  # assume it&#39;s right-hand TODO: how to estimate which hand
+
+    df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
+
+    if len(df.columns) &lt; 10:
+        df = _select_from_one_hand(df, possible_hand)
+        if df is None:
+            lg.warning(f&#39;Unknown hand side for {dg_file}&#39;)
+
+    else:
+        df = _select_from_two_hands(df)
+
+    t = df[&#39;time&#39;].values
+    fs = 1 / ((t[-1] - t[0]) / t.shape[0])
+    hdr[&#39;SamplingFrequency&#39;] = float(&#39;%.3f&#39; % (fs))
+
+    hdr[&#39;Columns&#39;] = list(df.columns)
+
+    return df, hdr
+
+
+def _fix_qttask(df):
+    t = to_datetime(df[&#39;time&#39;])
+    start_time = t[0]
+    t = t - t[0]
+    df[&#39;time&#39;] = t.dt.total_seconds()
+    return df, start_time
+
+
+def _fix_neurobs_log(df):
+    df.set_index(&#39;event&#39;, inplace=True)
+    starttime = df.loc[&#39;start&#39;, &#39;time&#39;].item()
+
+    df.drop(&#39;var&#39;, axis=1, inplace=True)
+    df.rename(index=str, columns=_expand_l_r, inplace=True)
+
+    df.drop([&#39;start&#39;, &#39;sampleinterval&#39;, &#39;scan&#39;, &#39;samplerate&#39;], axis=0, inplace=True, errors=&#39;ignore&#39;)
+
+    df = df[df.columns.tolist()[-1:] + df.columns.tolist()[:-1]]
+
+    df.drop_duplicates(inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    return df, starttime
+
+
+def _fix_fingermapping(df):
+
+    df.rename(index=str, columns={&#34;Onset:&#34;: &#34;time&#34;}, inplace=True)
+    df.rename(index=str, columns=_expand_l_r, inplace=True)
+
+    return df
+
+
+def _expand_l_r(s):
+    if s.endswith(&#39;:&#39;):
+        s = s[:-1].lower()
+
+    if s.startswith(&#39;l_&#39;):
+        return &#39;left &#39; + s[2:]
+
+    elif s.startswith(&#39;r_&#39;):
+        return &#39;right &#39; + s[2:]
+
+    else:
+        return s
+
+
+def _select_from_one_hand(df, possible_hand):
+
+    left_hand = sum([1 for col in df.columns if &#39;left&#39; in col.lower()])
+    right_hand = sum([1 for col in df.columns if &#39;right&#39; in col.lower()])
+
+    if left_hand == 0 and right_hand == 0:
+        if possible_hand[&#39;right&#39;] &gt; possible_hand[&#39;left&#39;]:
+            hand_side = &#39;right&#39;
+        elif possible_hand[&#39;right&#39;] &lt; possible_hand[&#39;left&#39;]:
+            hand_side = &#39;left&#39;
+        else:
+            return None
+
+    columns = []
+    for col in df.columns:
+        if col != &#39;time&#39;:
+            col = hand_side + &#39; &#39; + col
+        columns.append(col)
+    df.columns = columns
+
+    return df
+
+def _select_from_two_hands(df):
+    lefthand = (
+        df.loc[:, &#39;left thumb&#39;].sum()
+        + df.loc[:, &#39;left index&#39;].sum()
+        + df.loc[:, &#39;left middle&#39;].sum()
+        + df.loc[:, &#39;left ring&#39;].sum()
+        + df.loc[:, &#39;left little&#39;].sum() != 0)
+
+    righthand = (
+        df.loc[:, &#39;right thumb&#39;].sum()
+        + df.loc[:, &#39;right index&#39;].sum()
+        + df.loc[:, &#39;right middle&#39;].sum()
+        + df.loc[:, &#39;right ring&#39;].sum()
+        + df.loc[:, &#39;right little&#39;].sum() != 0)
+
+    if not righthand:
+        df.drop([
+            &#39;right thumb&#39;,
+            &#39;right index&#39;,
+            &#39;right middle&#39;,
+            &#39;right ring&#39;,
+            &#39;right little&#39;,
+        ], axis=&#39;columns&#39;, inplace=True)
+
+    if not lefthand:
+        df.drop([
+            &#39;left thumb&#39;,
+            &#39;left index&#39;,
+            &#39;left middle&#39;,
+            &#39;left ring&#39;,
+            &#39;left little&#39;,
+        ], axis=&#39;columns&#39;, inplace=True)
+
+    return df</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="xelo2.bids.io.dataglove.parse_dataglove_log"><code class="name flex">
+<span>def <span class="ident">parse_dataglove_log</span></span>(<span>dg_file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_dataglove_log(dg_file):
+    hdr = {
+        &#39;SamplingFrequency&#39;: None,
+        &#39;StartTime&#39;: 0,
+    }
+
+    possible_hand = {
+        &#39;right&#39;: 0,
+        &#39;left&#39;: 0,
+        }
+    with dg_file.open() as f:
+
+        skiprows = 0
+        log_format = &#39;qttasks&#39;
+        names = [&#39;time&#39;, &#39;thumb&#39;, &#39;index&#39;, &#39;middle&#39;, &#39;ring&#39;, &#39;little&#39;]
+
+        for i, l in enumerate(f):
+
+            possible_hand[&#39;right&#39;] += l.lower().count(&#39;right&#39;)
+            possible_hand[&#39;left&#39;] += l.lower().count(&#39;left&#39;)
+
+            if &#39;event&#39; in l:
+                skiprows = i
+                log_format = &#39;neurobs&#39;  # log from presentation
+                names = None
+
+            if &#39;Onset:&#39; in l:
+                skiprows = i
+                log_format = &#39;finger_mapping&#39;  # log from finger mapping c-code
+                names = None
+
+    df = read_csv(dg_file, skiprows=skiprows, delimiter=r&#39;\s+&#39;, names=names)
+
+    &#34;&#34;&#34;convert the log file into df with columns:
+    time, left thumb, left index, ..., right thumb, ..., right little
+
+    with &#39;time&#39; im ms
+    &#34;&#34;&#34;
+    if log_format == &#39;neurobs&#39;:
+        df, hdr[&#39;StartTime&#39;] = _fix_neurobs_log(df)
+    elif log_format == &#39;finger_mapping&#39;:
+        df = _fix_fingermapping(df)
+    elif log_format == &#39;qttasks&#39;:
+        df, hdr[&#39;StartTime&#39;] = _fix_qttask(df)
+        possible_hand[&#39;right&#39;] = 1  # assume it&#39;s right-hand TODO: how to estimate which hand
+
+    df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
+
+    if len(df.columns) &lt; 10:
+        df = _select_from_one_hand(df, possible_hand)
+        if df is None:
+            lg.warning(f&#39;Unknown hand side for {dg_file}&#39;)
+
+    else:
+        df = _select_from_two_hands(df)
+
+    t = df[&#39;time&#39;].values
+    fs = 1 / ((t[-1] - t[0]) / t.shape[0])
+    hdr[&#39;SamplingFrequency&#39;] = float(&#39;%.3f&#39; % (fs))
+
+    hdr[&#39;Columns&#39;] = list(df.columns)
+
+    return df, hdr</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="xelo2.bids.io" href="index.html">xelo2.bids.io</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="xelo2.bids.io.dataglove.parse_dataglove_log" href="#xelo2.bids.io.dataglove.parse_dataglove_log">parse_dataglove_log</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

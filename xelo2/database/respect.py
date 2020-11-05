@@ -1,6 +1,6 @@
 """Convenient functions to interact with the RESPECT folder"""
 from bidso.utils import read_tsv
-from ..api.structure import list_subjects
+from ..api.frontend import list_subjects
 
 
 def assign_respect_code(RESPECT_DIR):

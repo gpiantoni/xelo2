@@ -1,0 +1,4627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>xelo2.gui.interface API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>xelo2.gui.interface</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from logging import getLogger
+from pathlib import Path
+from datetime import date, datetime
+from functools import partial
+from numpy import isin
+
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QAction,
+    QComboBox,
+    QDateEdit,
+    QDateTimeEdit,
+    QDialog,
+    QDockWidget,
+    QGroupBox,
+    QFileDialog,
+    QHBoxLayout,
+    QInputDialog,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QProgressDialog,
+    QDoubleSpinBox,
+    QSpinBox,
+    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+    )
+from PyQt5.QtGui import (
+    QBrush,
+    QColor,
+    QDesktopServices,
+    QGuiApplication,
+    QPalette,
+    )
+from PyQt5.QtCore import (
+    Qt,
+    pyqtSlot,
+    QDate,
+    QDateTime,
+    QSettings,
+    QUrl,
+    )
+from PyQt5.QtSql import (
+    QSqlQuery,
+    QSqlTableModel,
+    )
+
+from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
+from ..api.utils import get_attributes
+from ..database.create import TABLES, open_database
+from ..bids.root import create_bids
+from ..bids.io.parrec import convert_parrec_nibabel
+from ..io.parrec import add_parrec
+from ..io.ieeg import add_ieeg_to_sess
+from ..io.channels import create_channels
+from ..io.electrodes import import_electrodes
+from ..io.events import read_events_from_ieeg
+from ..io.export_db import export_database
+from ..io.tsv import load_tsv, save_tsv
+
+from .utils import LEVELS, _protocol_name
+from .actions import create_menubar, Search, create_shortcuts, FilesWidget
+from .modal import (
+    NewFile,
+    Popup_Experimenters,
+    Popup_Protocols,
+    CompareEvents,
+    parse_accessdatabase,
+    )
+
+
+EXTRA_LEVELS = (&#39;channels&#39;, &#39;electrodes&#39;)
+
+settings = QSettings(&#34;xelo2&#34;, &#34;xelo2&#34;)
+lg = getLogger(__name__)
+
+
+class Interface(QMainWindow):
+    &#34;&#34;&#34;TODO: disable everything until you load database&#34;&#34;&#34;
+    db = None
+    test = False
+    unsaved_changes = False
+
+    def __init__(self, db_type=None, db_name=None, username=None, password=None):
+
+        super().__init__()
+        create_menubar(self)
+        create_shortcuts(self)
+
+        lists = {}
+        groups = {}
+        for k in LEVELS + EXTRA_LEVELS:
+            groups[k] = QGroupBox(k.capitalize())
+            lists[k] = QListWidget()
+            if k in LEVELS:
+                lists[k].currentItemChanged.connect(self.proc_all)
+            elif k in EXTRA_LEVELS:
+                lists[k].currentItemChanged.connect(self.show_channels_electrodes)
+
+            # right click
+            lists[k].setContextMenuPolicy(Qt.CustomContextMenu)
+            lists[k].customContextMenuRequested.connect(partial(self.rightclick_list, level=k))
+
+            layout = QVBoxLayout()
+            layout.addWidget(lists[k])
+            if k == &#39;runs&#39;:
+                b = QPushButton(&#39;Add to export list&#39;)
+                b.clicked.connect(self.exporting)
+                layout.addWidget(b)
+            groups[k].setLayout(layout)
+
+        # PARAMETERS: Widget
+        t_params = QTableWidget()
+        t_params.horizontalHeader().setStretchLastSection(True)
+        t_params.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_params.setColumnCount(3)
+        t_params.setHorizontalHeaderLabels([&#39;Level&#39;, &#39;Parameter&#39;, &#39;Value&#39;])
+        t_params.verticalHeader().setVisible(False)
+
+        # EVENTS: Widget
+        self.events_view = QTableView(self)
+        self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;events&#39;))
+
+        # CHANNELS: Widget
+        self.channels_view = QTableView(self)
+        self.channels_view.horizontalHeader().setStretchLastSection(True)
+        self.channels_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.channels_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;channels&#39;))
+
+        # ELECTRODES: Form
+        self.elec_form = QTableWidget()
+        self.elec_form.horizontalHeader().setStretchLastSection(True)
+        self.elec_form.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.elec_form.setColumnCount(2)
+        self.elec_form.setHorizontalHeaderLabels([&#39;Parameter&#39;, &#39;Value&#39;])
+        self.elec_form.verticalHeader().setVisible(False)
+
+        # ELECTRODES: Widget
+        self.electrodes_view = QTableView(self)
+        self.electrodes_view.horizontalHeader().setStretchLastSection(True)
+        self.electrodes_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.electrodes_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;electrodes&#39;))
+
+        # FILES: Widget
+        t_files = FilesWidget(self)
+        t_files.horizontalHeader().setStretchLastSection(True)
+        t_files.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_files.setColumnCount(3)
+        t_files.setHorizontalHeaderLabels([&#39;Level&#39;, &#39;Format&#39;, &#39;File&#39;])
+        t_files.verticalHeader().setVisible(False)
+        # right click
+        t_files.setContextMenuPolicy(Qt.CustomContextMenu)
+        t_files.customContextMenuRequested.connect(self.rightclick_files)
+
+        # EXPORT: Widget
+        w_export = QWidget()
+        col_export = QVBoxLayout()
+
+        t_export = QTableWidget()
+        t_export.horizontalHeader().setStretchLastSection(True)
+        t_export.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_export.setColumnCount(4)
+        t_export.setHorizontalHeaderLabels([&#39;Subject&#39;, &#39;Session&#39;, &#39;Run&#39;, &#39;Start Time&#39;])
+        t_export.verticalHeader().setVisible(False)
+
+        p_clearexport = QPushButton(&#39;Clear list&#39;)
+        p_clearexport.clicked.connect(self.clear_export)
+
+        p_doexport = QPushButton(&#39;Export ...&#39;)
+        p_doexport.clicked.connect(self.do_export)
+
+        col_export.addWidget(t_export)
+        col_export.addWidget(p_clearexport)
+        col_export.addWidget(p_doexport)
+        w_export.setLayout(col_export)
+
+        # session and protocol in the same column
+        col_sessmetc = QVBoxLayout()
+        col_sessmetc.addWidget(groups[&#39;sessions&#39;])
+        col_sessmetc.addWidget(groups[&#39;protocols&#39;])
+
+        # recordings, channels and electrodes
+        col_recchanelec = QVBoxLayout()
+        col_recchanelec.addWidget(groups[&#39;recordings&#39;])
+        col_recchanelec.addWidget(groups[&#39;channels&#39;])
+        col_recchanelec.addWidget(groups[&#39;electrodes&#39;])
+
+        # TOP PANELS
+        layout_top = QHBoxLayout()
+        layout_top.addWidget(groups[&#39;subjects&#39;])
+        layout_top.addLayout(col_sessmetc)
+        layout_top.addWidget(groups[&#39;runs&#39;])
+        layout_top.addLayout(col_recchanelec)
+
+        # FULL LAYOUT
+        # central widget
+        central_widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addLayout(layout_top)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
+        # parameters
+        dockwidget = QDockWidget(&#39;Parameters&#39;, self)
+        dockwidget.setWidget(t_params)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_parameters&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # events
+        dockwidget = QDockWidget(&#39;Events&#39;, self)
+        dockwidget.setWidget(self.events_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_events&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # channels
+        dockwidget = QDockWidget(&#39;Channels&#39;, self)
+        dockwidget.setWidget(self.channels_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_channels&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # electrodes
+        dockwidget = QDockWidget(&#39;Electrodes&#39;, self)
+        temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
+        elec_layout = QVBoxLayout(temp_widget)
+        elec_layout.addWidget(self.elec_form)
+        elec_layout.addWidget(self.electrodes_view)
+        dockwidget.setWidget(temp_widget)
+
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_electrodes&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # files
+        dockwidget = QDockWidget(&#39;Files&#39;, self)
+        dockwidget.setWidget(t_files)
+        dockwidget.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_files&#39;)  # savestate
+        self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
+
+        # export
+        dockwidget = QDockWidget(&#39;Export&#39;, self)
+        dockwidget.setWidget(w_export)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_export&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # restore geometry
+        window_geometry = settings.value(&#39;window/geometry&#39;)
+        if window_geometry is not None:
+            self.restoreGeometry(window_geometry)
+        window_state = settings.value(&#39;window/state&#39;)
+        if window_state is not None:
+            self.restoreState(window_state)
+
+        # SAVE THESE ITEMS
+        self.groups = groups
+        self.lists = lists
+        self.t_params = t_params
+        self.t_files = t_files
+        self.t_export = t_export
+        self.exports = []
+
+        self.search = Search()
+
+        self.statusBar()
+        self.show()
+
+        if db_type is None:
+            DB_ARGS = parse_accessdatabase(self)
+            if DB_ARGS is not None:
+                self.sql_access(**DB_ARGS)
+
+        else:
+            self.sql_access(db_type, db_name, username, password)
+
+    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+        &#34;&#34;&#34;This is where you access the database
+        &#34;&#34;&#34;
+        self.db = open_database(db_type, db_name, username, password)
+        self.db.transaction()
+
+        self.events_model = QSqlTableModel(self, self.db)
+        self.events_model.setTable(&#39;events&#39;)
+        self.events_view.setModel(self.events_model)
+        self.events_view.hideColumn(0)
+
+        self.channels_model = QSqlTableModel(self, self.db)
+        self.channels_model.setTable(&#39;channels&#39;)
+        self.channels_view.setModel(self.channels_model)
+        self.channels_view.hideColumn(0)
+
+        self.electrodes_model = QSqlTableModel(self, self.db)
+        self.electrodes_model.setTable(&#39;electrodes&#39;)
+        self.electrodes_view.setModel(self.electrodes_model)
+        self.electrodes_view.hideColumn(0)
+
+        self.list_subjects()
+
+    def sql_commit(self):
+
+        self.db.commit()
+        self.setWindowTitle(&#39;&#39;)
+        self.unsaved_changes = False
+        self.db.transaction()
+
+    def sql_rollback(self):
+        self.db.rollback()
+        self.unsaved_changes = False
+        self.setWindowTitle(&#39;&#39;)
+        self.db.transaction()
+        self.list_subjects()
+
+    def list_subjects(self, code_to_select=None):
+        &#34;&#34;&#34;
+        code_to_select : str
+            code of the subject to select
+        &#34;&#34;&#34;
+        for line in self.lists.values():
+            line.clear()
+
+        to_select = None
+        if self.subjsort.isChecked():
+            args = {
+                &#39;alphabetical&#39;: True,
+                &#39;reverse&#39;: False,
+                }
+        else:
+            args = {
+                &#39;alphabetical&#39;: False,
+                &#39;reverse&#39;: True,
+                }
+        for subj in list_subjects(self.db, **args):
+            item = QListWidgetItem(str(subj))
+            if subj.id in self.search.subjects:
+                highlight(item)
+            item.setData(Qt.UserRole, subj)
+            self.lists[&#39;subjects&#39;].addItem(item)
+            if code_to_select is not None and code_to_select == str(subj):
+                to_select = item
+            if to_select is None:  # select first one
+                to_select = item
+        self.lists[&#39;subjects&#39;].setCurrentItem(to_select)
+
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def proc_all(self, current=None, previous=None, item=None):
+        &#34;&#34;&#34;GUI calls current and previous. You can call item&#34;&#34;&#34;
+
+        self.list_channels_electrodes()
+        if item is None:
+            # when clicking on a previously selected list, it sends a signal where current is None, but I don&#39;t understand why
+            if current is None:
+                return
+            item = current.data(Qt.UserRole)
+
+        if item.t == &#39;subject&#39;:
+            self.list_sessions_and_protocols(item)
+
+        elif item.t == &#39;session&#39;:
+            self.list_runs(item)
+
+        elif item.t == &#39;protocol&#39;:
+            pass
+
+        elif item.t == &#39;run&#39;:
+            self.list_recordings(item)
+            self.show_events(item)
+
+        elif item.t == &#39;recording&#39;:
+            self.list_channels_electrodes(item)
+
+        self.list_params()
+        self.list_files()
+
+    def list_sessions_and_protocols(self, subj=None):
+
+        if subj is None or subj is False:
+            subj = self.current(&#39;subjects&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, ):
+                continue
+            l.clear()
+
+        for sess in subj.list_sessions():
+            item = QListWidgetItem_time(sess, _session_name(sess))
+            if sess.id in self.search.sessions:
+                highlight(item)
+            self.lists[&#39;sessions&#39;].addItem(item)
+        self.lists[&#39;sessions&#39;].setCurrentRow(0)
+
+        for protocol in subj.list_protocols():
+            item = QListWidgetItem(_protocol_name(protocol))
+            item.setData(Qt.UserRole, protocol)
+            self.lists[&#39;protocols&#39;].addItem(item)
+        self.lists[&#39;protocols&#39;].setCurrentRow(0)
+
+    def list_runs(self, sess=None):
+
+        if sess is None or sess is False:
+            sess = self.current(&#39;sessions&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;):
+                continue
+            l.clear()
+
+        for run in sess.list_runs():
+            item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+            if run.id in self.search.runs:
+                highlight(item)
+            self.lists[&#39;runs&#39;].addItem(item)
+        self.lists[&#39;runs&#39;].setCurrentRow(0)
+
+    def list_recordings(self, run=None):
+
+        if run is None or run is False:
+            run = self.current(&#39;runs&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;, &#39;runs&#39;):
+                continue
+            l.clear()
+
+        for recording in run.list_recordings():
+            item = QListWidgetItem(recording.modality)
+            item.setData(Qt.UserRole, recording)
+            if recording.id in self.search.recordings:
+                highlight(item)
+            self.lists[&#39;recordings&#39;].addItem(item)
+        self.lists[&#39;recordings&#39;].setCurrentRow(0)
+
+    def list_channels_electrodes(self, recording=None):
+
+        for level, l in self.lists.items():
+            if level in (&#39;channels&#39;, &#39;electrodes&#39;):
+                l.clear()
+
+        self.channels_model.setFilter(&#39;channel_group_id = 0&#39;)
+        self.channels_model.select()
+        self.channels_view.setEnabled(False)
+        self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
+        self.electrodes_model.select()
+        self.electrodes_view.setEnabled(False)
+
+        if recording is None:
+            return
+
+        sess = self.current(&#39;sessions&#39;)
+
+        if recording.modality == &#39;ieeg&#39;:
+            for chan in sess.list_channels():
+                item = QListWidgetItem(_name(chan.name))
+                item.setData(Qt.UserRole, chan)
+                self.lists[&#39;channels&#39;].addItem(item)
+
+            for elec in sess.list_electrodes():
+                item = QListWidgetItem(_name(elec.name))
+                item.setData(Qt.UserRole, elec)
+                self.lists[&#39;electrodes&#39;].addItem(item)
+
+    def statusbar_selected(self):
+
+        statusbar = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            statusbar.append(repr(obj))
+
+        self.statusBar().showMessage(&#39;\t&#39;.join(statusbar))
+
+    def list_params(self):
+        self.statusbar_selected()
+
+        self.t_params.blockSignals(True)
+        self.t_params.clearContents()
+
+        all_params = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+
+            parameters = {}
+            parameters.update(list_parameters(obj, self))
+
+            if k == &#39;runs&#39;:
+                w = Popup_Experimenters(obj, self)
+                parameters.update({&#39;Experimenters&#39;: w})
+                w = Popup_Protocols(obj, self)
+                parameters.update({&#39;Protocols&#39;: w})
+
+            elif k == &#39;recordings&#39;:
+
+                if obj.modality == &#39;ieeg&#39;:
+                    parameters.update(list_parameters(obj, self))
+
+                    sess = self.current(&#39;sessions&#39;)
+
+                    w = QComboBox()  # add callback here
+                    w.addItem(&#39;(undefined channels)&#39;, None)
+                    for chan in sess.list_channels():
+                        w.addItem(_name(chan.name), chan)
+                    channels = obj.channels
+                    if channels is None:
+                        w.setCurrentText(&#39;&#39;)
+                    else:
+                        w.setCurrentText(_name(channels.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
+                    parameters.update({&#39;Channels&#39;: w})
+
+                    w = QComboBox()
+                    w.addItem(&#39;(undefined electrodes)&#39;, None)
+                    for elec in sess.list_electrodes():
+                        w.addItem(_name(elec.name), elec)
+                    electrodes = obj.electrodes
+                    if electrodes is None:
+                        w.setCurrentText(&#39;&#39;)
+                    else:
+                        w.setCurrentText(_name(electrodes.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
+                    parameters.update({&#39;Electrodes&#39;: w})
+
+                if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
+                    parameters.update(list_parameters(obj, self))
+
+                if obj.run.session.name == &#39;MRI&#39;:
+                    parameters.update(list_parameters(obj, self))
+
+            for p_k, p_v in parameters.items():
+                all_params.append({
+                    &#39;level&#39;: self.groups[k].title(),
+                    &#39;parameter&#39;: p_k,
+                    &#39;value&#39;: p_v,
+                    })
+
+        self.t_params.setRowCount(len(all_params))
+
+        for i, val in enumerate(all_params):
+            item = QTableWidgetItem(val[&#39;level&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+            self.t_params.setItem(i, 0, item)
+            item = QTableWidgetItem(val[&#39;parameter&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            self.t_params.setItem(i, 1, item)
+            item = QTableWidgetItem(str(val[&#39;value&#39;]))
+            self.t_params.setCellWidget(i, 2, val[&#39;value&#39;])
+
+        self.t_params.blockSignals(False)
+
+    def combo_chanelec(self, i, widget):
+        data = widget.currentData()
+        recording = self.current(&#39;recordings&#39;)
+        if data is None:
+            if widget.currentText() == &#39;(undefined channels)&#39;:
+                recording.detach_channels()
+            else:
+                recording.detach_electrodes()
+
+        elif data.t == &#39;channel_group&#39;:
+            recording.attach_channels(data)
+
+        elif data.t == &#39;electrode_group&#39;:
+            recording.attach_electrodes(data)
+
+    def current(self, level):
+
+        item = self.lists[level].currentItem()
+        if item is not None:
+            return item.data(Qt.UserRole)
+
+    def list_files(self):
+
+        self.t_files.blockSignals(True)
+        self.t_files.clearContents()
+
+        all_files = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            for file in obj.list_files():
+                all_files.append({
+                    &#39;level&#39;: self.groups[k].title(),
+                    &#39;format&#39;: file.format,
+                    &#39;path&#39;: file.path,
+                    &#39;obj&#39;: [obj, file],
+                    })
+
+        self.t_files.setRowCount(len(all_files))
+
+        for i, val in enumerate(all_files):
+
+            item = QTableWidgetItem(val[&#39;level&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 0, item)
+
+            item = QTableWidgetItem(val[&#39;format&#39;])
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 1, item)
+
+            item = QTableWidgetItem(str(val[&#39;path&#39;]))
+            try:
+                path_exists = val[&#39;path&#39;].exists()
+
+            except PermissionError as err:
+                lg.warning(err)
+                item.setForeground(QBrush(QColor(&#39;orange&#39;)))
+
+            else:
+                if not path_exists:
+                    item.setForeground(QBrush(QColor(&#39;red&#39;)))
+
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 2, item)
+
+        self.t_files.blockSignals(False)
+
+    def changed(self, obj, column, x):
+        if isinstance(x, QDate):
+            x = x.toPyDate()
+        elif isinstance(x, QDateTime):
+            x = x.toPyDateTime()
+        else:
+            if isinstance(x, QLineEdit):
+                x = x.text()
+
+            x = f&#39;{x}&#39;
+
+        setattr(obj, column, x)
+        self.modified()
+
+    def show_events(self, item):
+        self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
+        self.events_model.select()
+
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def show_channels_electrodes(self, current=None, previous=None):
+        if current is None:
+            return
+
+        self.statusbar_selected()
+
+        item = current.data(Qt.UserRole)
+
+        if item.t == &#39;channel_group&#39;:
+            self.channels_view.setEnabled(True)
+            self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
+            self.channels_model.select()
+
+        elif item.t == &#39;electrode_group&#39;:
+            self.elec_form.blockSignals(True)
+
+            parameters = list_parameters(item, self)
+            self.elec_form.setRowCount(len(parameters))
+            for i, kv in enumerate(parameters.items()):
+                k, v = kv
+                table_item = QTableWidgetItem(k)
+                self.elec_form.setItem(i, 0, table_item)
+                self.elec_form.setCellWidget(i, 1, v)
+            self.elec_form.blockSignals(False)
+
+            self.electrodes_view.setEnabled(True)
+            self.electrodes_model.setFilter(f&#39;electrode_group_id = {item.id}&#39;)
+            self.electrodes_model.select()
+
+    def exporting(self, checked=None, subj=None, sess=None, run=None):
+
+        if subj is None:
+            subj = self.lists[&#39;subjects&#39;].currentItem().data(Qt.UserRole)
+            sess = self.lists[&#39;sessions&#39;].currentItem().data(Qt.UserRole)
+            run = self.lists[&#39;runs&#39;].currentItem().data(Qt.UserRole)
+
+        d = {}
+        d[&#39;subjects&#39;] = str(subj)
+        if sess.name == &#39;MRI&#39;:
+            d[&#39;sessions&#39;] = f&#39;{sess.name} ({sess.MagneticFieldStrength})&#39;
+        else:
+            d[&#39;sessions&#39;] = sess.name
+        d[&#39;run_id&#39;] = run.id
+        d[&#39;runs&#39;] = f&#39;{run.task_name}&#39;
+        d[&#39;start_time&#39;] = f&#39;{run.start_time:%d %b %Y %H:%M:%S}&#39;
+        self.exports.append(d)
+
+        self.list_exports()
+
+    def clear_export(self):
+        self.exports = []
+        self.list_exports()
+
+    def list_exports(self):
+
+        self.t_export.clearContents()
+        n_exports = len(self.exports)
+
+        self.t_export.setRowCount(n_exports)
+
+        for i, l in enumerate(self.exports):
+            item = QTableWidgetItem(l[&#39;subjects&#39;])
+            self.t_export.setItem(i, 0, item)
+            item = QTableWidgetItem(l[&#39;sessions&#39;])
+            self.t_export.setItem(i, 1, item)
+            item = QTableWidgetItem(l[&#39;runs&#39;])
+            self.t_export.setItem(i, 2, item)
+            item = QTableWidgetItem(l[&#39;start_time&#39;])
+            self.t_export.setItem(i, 3, item)
+
+    def rightclick_table(self, pos, table=None):
+        if table == &#39;events&#39;:
+            view = self.events_view
+        elif table == &#39;channels&#39;:
+            view = self.channels_view
+        elif table == &#39;electrodes&#39;:
+            view = self.electrodes_view
+
+        menu = QMenu(self)
+        action = QAction(f&#39;Import {table} from tsv ...&#39;, self)
+        action.triggered.connect(lambda x: self.tsv_import(table=table))
+        menu.addAction(action)
+        action = QAction(f&#39;Export {table} to tsv ...&#39;, self)
+        action.triggered.connect(lambda x: self.tsv_export(table=table))
+        menu.addAction(action)
+        menu.popup(view.mapToGlobal(pos))
+
+    def tsv_import(self, table):
+
+        tsv_file = QFileDialog.getOpenFileName(
+            self,
+            f&#34;Import {table} from file&#34;,
+            None,
+            &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+        if tsv_file == &#39;&#39;:
+            return
+
+        if table == &#39;events&#39;:
+            run = self.current(&#39;runs&#39;)
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        X = load_tsv(Path(tsv_file), X.dtype)
+
+        if table == &#39;events&#39;:
+            run.events = X
+            self.show_events(run)
+
+        else:
+            current.data = _fake_names(X)
+            recording = self.current(&#39;recordings&#39;)
+            self.list_channels_electrodes(recording=recording)
+
+        self.modified()
+
+    def tsv_export(self, table):
+
+        tsv_file = QFileDialog.getSaveFileName(
+            self,
+            f&#34;Save {table} to file&#34;,
+            None,
+            &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+        if tsv_file == &#39;&#39;:
+            return
+
+        if table == &#39;events&#39;:
+            run = self.current(&#39;runs&#39;)
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        save_tsv(Path(tsv_file), X)
+
+    def rightclick_list(self, pos, level=None):
+        item = self.lists[level].itemAt(pos)
+
+        menu = QMenu(self)
+        if item is None:
+            action = QAction(f&#39;Add {level}&#39;, self)
+            action.triggered.connect(lambda x: self.new_item(level=level))
+            menu.addAction(action)
+
+        else:
+            obj = item.data(Qt.UserRole)
+
+            if obj.t in (&#39;channel_group&#39;, &#39;electrode_group&#39;):
+                action_rename = QAction(&#39;Rename&#39;, self)
+                action_rename.triggered.connect(lambda x: self.rename_item(obj))
+                menu.addAction(action_rename)
+            action_delete = QAction(&#39;Delete&#39;, self)
+            action_delete.triggered.connect(lambda x: self.delete_item(obj))
+            menu.addAction(action_delete)
+
+        menu.popup(self.lists[level].mapToGlobal(pos))
+
+    def rename_item(self, item):
+        text, ok = QInputDialog.getText(
+            self,
+            f&#39;Rename {item.t.split(&#34;_&#34;)[0]}&#39;,
+            &#39;New title:&#39;,
+            )
+
+        if ok and text != &#39;&#39;:
+            item.name = text
+
+    def delete_item(self, item):
+        item.delete()
+
+        if item.t == &#39;subject&#39;:
+            self.list_subjects()
+
+        elif item.t == &#39;session&#39;:
+            self.list_sessions_and_protocols(item.subject)
+
+        elif item.t == &#39;protocol&#39;:
+            self.list_sessions_and_protocols(item.subject)
+
+        elif item.t == &#39;run&#39;:
+            self.list_runs(item.session)
+
+        elif item.t == &#39;recording&#39;:
+            self.list_recordings(item.run)
+
+        self.list_params()
+        self.list_files()
+
+    def rightclick_files(self, pos):
+        item = self.t_files.itemAt(pos)
+
+        if item is None:
+            menu = QMenu(self)
+            action = QAction(&#39;Add File&#39;, self)
+            action.triggered.connect(lambda x: self.new_file(self))
+            menu.addAction(action)
+            menu.popup(self.t_files.mapToGlobal(pos))
+
+        else:
+            level_obj, file_obj = item.data(Qt.UserRole)
+            file_path = file_obj.path.resolve()
+            url_directory = QUrl.fromLocalFile(str(file_path.parent))
+
+            action_edit = QAction(&#39;Edit File&#39;, self)
+            action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
+            action_copy = QAction(&#39;Copy Path to File&#39;, self)
+            action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_obj.path)))
+            action_openfile = QAction(&#39;Open File&#39;, self)
+            action_openfile.triggered.connect(lambda x: self.open_file(file_path))
+
+            action_opendirectory = QAction(&#39;Open Containing Folder&#39;, self)
+            action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+            action_delete = QAction(&#39;Delete&#39;, self)
+            action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
+            menu = QMenu(&#39;File Information&#39;, self)
+            menu.addAction(action_edit)
+            menu.addAction(action_copy)
+            menu.addAction(action_openfile)
+            menu.addAction(action_opendirectory)
+            menu.addSeparator()
+            menu.addAction(action_delete)
+            menu.popup(self.t_files.mapToGlobal(pos))
+
+    def open_file(self, file_path):
+        if file_path.suffix.lower() == &#39;.par&#39;:
+            print(f&#39;converting {file_path}&#39;)
+            file_path = convert_parrec_nibabel(file_path)
+            print(f&#39;converted to {file_path}&#39;)
+
+        url_file = QUrl.fromLocalFile(str(file_path))
+        QDesktopServices.openUrl(url_file)
+
+    def export_tsv(self):
+        export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
+
+        &#34;&#34;&#34;
+        tsv_path = QFileDialog.getExistingDirectory()
+        if tsv_path == &#39;&#39;:
+            return
+        export_database(Path(tsv_path))
+        &#34;&#34;&#34;
+
+    def sql_search(self):
+
+        text, ok = QInputDialog.getText(
+            self,
+            &#39;Search the database&#39;,
+            &#39;WHERE statement&#39; + &#39; &#39; * 200,
+            QLineEdit.Normal,
+            self.search.previous,
+            )
+
+        if ok and text != &#39;&#39;:
+            self.search.where(self.db, text)
+            self.list_subjects()
+
+    def sql_search_clear(self):
+        self.search.clear()
+        self.list_subjects()
+
+    def add_search_results_to_export(self):
+
+        for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
+            self.exporting(
+                subj=Subject(id=subj_id),
+                sess=Session(id=sess_id),
+                run=Run(id=run_id),
+                )
+
+    def modified(self):
+        self.unsaved_changes = True
+        self.setWindowTitle(&#39;*&#39; + self.windowTitle())
+
+    def do_export(self, checked=None):
+
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+        run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
+
+        query = QSqlQuery(self.db)
+        query.prepare(f&#34;&#34;&#34;\
+            SELECT subjects.id, sessions.id, runs.id FROM runs
+            JOIN sessions ON sessions.id = runs.session_id
+            JOIN subjects ON subjects.id = sessions.subject_id
+            WHERE runs.id IN {run_ids}
+            &#34;&#34;&#34;)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        while query.next():
+            subset[&#39;subjects&#39;].append(query.value(0))
+            subset[&#39;sessions&#39;].append(query.value(1))
+            subset[&#39;runs&#39;].append(query.value(2))
+
+        data_path = QFileDialog.getExistingDirectory()
+        if data_path == &#39;&#39;:
+            return
+
+        progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(subset[&#39;runs&#39;]), self)
+        progress.setWindowTitle(&#39;Converting to BIDS&#39;)
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
+
+        create_bids(self.db, Path(data_path), deface=False, subset=subset, progress=progress)
+        progress.setValue(len(subset[&#39;runs&#39;]))
+
+    def new_item(self, checked=None, level=None):
+
+        if level == &#39;subjects&#39;:
+            text, ok = QInputDialog.getText(
+                self,
+                &#39;Add New Subject&#39;,
+                &#39;Subject Code:&#39;,
+                )
+
+        elif level == &#39;sessions&#39;:
+            current_subject = self.current(&#39;subjects&#39;)
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Session for {current_subject}&#39;,
+                &#39;Session Name:&#39;,
+                TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;protocols&#39;:
+            current_subject = self.current(&#39;subjects&#39;)
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Protocol for {current_subject}&#39;,
+                &#39;Protocol Name:&#39;,
+                TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;runs&#39;:
+            current_session = self.current(&#39;sessions&#39;)
+
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Run for {current_session.name}&#39;,
+                &#39;Task Name:&#39;,
+                TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;recordings&#39;:
+            current_run = self.current(&#39;runs&#39;)
+
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Recording for {current_run.task_name}&#39;,
+                &#39;Modality:&#39;,
+                TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+            current_recording = self.current(&#39;recordings&#39;)
+            if current_recording is None or current_recording.modality != &#39;ieeg&#39;:
+                QMessageBox.warning(
+                    self,
+                    f&#39;Cannot add {level}&#39;,
+                    &#39;You should first select an &#34;ieeg&#34; recording&#39;)
+                return
+
+            text, ok = QInputDialog.getText(
+                self,
+                f&#39;Add new {level}&#39;,
+                &#39;Name to identify this setup:&#39;,
+                )
+
+        if ok and text != &#39;&#39;:
+            if level == &#39;subjects&#39;:
+                code = text.strip()
+                Subject.add(self.db, code)
+                self.list_subjects(code)
+
+            elif level == &#39;sessions&#39;:
+                current_subject.add_session(text)
+                self.list_sessions_and_protocols(current_subject)
+
+            elif level == &#39;protocols&#39;:
+                current_subject.add_protocol(text)
+                self.list_sessions_and_protocols(current_subject)
+
+            elif level == &#39;runs&#39;:
+                current_session.add_run(text)
+                self.list_runs(current_session)
+
+            elif level == &#39;recordings&#39;:
+                current_run.add_recording(text)
+                self.list_recordings(current_run)
+
+            elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+                if level in &#39;channels&#39;:
+                    chan = Channels.add(self.db)
+                    chan.name = text
+                    current_recording.attach_channels(chan)
+
+                elif level in &#39;electrodes&#39;:
+                    elec = Electrodes.add(self.db)
+                    elec.name = text
+                    current_recording.attach_electrodes(elec)
+
+                self.list_recordings(self.current(&#39;runs&#39;))
+                self.list_channels_electrodes(current_recording)
+                self.list_params()
+
+            self.modified()
+
+    def edit_subject_codes(self):
+        subject = self.current(&#39;subjects&#39;)
+        text = str(subject)
+        if text == &#39;(subject without code)&#39;:
+            text = &#39;&#39;
+        text, ok = QInputDialog.getText(
+            self,
+            &#39;Edit Subject Codes&#39;,
+            &#39;Separate each code by a comma (spaces are ignored)&#39;,
+            text=text,
+            )
+
+        if ok and text != &#39;&#39;:
+            text = text.strip(&#39;, &#39;)
+            subject.codes = [x.strip() for x in text.split(&#39;,&#39;)]
+            self.list_subjects()
+            self.modified()
+
+    def new_file(self, checked=None, filename=None):
+        get_new_file = NewFile(self, filename=filename)
+        result = get_new_file.exec()
+
+        if result:
+            level = get_new_file.level.currentText().lower() + &#39;s&#39;
+            item = self.current(level)
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            item.add_file(format, path)
+
+            self.list_files()
+            self.modified()
+
+    def edit_file(self, level_obj, file_obj):
+        get_new_file = NewFile(self, file_obj, level_obj)
+        result = get_new_file.exec()
+
+        if result:
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            file_obj.path = path
+            file_obj.format = format
+
+        self.list_files()
+        self.modified()
+
+    def io_parrec(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        success = False
+        for file in recording.list_files():
+            if file.format == &#39;parrec&#39;:
+                add_parrec(file.path, run=run, recording=recording)
+                success = True
+                break
+
+        if success:
+            self.list_recordings(run)
+            self.list_params()
+            self.modified()
+        else:
+            self.statusBar().showMessage(&#39;Cound not find PAR/REC to collect info from&#39;)
+
+    def io_parrec_sess(self):
+        sess = self.current(&#39;sessions&#39;)
+
+        par_folder = QFileDialog.getExistingDirectory()
+        if par_folder == &#39;&#39;:
+            return
+
+        list_parrec = list(Path(par_folder).glob(&#39;*.PAR&#39;))
+        progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(list_parrec), self)
+        progress.setWindowTitle(f&#39;Importing PAR/REC files to &#34;{sess.subject}&#34;/&#34;{sess.name}&#34;&#39;)
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
+
+        for i, par_file in enumerate(list_parrec):
+            progress.setValue(i)
+            progress.setLabelText(f&#39;Importing {par_file.name}&#39;)
+            QGuiApplication.processEvents()
+            add_parrec(par_file, sess=sess)
+
+            if progress.wasCanceled():
+                break
+
+        progress.setValue(i + 1)
+        self.list_runs(sess)
+        self.list_params()
+        self.modified()
+
+    def io_ieeg(self):
+        sess = self.current(&#39;sessions&#39;)
+
+        ieeg_file = QFileDialog.getOpenFileName(
+            self,
+            &#34;Select File&#34;,
+            None)[0]
+
+        if ieeg_file == &#39;&#39;:
+            return
+
+        add_ieeg_to_sess(sess, Path(ieeg_file))
+
+        self.list_runs(sess)
+        self.list_params()
+        self.modified()
+
+    def io_events_only(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        events = read_events_from_ieeg(run, recording, ieeg_files[0])
+
+        if len(events) &gt; 0:
+            run.events = events
+            self.show_events(run)
+
+            self.modified()
+        else:
+            print(&#39;there were no events&#39;)
+
+    def io_events(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        compare_events = CompareEvents(self, run, ieeg_files[0].path)
+        result = compare_events.exec()
+
+        if result == QDialog.Accepted:
+            run.start_time = compare_events.info[&#39;start_time&#39;]
+            run.duration = compare_events.info[&#39;duration&#39;]
+            run.events = compare_events.info[&#39;events&#39;]
+
+            self.list_params()
+            self.show_events(run)
+            self.modified()
+
+    def io_channels(self):
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        chan = create_channels(self.db, ieeg_files[0].path)
+        if chan is None:
+            return
+        chan.name = &#39;(imported)&#39;
+        recording.attach_channels(chan)
+
+        self.modified()
+        self.list_recordings()
+
+    def io_electrodes(self):
+
+        mat_file = QFileDialog.getOpenFileName(
+            self,
+            &#34;Open File&#34;,
+            None,
+            &#34;Matlab (*.mat)&#34;)[0]
+
+        if mat_file == &#39;&#39;:
+            return
+
+        rec = self.current(&#39;recordings&#39;)
+        chan = rec.channels
+        chan_data = chan.data
+        idx = isin(chan_data[&#39;type&#39;], (&#39;ECOG&#39;, &#39;SEEG&#39;))
+        n_chan = idx.sum()
+        lg.warning(f&#39;# of ECOG/SEEG channels for this recording: {n_chan}&#39;)
+
+        xyz = import_electrodes(mat_file, n_chan)
+        if xyz is None:
+            print(&#39;you need to do this manually&#39;)
+            return
+
+        elec = Electrodes.add(self.db)
+        elec_data = elec.empty(n_chan)
+        elec_data[&#39;name&#39;] = chan_data[&#39;name&#39;][idx]
+        elec_data[&#39;x&#39;] = xyz[:, 0]
+        elec_data[&#39;y&#39;] = xyz[:, 1]
+        elec_data[&#39;z&#39;] = xyz[:, 2]
+        elec.data = elec_data
+        rec.attach_electrodes(elec)
+
+        self.modified()
+        self.list_recordings()
+
+    def delete_file(self, level_obj, file_obj):
+        level_obj.delete_file(file_obj)
+        self.list_files()
+        self.modified()
+
+    def closeEvent(self, event):
+
+        if self.unsaved_changes:
+            answer = QMessageBox.question(
+                self,
+                &#39;Confirm Closing&#39;,
+                &#39;There are unsaved changes. Are you sure you want to exit?&#39;,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No)
+
+            if answer == QMessageBox.No:
+                event.ignore()
+                return
+
+        settings.setValue(&#39;window/geometry&#39;, self.saveGeometry())
+        settings.setValue(&#39;window/state&#39;, self.saveState())
+
+        event.accept()
+
+
+def list_parameters(obj, parent=None):
+
+    d = {}
+    for col_name, col_info, value in get_attributes(obj):
+
+        if col_info is None or &#39;type&#39; not in col_info:
+            continue
+
+        elif col_info[&#39;type&#39;].startswith(&#39;DATETIME&#39;):
+            w = make_datetime(value)
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;DATE&#39;):
+            w = make_date(value)
+            w.dateChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;FLOAT&#39;):
+            w = make_float(value)
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;INTEGER&#39;):
+            w = make_integer(value)
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
+            if &#39;values&#39; in col_info:
+                w = make_combobox(value, col_info[&#39;values&#39;])
+                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
+            else:
+                w = make_edit(value)
+                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
+
+        else:
+            raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
+
+        if &#39;doc&#39; in col_info:
+            w.setToolTip(col_info[&#39;doc&#39;])
+
+        d[col_info[&#39;name&#39;]] = w
+
+    return d
+
+
+def make_edit(value):
+    w = QLineEdit()
+    w.insert(value)
+    return w
+
+
+def make_integer(value):
+    w = QSpinBox()
+    w.setRange(-2e7, 2e7)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        w.setValue(value)
+
+    return w
+
+
+def make_float(value):
+    w = QDoubleSpinBox()
+    w.setDecimals(3)
+    w.setRange(-1e8, 1e8)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        try:
+            w.setValue(value)
+        except TypeError:
+            print(value)
+            print(type(value))
+
+    return w
+
+
+def make_combobox(value, possible_values):
+    w = QComboBox()
+    values = [&#39;Unknown / Unspecified&#39;, ] + possible_values
+    w.addItems(values)
+    w.setCurrentText(value)
+
+    return w
+
+
+def make_date(value):
+    w = QDateEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat(&#39;dd/MM/yyyy&#39;)
+    if value is None:
+        w.setDate(date(1900, 1, 1))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDate(value)
+
+    return w
+
+
+def make_datetime(value):
+    w = QDateTimeEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat(&#39;dd/MM/yyyy HH:mm:ss.zzz&#39;)
+    if value is None:
+        w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDateTime(value)
+
+    return w
+
+
+def copy_to_clipboard(text):
+
+    clipboard = QGuiApplication.clipboard()
+    clipboard.setText(text)
+
+
+def highlight(item):
+    item.setBackground(Qt.yellow)
+    font = item.font()
+    font.setBold(True)
+    item.setFont(font)
+
+
+class QListWidgetItem_time(QListWidgetItem):
+    def __init__(self, obj, title):
+        self.obj = obj
+        super().__init__(title)
+        self.setData(Qt.UserRole, obj)
+
+    def __lt__(self, other):
+        return self.obj.start_time &lt; other.obj.start_time
+
+
+def _name(name):
+    if name is None:
+        return &#39;(untitled)&#39;
+    else:
+        return name
+
+def _session_name(sess):
+    if sess.start_time is None:
+        date_str = &#39;unknown date&#39;
+    else:
+        date_str = f&#39;{sess.start_time:%d %b %Y}&#39;
+    return f&#39;{sess.name} ({date_str})&#39;
+
+
+def _fake_names(X):
+    &#34;&#34;&#34;We cannot have empty channel names, so we use it the MICROMED
+    convention
+    &#34;&#34;&#34;
+    for i in range(X[&#39;name&#39;].shape[0]):
+        if X[&#39;name&#39;][i] == &#39;&#39;:
+            X[&#39;name&#39;][i] = f&#39;el{i + 1}&#39;
+    return X</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="xelo2.gui.interface.copy_to_clipboard"><code class="name flex">
+<span>def <span class="ident">copy_to_clipboard</span></span>(<span>text)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy_to_clipboard(text):
+
+    clipboard = QGuiApplication.clipboard()
+    clipboard.setText(text)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.highlight"><code class="name flex">
+<span>def <span class="ident">highlight</span></span>(<span>item)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def highlight(item):
+    item.setBackground(Qt.yellow)
+    font = item.font()
+    font.setBold(True)
+    item.setFont(font)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.list_parameters"><code class="name flex">
+<span>def <span class="ident">list_parameters</span></span>(<span>obj, parent=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_parameters(obj, parent=None):
+
+    d = {}
+    for col_name, col_info, value in get_attributes(obj):
+
+        if col_info is None or &#39;type&#39; not in col_info:
+            continue
+
+        elif col_info[&#39;type&#39;].startswith(&#39;DATETIME&#39;):
+            w = make_datetime(value)
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;DATE&#39;):
+            w = make_date(value)
+            w.dateChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;FLOAT&#39;):
+            w = make_float(value)
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;INTEGER&#39;):
+            w = make_integer(value)
+            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+
+        elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
+            if &#39;values&#39; in col_info:
+                w = make_combobox(value, col_info[&#39;values&#39;])
+                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
+            else:
+                w = make_edit(value)
+                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
+
+        else:
+            raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
+
+        if &#39;doc&#39; in col_info:
+            w.setToolTip(col_info[&#39;doc&#39;])
+
+        d[col_info[&#39;name&#39;]] = w
+
+    return d</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_combobox"><code class="name flex">
+<span>def <span class="ident">make_combobox</span></span>(<span>value, possible_values)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_combobox(value, possible_values):
+    w = QComboBox()
+    values = [&#39;Unknown / Unspecified&#39;, ] + possible_values
+    w.addItems(values)
+    w.setCurrentText(value)
+
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_date"><code class="name flex">
+<span>def <span class="ident">make_date</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_date(value):
+    w = QDateEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat(&#39;dd/MM/yyyy&#39;)
+    if value is None:
+        w.setDate(date(1900, 1, 1))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDate(value)
+
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_datetime"><code class="name flex">
+<span>def <span class="ident">make_datetime</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_datetime(value):
+    w = QDateTimeEdit()
+    w.setCalendarPopup(True)
+    w.setDisplayFormat(&#39;dd/MM/yyyy HH:mm:ss.zzz&#39;)
+    if value is None:
+        w.setDateTime(datetime(1900, 1, 1, 0, 0, 0))
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+    else:
+        w.setDateTime(value)
+
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_edit"><code class="name flex">
+<span>def <span class="ident">make_edit</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_edit(value):
+    w = QLineEdit()
+    w.insert(value)
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_float"><code class="name flex">
+<span>def <span class="ident">make_float</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_float(value):
+    w = QDoubleSpinBox()
+    w.setDecimals(3)
+    w.setRange(-1e8, 1e8)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        try:
+            w.setValue(value)
+        except TypeError:
+            print(value)
+            print(type(value))
+
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_integer"><code class="name flex">
+<span>def <span class="ident">make_integer</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_integer(value):
+    w = QSpinBox()
+    w.setRange(-2e7, 2e7)
+
+    if value is None:
+        w.setValue(0)
+        palette = QPalette()
+        palette.setColor(QPalette.Text, Qt.red)
+        w.setPalette(palette)
+
+    else:
+        w.setValue(value)
+
+    return w</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="xelo2.gui.interface.Interface"><code class="flex name class">
+<span>class <span class="ident">Interface</span></span>
+<span>(</span><span>db_type=None, db_name=None, username=None, password=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO: disable everything until you load database</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Interface(QMainWindow):
+    &#34;&#34;&#34;TODO: disable everything until you load database&#34;&#34;&#34;
+    db = None
+    test = False
+    unsaved_changes = False
+
+    def __init__(self, db_type=None, db_name=None, username=None, password=None):
+
+        super().__init__()
+        create_menubar(self)
+        create_shortcuts(self)
+
+        lists = {}
+        groups = {}
+        for k in LEVELS + EXTRA_LEVELS:
+            groups[k] = QGroupBox(k.capitalize())
+            lists[k] = QListWidget()
+            if k in LEVELS:
+                lists[k].currentItemChanged.connect(self.proc_all)
+            elif k in EXTRA_LEVELS:
+                lists[k].currentItemChanged.connect(self.show_channels_electrodes)
+
+            # right click
+            lists[k].setContextMenuPolicy(Qt.CustomContextMenu)
+            lists[k].customContextMenuRequested.connect(partial(self.rightclick_list, level=k))
+
+            layout = QVBoxLayout()
+            layout.addWidget(lists[k])
+            if k == &#39;runs&#39;:
+                b = QPushButton(&#39;Add to export list&#39;)
+                b.clicked.connect(self.exporting)
+                layout.addWidget(b)
+            groups[k].setLayout(layout)
+
+        # PARAMETERS: Widget
+        t_params = QTableWidget()
+        t_params.horizontalHeader().setStretchLastSection(True)
+        t_params.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_params.setColumnCount(3)
+        t_params.setHorizontalHeaderLabels([&#39;Level&#39;, &#39;Parameter&#39;, &#39;Value&#39;])
+        t_params.verticalHeader().setVisible(False)
+
+        # EVENTS: Widget
+        self.events_view = QTableView(self)
+        self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;events&#39;))
+
+        # CHANNELS: Widget
+        self.channels_view = QTableView(self)
+        self.channels_view.horizontalHeader().setStretchLastSection(True)
+        self.channels_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.channels_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;channels&#39;))
+
+        # ELECTRODES: Form
+        self.elec_form = QTableWidget()
+        self.elec_form.horizontalHeader().setStretchLastSection(True)
+        self.elec_form.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.elec_form.setColumnCount(2)
+        self.elec_form.setHorizontalHeaderLabels([&#39;Parameter&#39;, &#39;Value&#39;])
+        self.elec_form.verticalHeader().setVisible(False)
+
+        # ELECTRODES: Widget
+        self.electrodes_view = QTableView(self)
+        self.electrodes_view.horizontalHeader().setStretchLastSection(True)
+        self.electrodes_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.electrodes_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;electrodes&#39;))
+
+        # FILES: Widget
+        t_files = FilesWidget(self)
+        t_files.horizontalHeader().setStretchLastSection(True)
+        t_files.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_files.setColumnCount(3)
+        t_files.setHorizontalHeaderLabels([&#39;Level&#39;, &#39;Format&#39;, &#39;File&#39;])
+        t_files.verticalHeader().setVisible(False)
+        # right click
+        t_files.setContextMenuPolicy(Qt.CustomContextMenu)
+        t_files.customContextMenuRequested.connect(self.rightclick_files)
+
+        # EXPORT: Widget
+        w_export = QWidget()
+        col_export = QVBoxLayout()
+
+        t_export = QTableWidget()
+        t_export.horizontalHeader().setStretchLastSection(True)
+        t_export.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t_export.setColumnCount(4)
+        t_export.setHorizontalHeaderLabels([&#39;Subject&#39;, &#39;Session&#39;, &#39;Run&#39;, &#39;Start Time&#39;])
+        t_export.verticalHeader().setVisible(False)
+
+        p_clearexport = QPushButton(&#39;Clear list&#39;)
+        p_clearexport.clicked.connect(self.clear_export)
+
+        p_doexport = QPushButton(&#39;Export ...&#39;)
+        p_doexport.clicked.connect(self.do_export)
+
+        col_export.addWidget(t_export)
+        col_export.addWidget(p_clearexport)
+        col_export.addWidget(p_doexport)
+        w_export.setLayout(col_export)
+
+        # session and protocol in the same column
+        col_sessmetc = QVBoxLayout()
+        col_sessmetc.addWidget(groups[&#39;sessions&#39;])
+        col_sessmetc.addWidget(groups[&#39;protocols&#39;])
+
+        # recordings, channels and electrodes
+        col_recchanelec = QVBoxLayout()
+        col_recchanelec.addWidget(groups[&#39;recordings&#39;])
+        col_recchanelec.addWidget(groups[&#39;channels&#39;])
+        col_recchanelec.addWidget(groups[&#39;electrodes&#39;])
+
+        # TOP PANELS
+        layout_top = QHBoxLayout()
+        layout_top.addWidget(groups[&#39;subjects&#39;])
+        layout_top.addLayout(col_sessmetc)
+        layout_top.addWidget(groups[&#39;runs&#39;])
+        layout_top.addLayout(col_recchanelec)
+
+        # FULL LAYOUT
+        # central widget
+        central_widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addLayout(layout_top)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
+        # parameters
+        dockwidget = QDockWidget(&#39;Parameters&#39;, self)
+        dockwidget.setWidget(t_params)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_parameters&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # events
+        dockwidget = QDockWidget(&#39;Events&#39;, self)
+        dockwidget.setWidget(self.events_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_events&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # channels
+        dockwidget = QDockWidget(&#39;Channels&#39;, self)
+        dockwidget.setWidget(self.channels_view)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_channels&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # electrodes
+        dockwidget = QDockWidget(&#39;Electrodes&#39;, self)
+        temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
+        elec_layout = QVBoxLayout(temp_widget)
+        elec_layout.addWidget(self.elec_form)
+        elec_layout.addWidget(self.electrodes_view)
+        dockwidget.setWidget(temp_widget)
+
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_electrodes&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # files
+        dockwidget = QDockWidget(&#39;Files&#39;, self)
+        dockwidget.setWidget(t_files)
+        dockwidget.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_files&#39;)  # savestate
+        self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
+
+        # export
+        dockwidget = QDockWidget(&#39;Export&#39;, self)
+        dockwidget.setWidget(w_export)
+        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget.setObjectName(&#39;dock_export&#39;)  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+
+        # restore geometry
+        window_geometry = settings.value(&#39;window/geometry&#39;)
+        if window_geometry is not None:
+            self.restoreGeometry(window_geometry)
+        window_state = settings.value(&#39;window/state&#39;)
+        if window_state is not None:
+            self.restoreState(window_state)
+
+        # SAVE THESE ITEMS
+        self.groups = groups
+        self.lists = lists
+        self.t_params = t_params
+        self.t_files = t_files
+        self.t_export = t_export
+        self.exports = []
+
+        self.search = Search()
+
+        self.statusBar()
+        self.show()
+
+        if db_type is None:
+            DB_ARGS = parse_accessdatabase(self)
+            if DB_ARGS is not None:
+                self.sql_access(**DB_ARGS)
+
+        else:
+            self.sql_access(db_type, db_name, username, password)
+
+    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+        &#34;&#34;&#34;This is where you access the database
+        &#34;&#34;&#34;
+        self.db = open_database(db_type, db_name, username, password)
+        self.db.transaction()
+
+        self.events_model = QSqlTableModel(self, self.db)
+        self.events_model.setTable(&#39;events&#39;)
+        self.events_view.setModel(self.events_model)
+        self.events_view.hideColumn(0)
+
+        self.channels_model = QSqlTableModel(self, self.db)
+        self.channels_model.setTable(&#39;channels&#39;)
+        self.channels_view.setModel(self.channels_model)
+        self.channels_view.hideColumn(0)
+
+        self.electrodes_model = QSqlTableModel(self, self.db)
+        self.electrodes_model.setTable(&#39;electrodes&#39;)
+        self.electrodes_view.setModel(self.electrodes_model)
+        self.electrodes_view.hideColumn(0)
+
+        self.list_subjects()
+
+    def sql_commit(self):
+
+        self.db.commit()
+        self.setWindowTitle(&#39;&#39;)
+        self.unsaved_changes = False
+        self.db.transaction()
+
+    def sql_rollback(self):
+        self.db.rollback()
+        self.unsaved_changes = False
+        self.setWindowTitle(&#39;&#39;)
+        self.db.transaction()
+        self.list_subjects()
+
+    def list_subjects(self, code_to_select=None):
+        &#34;&#34;&#34;
+        code_to_select : str
+            code of the subject to select
+        &#34;&#34;&#34;
+        for line in self.lists.values():
+            line.clear()
+
+        to_select = None
+        if self.subjsort.isChecked():
+            args = {
+                &#39;alphabetical&#39;: True,
+                &#39;reverse&#39;: False,
+                }
+        else:
+            args = {
+                &#39;alphabetical&#39;: False,
+                &#39;reverse&#39;: True,
+                }
+        for subj in list_subjects(self.db, **args):
+            item = QListWidgetItem(str(subj))
+            if subj.id in self.search.subjects:
+                highlight(item)
+            item.setData(Qt.UserRole, subj)
+            self.lists[&#39;subjects&#39;].addItem(item)
+            if code_to_select is not None and code_to_select == str(subj):
+                to_select = item
+            if to_select is None:  # select first one
+                to_select = item
+        self.lists[&#39;subjects&#39;].setCurrentItem(to_select)
+
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def proc_all(self, current=None, previous=None, item=None):
+        &#34;&#34;&#34;GUI calls current and previous. You can call item&#34;&#34;&#34;
+
+        self.list_channels_electrodes()
+        if item is None:
+            # when clicking on a previously selected list, it sends a signal where current is None, but I don&#39;t understand why
+            if current is None:
+                return
+            item = current.data(Qt.UserRole)
+
+        if item.t == &#39;subject&#39;:
+            self.list_sessions_and_protocols(item)
+
+        elif item.t == &#39;session&#39;:
+            self.list_runs(item)
+
+        elif item.t == &#39;protocol&#39;:
+            pass
+
+        elif item.t == &#39;run&#39;:
+            self.list_recordings(item)
+            self.show_events(item)
+
+        elif item.t == &#39;recording&#39;:
+            self.list_channels_electrodes(item)
+
+        self.list_params()
+        self.list_files()
+
+    def list_sessions_and_protocols(self, subj=None):
+
+        if subj is None or subj is False:
+            subj = self.current(&#39;subjects&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, ):
+                continue
+            l.clear()
+
+        for sess in subj.list_sessions():
+            item = QListWidgetItem_time(sess, _session_name(sess))
+            if sess.id in self.search.sessions:
+                highlight(item)
+            self.lists[&#39;sessions&#39;].addItem(item)
+        self.lists[&#39;sessions&#39;].setCurrentRow(0)
+
+        for protocol in subj.list_protocols():
+            item = QListWidgetItem(_protocol_name(protocol))
+            item.setData(Qt.UserRole, protocol)
+            self.lists[&#39;protocols&#39;].addItem(item)
+        self.lists[&#39;protocols&#39;].setCurrentRow(0)
+
+    def list_runs(self, sess=None):
+
+        if sess is None or sess is False:
+            sess = self.current(&#39;sessions&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;):
+                continue
+            l.clear()
+
+        for run in sess.list_runs():
+            item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+            if run.id in self.search.runs:
+                highlight(item)
+            self.lists[&#39;runs&#39;].addItem(item)
+        self.lists[&#39;runs&#39;].setCurrentRow(0)
+
+    def list_recordings(self, run=None):
+
+        if run is None or run is False:
+            run = self.current(&#39;runs&#39;)
+
+        for level, l in self.lists.items():
+            if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;, &#39;runs&#39;):
+                continue
+            l.clear()
+
+        for recording in run.list_recordings():
+            item = QListWidgetItem(recording.modality)
+            item.setData(Qt.UserRole, recording)
+            if recording.id in self.search.recordings:
+                highlight(item)
+            self.lists[&#39;recordings&#39;].addItem(item)
+        self.lists[&#39;recordings&#39;].setCurrentRow(0)
+
+    def list_channels_electrodes(self, recording=None):
+
+        for level, l in self.lists.items():
+            if level in (&#39;channels&#39;, &#39;electrodes&#39;):
+                l.clear()
+
+        self.channels_model.setFilter(&#39;channel_group_id = 0&#39;)
+        self.channels_model.select()
+        self.channels_view.setEnabled(False)
+        self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
+        self.electrodes_model.select()
+        self.electrodes_view.setEnabled(False)
+
+        if recording is None:
+            return
+
+        sess = self.current(&#39;sessions&#39;)
+
+        if recording.modality == &#39;ieeg&#39;:
+            for chan in sess.list_channels():
+                item = QListWidgetItem(_name(chan.name))
+                item.setData(Qt.UserRole, chan)
+                self.lists[&#39;channels&#39;].addItem(item)
+
+            for elec in sess.list_electrodes():
+                item = QListWidgetItem(_name(elec.name))
+                item.setData(Qt.UserRole, elec)
+                self.lists[&#39;electrodes&#39;].addItem(item)
+
+    def statusbar_selected(self):
+
+        statusbar = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            statusbar.append(repr(obj))
+
+        self.statusBar().showMessage(&#39;\t&#39;.join(statusbar))
+
+    def list_params(self):
+        self.statusbar_selected()
+
+        self.t_params.blockSignals(True)
+        self.t_params.clearContents()
+
+        all_params = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+
+            parameters = {}
+            parameters.update(list_parameters(obj, self))
+
+            if k == &#39;runs&#39;:
+                w = Popup_Experimenters(obj, self)
+                parameters.update({&#39;Experimenters&#39;: w})
+                w = Popup_Protocols(obj, self)
+                parameters.update({&#39;Protocols&#39;: w})
+
+            elif k == &#39;recordings&#39;:
+
+                if obj.modality == &#39;ieeg&#39;:
+                    parameters.update(list_parameters(obj, self))
+
+                    sess = self.current(&#39;sessions&#39;)
+
+                    w = QComboBox()  # add callback here
+                    w.addItem(&#39;(undefined channels)&#39;, None)
+                    for chan in sess.list_channels():
+                        w.addItem(_name(chan.name), chan)
+                    channels = obj.channels
+                    if channels is None:
+                        w.setCurrentText(&#39;&#39;)
+                    else:
+                        w.setCurrentText(_name(channels.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
+                    parameters.update({&#39;Channels&#39;: w})
+
+                    w = QComboBox()
+                    w.addItem(&#39;(undefined electrodes)&#39;, None)
+                    for elec in sess.list_electrodes():
+                        w.addItem(_name(elec.name), elec)
+                    electrodes = obj.electrodes
+                    if electrodes is None:
+                        w.setCurrentText(&#39;&#39;)
+                    else:
+                        w.setCurrentText(_name(electrodes.name))
+                    w.activated.connect(partial(self.combo_chanelec, widget=w))
+                    parameters.update({&#39;Electrodes&#39;: w})
+
+                if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
+                    parameters.update(list_parameters(obj, self))
+
+                if obj.run.session.name == &#39;MRI&#39;:
+                    parameters.update(list_parameters(obj, self))
+
+            for p_k, p_v in parameters.items():
+                all_params.append({
+                    &#39;level&#39;: self.groups[k].title(),
+                    &#39;parameter&#39;: p_k,
+                    &#39;value&#39;: p_v,
+                    })
+
+        self.t_params.setRowCount(len(all_params))
+
+        for i, val in enumerate(all_params):
+            item = QTableWidgetItem(val[&#39;level&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+            self.t_params.setItem(i, 0, item)
+            item = QTableWidgetItem(val[&#39;parameter&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            self.t_params.setItem(i, 1, item)
+            item = QTableWidgetItem(str(val[&#39;value&#39;]))
+            self.t_params.setCellWidget(i, 2, val[&#39;value&#39;])
+
+        self.t_params.blockSignals(False)
+
+    def combo_chanelec(self, i, widget):
+        data = widget.currentData()
+        recording = self.current(&#39;recordings&#39;)
+        if data is None:
+            if widget.currentText() == &#39;(undefined channels)&#39;:
+                recording.detach_channels()
+            else:
+                recording.detach_electrodes()
+
+        elif data.t == &#39;channel_group&#39;:
+            recording.attach_channels(data)
+
+        elif data.t == &#39;electrode_group&#39;:
+            recording.attach_electrodes(data)
+
+    def current(self, level):
+
+        item = self.lists[level].currentItem()
+        if item is not None:
+            return item.data(Qt.UserRole)
+
+    def list_files(self):
+
+        self.t_files.blockSignals(True)
+        self.t_files.clearContents()
+
+        all_files = []
+        for k, v in self.lists.items():
+            item = v.currentItem()
+            if item is None:
+                continue
+            obj = item.data(Qt.UserRole)
+            for file in obj.list_files():
+                all_files.append({
+                    &#39;level&#39;: self.groups[k].title(),
+                    &#39;format&#39;: file.format,
+                    &#39;path&#39;: file.path,
+                    &#39;obj&#39;: [obj, file],
+                    })
+
+        self.t_files.setRowCount(len(all_files))
+
+        for i, val in enumerate(all_files):
+
+            item = QTableWidgetItem(val[&#39;level&#39;])
+            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 0, item)
+
+            item = QTableWidgetItem(val[&#39;format&#39;])
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 1, item)
+
+            item = QTableWidgetItem(str(val[&#39;path&#39;]))
+            try:
+                path_exists = val[&#39;path&#39;].exists()
+
+            except PermissionError as err:
+                lg.warning(err)
+                item.setForeground(QBrush(QColor(&#39;orange&#39;)))
+
+            else:
+                if not path_exists:
+                    item.setForeground(QBrush(QColor(&#39;red&#39;)))
+
+            item.setData(Qt.UserRole, val[&#39;obj&#39;])
+            self.t_files.setItem(i, 2, item)
+
+        self.t_files.blockSignals(False)
+
+    def changed(self, obj, column, x):
+        if isinstance(x, QDate):
+            x = x.toPyDate()
+        elif isinstance(x, QDateTime):
+            x = x.toPyDateTime()
+        else:
+            if isinstance(x, QLineEdit):
+                x = x.text()
+
+            x = f&#39;{x}&#39;
+
+        setattr(obj, column, x)
+        self.modified()
+
+    def show_events(self, item):
+        self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
+        self.events_model.select()
+
+    @pyqtSlot(QListWidgetItem, QListWidgetItem)
+    def show_channels_electrodes(self, current=None, previous=None):
+        if current is None:
+            return
+
+        self.statusbar_selected()
+
+        item = current.data(Qt.UserRole)
+
+        if item.t == &#39;channel_group&#39;:
+            self.channels_view.setEnabled(True)
+            self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
+            self.channels_model.select()
+
+        elif item.t == &#39;electrode_group&#39;:
+            self.elec_form.blockSignals(True)
+
+            parameters = list_parameters(item, self)
+            self.elec_form.setRowCount(len(parameters))
+            for i, kv in enumerate(parameters.items()):
+                k, v = kv
+                table_item = QTableWidgetItem(k)
+                self.elec_form.setItem(i, 0, table_item)
+                self.elec_form.setCellWidget(i, 1, v)
+            self.elec_form.blockSignals(False)
+
+            self.electrodes_view.setEnabled(True)
+            self.electrodes_model.setFilter(f&#39;electrode_group_id = {item.id}&#39;)
+            self.electrodes_model.select()
+
+    def exporting(self, checked=None, subj=None, sess=None, run=None):
+
+        if subj is None:
+            subj = self.lists[&#39;subjects&#39;].currentItem().data(Qt.UserRole)
+            sess = self.lists[&#39;sessions&#39;].currentItem().data(Qt.UserRole)
+            run = self.lists[&#39;runs&#39;].currentItem().data(Qt.UserRole)
+
+        d = {}
+        d[&#39;subjects&#39;] = str(subj)
+        if sess.name == &#39;MRI&#39;:
+            d[&#39;sessions&#39;] = f&#39;{sess.name} ({sess.MagneticFieldStrength})&#39;
+        else:
+            d[&#39;sessions&#39;] = sess.name
+        d[&#39;run_id&#39;] = run.id
+        d[&#39;runs&#39;] = f&#39;{run.task_name}&#39;
+        d[&#39;start_time&#39;] = f&#39;{run.start_time:%d %b %Y %H:%M:%S}&#39;
+        self.exports.append(d)
+
+        self.list_exports()
+
+    def clear_export(self):
+        self.exports = []
+        self.list_exports()
+
+    def list_exports(self):
+
+        self.t_export.clearContents()
+        n_exports = len(self.exports)
+
+        self.t_export.setRowCount(n_exports)
+
+        for i, l in enumerate(self.exports):
+            item = QTableWidgetItem(l[&#39;subjects&#39;])
+            self.t_export.setItem(i, 0, item)
+            item = QTableWidgetItem(l[&#39;sessions&#39;])
+            self.t_export.setItem(i, 1, item)
+            item = QTableWidgetItem(l[&#39;runs&#39;])
+            self.t_export.setItem(i, 2, item)
+            item = QTableWidgetItem(l[&#39;start_time&#39;])
+            self.t_export.setItem(i, 3, item)
+
+    def rightclick_table(self, pos, table=None):
+        if table == &#39;events&#39;:
+            view = self.events_view
+        elif table == &#39;channels&#39;:
+            view = self.channels_view
+        elif table == &#39;electrodes&#39;:
+            view = self.electrodes_view
+
+        menu = QMenu(self)
+        action = QAction(f&#39;Import {table} from tsv ...&#39;, self)
+        action.triggered.connect(lambda x: self.tsv_import(table=table))
+        menu.addAction(action)
+        action = QAction(f&#39;Export {table} to tsv ...&#39;, self)
+        action.triggered.connect(lambda x: self.tsv_export(table=table))
+        menu.addAction(action)
+        menu.popup(view.mapToGlobal(pos))
+
+    def tsv_import(self, table):
+
+        tsv_file = QFileDialog.getOpenFileName(
+            self,
+            f&#34;Import {table} from file&#34;,
+            None,
+            &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+        if tsv_file == &#39;&#39;:
+            return
+
+        if table == &#39;events&#39;:
+            run = self.current(&#39;runs&#39;)
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        X = load_tsv(Path(tsv_file), X.dtype)
+
+        if table == &#39;events&#39;:
+            run.events = X
+            self.show_events(run)
+
+        else:
+            current.data = _fake_names(X)
+            recording = self.current(&#39;recordings&#39;)
+            self.list_channels_electrodes(recording=recording)
+
+        self.modified()
+
+    def tsv_export(self, table):
+
+        tsv_file = QFileDialog.getSaveFileName(
+            self,
+            f&#34;Save {table} to file&#34;,
+            None,
+            &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+        if tsv_file == &#39;&#39;:
+            return
+
+        if table == &#39;events&#39;:
+            run = self.current(&#39;runs&#39;)
+            X = run.events
+        else:
+            current = self.current(table)
+            X = current.data
+
+        save_tsv(Path(tsv_file), X)
+
+    def rightclick_list(self, pos, level=None):
+        item = self.lists[level].itemAt(pos)
+
+        menu = QMenu(self)
+        if item is None:
+            action = QAction(f&#39;Add {level}&#39;, self)
+            action.triggered.connect(lambda x: self.new_item(level=level))
+            menu.addAction(action)
+
+        else:
+            obj = item.data(Qt.UserRole)
+
+            if obj.t in (&#39;channel_group&#39;, &#39;electrode_group&#39;):
+                action_rename = QAction(&#39;Rename&#39;, self)
+                action_rename.triggered.connect(lambda x: self.rename_item(obj))
+                menu.addAction(action_rename)
+            action_delete = QAction(&#39;Delete&#39;, self)
+            action_delete.triggered.connect(lambda x: self.delete_item(obj))
+            menu.addAction(action_delete)
+
+        menu.popup(self.lists[level].mapToGlobal(pos))
+
+    def rename_item(self, item):
+        text, ok = QInputDialog.getText(
+            self,
+            f&#39;Rename {item.t.split(&#34;_&#34;)[0]}&#39;,
+            &#39;New title:&#39;,
+            )
+
+        if ok and text != &#39;&#39;:
+            item.name = text
+
+    def delete_item(self, item):
+        item.delete()
+
+        if item.t == &#39;subject&#39;:
+            self.list_subjects()
+
+        elif item.t == &#39;session&#39;:
+            self.list_sessions_and_protocols(item.subject)
+
+        elif item.t == &#39;protocol&#39;:
+            self.list_sessions_and_protocols(item.subject)
+
+        elif item.t == &#39;run&#39;:
+            self.list_runs(item.session)
+
+        elif item.t == &#39;recording&#39;:
+            self.list_recordings(item.run)
+
+        self.list_params()
+        self.list_files()
+
+    def rightclick_files(self, pos):
+        item = self.t_files.itemAt(pos)
+
+        if item is None:
+            menu = QMenu(self)
+            action = QAction(&#39;Add File&#39;, self)
+            action.triggered.connect(lambda x: self.new_file(self))
+            menu.addAction(action)
+            menu.popup(self.t_files.mapToGlobal(pos))
+
+        else:
+            level_obj, file_obj = item.data(Qt.UserRole)
+            file_path = file_obj.path.resolve()
+            url_directory = QUrl.fromLocalFile(str(file_path.parent))
+
+            action_edit = QAction(&#39;Edit File&#39;, self)
+            action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
+            action_copy = QAction(&#39;Copy Path to File&#39;, self)
+            action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_obj.path)))
+            action_openfile = QAction(&#39;Open File&#39;, self)
+            action_openfile.triggered.connect(lambda x: self.open_file(file_path))
+
+            action_opendirectory = QAction(&#39;Open Containing Folder&#39;, self)
+            action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+            action_delete = QAction(&#39;Delete&#39;, self)
+            action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
+            menu = QMenu(&#39;File Information&#39;, self)
+            menu.addAction(action_edit)
+            menu.addAction(action_copy)
+            menu.addAction(action_openfile)
+            menu.addAction(action_opendirectory)
+            menu.addSeparator()
+            menu.addAction(action_delete)
+            menu.popup(self.t_files.mapToGlobal(pos))
+
+    def open_file(self, file_path):
+        if file_path.suffix.lower() == &#39;.par&#39;:
+            print(f&#39;converting {file_path}&#39;)
+            file_path = convert_parrec_nibabel(file_path)
+            print(f&#39;converted to {file_path}&#39;)
+
+        url_file = QUrl.fromLocalFile(str(file_path))
+        QDesktopServices.openUrl(url_file)
+
+    def export_tsv(self):
+        export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
+
+        &#34;&#34;&#34;
+        tsv_path = QFileDialog.getExistingDirectory()
+        if tsv_path == &#39;&#39;:
+            return
+        export_database(Path(tsv_path))
+        &#34;&#34;&#34;
+
+    def sql_search(self):
+
+        text, ok = QInputDialog.getText(
+            self,
+            &#39;Search the database&#39;,
+            &#39;WHERE statement&#39; + &#39; &#39; * 200,
+            QLineEdit.Normal,
+            self.search.previous,
+            )
+
+        if ok and text != &#39;&#39;:
+            self.search.where(self.db, text)
+            self.list_subjects()
+
+    def sql_search_clear(self):
+        self.search.clear()
+        self.list_subjects()
+
+    def add_search_results_to_export(self):
+
+        for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
+            self.exporting(
+                subj=Subject(id=subj_id),
+                sess=Session(id=sess_id),
+                run=Run(id=run_id),
+                )
+
+    def modified(self):
+        self.unsaved_changes = True
+        self.setWindowTitle(&#39;*&#39; + self.windowTitle())
+
+    def do_export(self, checked=None):
+
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+        run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
+
+        query = QSqlQuery(self.db)
+        query.prepare(f&#34;&#34;&#34;\
+            SELECT subjects.id, sessions.id, runs.id FROM runs
+            JOIN sessions ON sessions.id = runs.session_id
+            JOIN subjects ON subjects.id = sessions.subject_id
+            WHERE runs.id IN {run_ids}
+            &#34;&#34;&#34;)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        while query.next():
+            subset[&#39;subjects&#39;].append(query.value(0))
+            subset[&#39;sessions&#39;].append(query.value(1))
+            subset[&#39;runs&#39;].append(query.value(2))
+
+        data_path = QFileDialog.getExistingDirectory()
+        if data_path == &#39;&#39;:
+            return
+
+        progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(subset[&#39;runs&#39;]), self)
+        progress.setWindowTitle(&#39;Converting to BIDS&#39;)
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
+
+        create_bids(self.db, Path(data_path), deface=False, subset=subset, progress=progress)
+        progress.setValue(len(subset[&#39;runs&#39;]))
+
+    def new_item(self, checked=None, level=None):
+
+        if level == &#39;subjects&#39;:
+            text, ok = QInputDialog.getText(
+                self,
+                &#39;Add New Subject&#39;,
+                &#39;Subject Code:&#39;,
+                )
+
+        elif level == &#39;sessions&#39;:
+            current_subject = self.current(&#39;subjects&#39;)
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Session for {current_subject}&#39;,
+                &#39;Session Name:&#39;,
+                TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;protocols&#39;:
+            current_subject = self.current(&#39;subjects&#39;)
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Protocol for {current_subject}&#39;,
+                &#39;Protocol Name:&#39;,
+                TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;runs&#39;:
+            current_session = self.current(&#39;sessions&#39;)
+
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Run for {current_session.name}&#39;,
+                &#39;Task Name:&#39;,
+                TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level == &#39;recordings&#39;:
+            current_run = self.current(&#39;runs&#39;)
+
+            text, ok = QInputDialog.getItem(
+                self,
+                f&#39;Add New Recording for {current_run.task_name}&#39;,
+                &#39;Modality:&#39;,
+                TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+                0, False)
+
+        elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+            current_recording = self.current(&#39;recordings&#39;)
+            if current_recording is None or current_recording.modality != &#39;ieeg&#39;:
+                QMessageBox.warning(
+                    self,
+                    f&#39;Cannot add {level}&#39;,
+                    &#39;You should first select an &#34;ieeg&#34; recording&#39;)
+                return
+
+            text, ok = QInputDialog.getText(
+                self,
+                f&#39;Add new {level}&#39;,
+                &#39;Name to identify this setup:&#39;,
+                )
+
+        if ok and text != &#39;&#39;:
+            if level == &#39;subjects&#39;:
+                code = text.strip()
+                Subject.add(self.db, code)
+                self.list_subjects(code)
+
+            elif level == &#39;sessions&#39;:
+                current_subject.add_session(text)
+                self.list_sessions_and_protocols(current_subject)
+
+            elif level == &#39;protocols&#39;:
+                current_subject.add_protocol(text)
+                self.list_sessions_and_protocols(current_subject)
+
+            elif level == &#39;runs&#39;:
+                current_session.add_run(text)
+                self.list_runs(current_session)
+
+            elif level == &#39;recordings&#39;:
+                current_run.add_recording(text)
+                self.list_recordings(current_run)
+
+            elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+                if level in &#39;channels&#39;:
+                    chan = Channels.add(self.db)
+                    chan.name = text
+                    current_recording.attach_channels(chan)
+
+                elif level in &#39;electrodes&#39;:
+                    elec = Electrodes.add(self.db)
+                    elec.name = text
+                    current_recording.attach_electrodes(elec)
+
+                self.list_recordings(self.current(&#39;runs&#39;))
+                self.list_channels_electrodes(current_recording)
+                self.list_params()
+
+            self.modified()
+
+    def edit_subject_codes(self):
+        subject = self.current(&#39;subjects&#39;)
+        text = str(subject)
+        if text == &#39;(subject without code)&#39;:
+            text = &#39;&#39;
+        text, ok = QInputDialog.getText(
+            self,
+            &#39;Edit Subject Codes&#39;,
+            &#39;Separate each code by a comma (spaces are ignored)&#39;,
+            text=text,
+            )
+
+        if ok and text != &#39;&#39;:
+            text = text.strip(&#39;, &#39;)
+            subject.codes = [x.strip() for x in text.split(&#39;,&#39;)]
+            self.list_subjects()
+            self.modified()
+
+    def new_file(self, checked=None, filename=None):
+        get_new_file = NewFile(self, filename=filename)
+        result = get_new_file.exec()
+
+        if result:
+            level = get_new_file.level.currentText().lower() + &#39;s&#39;
+            item = self.current(level)
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            item.add_file(format, path)
+
+            self.list_files()
+            self.modified()
+
+    def edit_file(self, level_obj, file_obj):
+        get_new_file = NewFile(self, file_obj, level_obj)
+        result = get_new_file.exec()
+
+        if result:
+            format = get_new_file.format.currentText()
+            path = get_new_file.filepath.text()
+            file_obj.path = path
+            file_obj.format = format
+
+        self.list_files()
+        self.modified()
+
+    def io_parrec(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        success = False
+        for file in recording.list_files():
+            if file.format == &#39;parrec&#39;:
+                add_parrec(file.path, run=run, recording=recording)
+                success = True
+                break
+
+        if success:
+            self.list_recordings(run)
+            self.list_params()
+            self.modified()
+        else:
+            self.statusBar().showMessage(&#39;Cound not find PAR/REC to collect info from&#39;)
+
+    def io_parrec_sess(self):
+        sess = self.current(&#39;sessions&#39;)
+
+        par_folder = QFileDialog.getExistingDirectory()
+        if par_folder == &#39;&#39;:
+            return
+
+        list_parrec = list(Path(par_folder).glob(&#39;*.PAR&#39;))
+        progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(list_parrec), self)
+        progress.setWindowTitle(f&#39;Importing PAR/REC files to &#34;{sess.subject}&#34;/&#34;{sess.name}&#34;&#39;)
+        progress.setMinimumDuration(0)
+        progress.setWindowModality(Qt.WindowModal)
+
+        for i, par_file in enumerate(list_parrec):
+            progress.setValue(i)
+            progress.setLabelText(f&#39;Importing {par_file.name}&#39;)
+            QGuiApplication.processEvents()
+            add_parrec(par_file, sess=sess)
+
+            if progress.wasCanceled():
+                break
+
+        progress.setValue(i + 1)
+        self.list_runs(sess)
+        self.list_params()
+        self.modified()
+
+    def io_ieeg(self):
+        sess = self.current(&#39;sessions&#39;)
+
+        ieeg_file = QFileDialog.getOpenFileName(
+            self,
+            &#34;Select File&#34;,
+            None)[0]
+
+        if ieeg_file == &#39;&#39;:
+            return
+
+        add_ieeg_to_sess(sess, Path(ieeg_file))
+
+        self.list_runs(sess)
+        self.list_params()
+        self.modified()
+
+    def io_events_only(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        events = read_events_from_ieeg(run, recording, ieeg_files[0])
+
+        if len(events) &gt; 0:
+            run.events = events
+            self.show_events(run)
+
+            self.modified()
+        else:
+            print(&#39;there were no events&#39;)
+
+    def io_events(self):
+        run = self.current(&#39;runs&#39;)
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        compare_events = CompareEvents(self, run, ieeg_files[0].path)
+        result = compare_events.exec()
+
+        if result == QDialog.Accepted:
+            run.start_time = compare_events.info[&#39;start_time&#39;]
+            run.duration = compare_events.info[&#39;duration&#39;]
+            run.events = compare_events.info[&#39;events&#39;]
+
+            self.list_params()
+            self.show_events(run)
+            self.modified()
+
+    def io_channels(self):
+        recording = self.current(&#39;recordings&#39;)
+
+        if recording is None or recording.modality != &#39;ieeg&#39;:
+            return
+
+        ieeg_files = recording.list_files()
+        if len(ieeg_files) == 0:
+            return
+
+        if not ieeg_files[0].path.exists():
+            return
+
+        chan = create_channels(self.db, ieeg_files[0].path)
+        if chan is None:
+            return
+        chan.name = &#39;(imported)&#39;
+        recording.attach_channels(chan)
+
+        self.modified()
+        self.list_recordings()
+
+    def io_electrodes(self):
+
+        mat_file = QFileDialog.getOpenFileName(
+            self,
+            &#34;Open File&#34;,
+            None,
+            &#34;Matlab (*.mat)&#34;)[0]
+
+        if mat_file == &#39;&#39;:
+            return
+
+        rec = self.current(&#39;recordings&#39;)
+        chan = rec.channels
+        chan_data = chan.data
+        idx = isin(chan_data[&#39;type&#39;], (&#39;ECOG&#39;, &#39;SEEG&#39;))
+        n_chan = idx.sum()
+        lg.warning(f&#39;# of ECOG/SEEG channels for this recording: {n_chan}&#39;)
+
+        xyz = import_electrodes(mat_file, n_chan)
+        if xyz is None:
+            print(&#39;you need to do this manually&#39;)
+            return
+
+        elec = Electrodes.add(self.db)
+        elec_data = elec.empty(n_chan)
+        elec_data[&#39;name&#39;] = chan_data[&#39;name&#39;][idx]
+        elec_data[&#39;x&#39;] = xyz[:, 0]
+        elec_data[&#39;y&#39;] = xyz[:, 1]
+        elec_data[&#39;z&#39;] = xyz[:, 2]
+        elec.data = elec_data
+        rec.attach_electrodes(elec)
+
+        self.modified()
+        self.list_recordings()
+
+    def delete_file(self, level_obj, file_obj):
+        level_obj.delete_file(file_obj)
+        self.list_files()
+        self.modified()
+
+    def closeEvent(self, event):
+
+        if self.unsaved_changes:
+            answer = QMessageBox.question(
+                self,
+                &#39;Confirm Closing&#39;,
+                &#39;There are unsaved changes. Are you sure you want to exit?&#39;,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No)
+
+            if answer == QMessageBox.No:
+                event.ignore()
+                return
+
+        settings.setValue(&#39;window/geometry&#39;, self.saveGeometry())
+        settings.setValue(&#39;window/state&#39;, self.saveState())
+
+        event.accept()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QMainWindow</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="xelo2.gui.interface.Interface.db"><code class="name">var <span class="ident">db</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="xelo2.gui.interface.Interface.test"><code class="name">var <span class="ident">test</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="xelo2.gui.interface.Interface.unsaved_changes"><code class="name">var <span class="ident">unsaved_changes</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.interface.Interface.add_search_results_to_export"><code class="name flex">
+<span>def <span class="ident">add_search_results_to_export</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_search_results_to_export(self):
+
+    for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
+        self.exporting(
+            subj=Subject(id=subj_id),
+            sess=Session(id=sess_id),
+            run=Run(id=run_id),
+            )</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.changed"><code class="name flex">
+<span>def <span class="ident">changed</span></span>(<span>self, obj, column, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def changed(self, obj, column, x):
+    if isinstance(x, QDate):
+        x = x.toPyDate()
+    elif isinstance(x, QDateTime):
+        x = x.toPyDateTime()
+    else:
+        if isinstance(x, QLineEdit):
+            x = x.text()
+
+        x = f&#39;{x}&#39;
+
+    setattr(obj, column, x)
+    self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.clear_export"><code class="name flex">
+<span>def <span class="ident">clear_export</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_export(self):
+    self.exports = []
+    self.list_exports()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.closeEvent"><code class="name flex">
+<span>def <span class="ident">closeEvent</span></span>(<span>self, event)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>closeEvent(self, QCloseEvent)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def closeEvent(self, event):
+
+    if self.unsaved_changes:
+        answer = QMessageBox.question(
+            self,
+            &#39;Confirm Closing&#39;,
+            &#39;There are unsaved changes. Are you sure you want to exit?&#39;,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No)
+
+        if answer == QMessageBox.No:
+            event.ignore()
+            return
+
+    settings.setValue(&#39;window/geometry&#39;, self.saveGeometry())
+    settings.setValue(&#39;window/state&#39;, self.saveState())
+
+    event.accept()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.combo_chanelec"><code class="name flex">
+<span>def <span class="ident">combo_chanelec</span></span>(<span>self, i, widget)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def combo_chanelec(self, i, widget):
+    data = widget.currentData()
+    recording = self.current(&#39;recordings&#39;)
+    if data is None:
+        if widget.currentText() == &#39;(undefined channels)&#39;:
+            recording.detach_channels()
+        else:
+            recording.detach_electrodes()
+
+    elif data.t == &#39;channel_group&#39;:
+        recording.attach_channels(data)
+
+    elif data.t == &#39;electrode_group&#39;:
+        recording.attach_electrodes(data)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.current"><code class="name flex">
+<span>def <span class="ident">current</span></span>(<span>self, level)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def current(self, level):
+
+    item = self.lists[level].currentItem()
+    if item is not None:
+        return item.data(Qt.UserRole)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.delete_file"><code class="name flex">
+<span>def <span class="ident">delete_file</span></span>(<span>self, level_obj, file_obj)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_file(self, level_obj, file_obj):
+    level_obj.delete_file(file_obj)
+    self.list_files()
+    self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.delete_item"><code class="name flex">
+<span>def <span class="ident">delete_item</span></span>(<span>self, item)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_item(self, item):
+    item.delete()
+
+    if item.t == &#39;subject&#39;:
+        self.list_subjects()
+
+    elif item.t == &#39;session&#39;:
+        self.list_sessions_and_protocols(item.subject)
+
+    elif item.t == &#39;protocol&#39;:
+        self.list_sessions_and_protocols(item.subject)
+
+    elif item.t == &#39;run&#39;:
+        self.list_runs(item.session)
+
+    elif item.t == &#39;recording&#39;:
+        self.list_recordings(item.run)
+
+    self.list_params()
+    self.list_files()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.do_export"><code class="name flex">
+<span>def <span class="ident">do_export</span></span>(<span>self, checked=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_export(self, checked=None):
+
+    subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+    run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
+
+    query = QSqlQuery(self.db)
+    query.prepare(f&#34;&#34;&#34;\
+        SELECT subjects.id, sessions.id, runs.id FROM runs
+        JOIN sessions ON sessions.id = runs.session_id
+        JOIN subjects ON subjects.id = sessions.subject_id
+        WHERE runs.id IN {run_ids}
+        &#34;&#34;&#34;)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    while query.next():
+        subset[&#39;subjects&#39;].append(query.value(0))
+        subset[&#39;sessions&#39;].append(query.value(1))
+        subset[&#39;runs&#39;].append(query.value(2))
+
+    data_path = QFileDialog.getExistingDirectory()
+    if data_path == &#39;&#39;:
+        return
+
+    progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(subset[&#39;runs&#39;]), self)
+    progress.setWindowTitle(&#39;Converting to BIDS&#39;)
+    progress.setMinimumDuration(0)
+    progress.setWindowModality(Qt.WindowModal)
+
+    create_bids(self.db, Path(data_path), deface=False, subset=subset, progress=progress)
+    progress.setValue(len(subset[&#39;runs&#39;]))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.edit_file"><code class="name flex">
+<span>def <span class="ident">edit_file</span></span>(<span>self, level_obj, file_obj)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def edit_file(self, level_obj, file_obj):
+    get_new_file = NewFile(self, file_obj, level_obj)
+    result = get_new_file.exec()
+
+    if result:
+        format = get_new_file.format.currentText()
+        path = get_new_file.filepath.text()
+        file_obj.path = path
+        file_obj.format = format
+
+    self.list_files()
+    self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.edit_subject_codes"><code class="name flex">
+<span>def <span class="ident">edit_subject_codes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def edit_subject_codes(self):
+    subject = self.current(&#39;subjects&#39;)
+    text = str(subject)
+    if text == &#39;(subject without code)&#39;:
+        text = &#39;&#39;
+    text, ok = QInputDialog.getText(
+        self,
+        &#39;Edit Subject Codes&#39;,
+        &#39;Separate each code by a comma (spaces are ignored)&#39;,
+        text=text,
+        )
+
+    if ok and text != &#39;&#39;:
+        text = text.strip(&#39;, &#39;)
+        subject.codes = [x.strip() for x in text.split(&#39;,&#39;)]
+        self.list_subjects()
+        self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.export_tsv"><code class="name flex">
+<span>def <span class="ident">export_tsv</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def export_tsv(self):
+    export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
+
+    &#34;&#34;&#34;
+    tsv_path = QFileDialog.getExistingDirectory()
+    if tsv_path == &#39;&#39;:
+        return
+    export_database(Path(tsv_path))
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.exporting"><code class="name flex">
+<span>def <span class="ident">exporting</span></span>(<span>self, checked=None, subj=None, sess=None, run=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exporting(self, checked=None, subj=None, sess=None, run=None):
+
+    if subj is None:
+        subj = self.lists[&#39;subjects&#39;].currentItem().data(Qt.UserRole)
+        sess = self.lists[&#39;sessions&#39;].currentItem().data(Qt.UserRole)
+        run = self.lists[&#39;runs&#39;].currentItem().data(Qt.UserRole)
+
+    d = {}
+    d[&#39;subjects&#39;] = str(subj)
+    if sess.name == &#39;MRI&#39;:
+        d[&#39;sessions&#39;] = f&#39;{sess.name} ({sess.MagneticFieldStrength})&#39;
+    else:
+        d[&#39;sessions&#39;] = sess.name
+    d[&#39;run_id&#39;] = run.id
+    d[&#39;runs&#39;] = f&#39;{run.task_name}&#39;
+    d[&#39;start_time&#39;] = f&#39;{run.start_time:%d %b %Y %H:%M:%S}&#39;
+    self.exports.append(d)
+
+    self.list_exports()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_channels"><code class="name flex">
+<span>def <span class="ident">io_channels</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_channels(self):
+    recording = self.current(&#39;recordings&#39;)
+
+    if recording is None or recording.modality != &#39;ieeg&#39;:
+        return
+
+    ieeg_files = recording.list_files()
+    if len(ieeg_files) == 0:
+        return
+
+    if not ieeg_files[0].path.exists():
+        return
+
+    chan = create_channels(self.db, ieeg_files[0].path)
+    if chan is None:
+        return
+    chan.name = &#39;(imported)&#39;
+    recording.attach_channels(chan)
+
+    self.modified()
+    self.list_recordings()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_electrodes"><code class="name flex">
+<span>def <span class="ident">io_electrodes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_electrodes(self):
+
+    mat_file = QFileDialog.getOpenFileName(
+        self,
+        &#34;Open File&#34;,
+        None,
+        &#34;Matlab (*.mat)&#34;)[0]
+
+    if mat_file == &#39;&#39;:
+        return
+
+    rec = self.current(&#39;recordings&#39;)
+    chan = rec.channels
+    chan_data = chan.data
+    idx = isin(chan_data[&#39;type&#39;], (&#39;ECOG&#39;, &#39;SEEG&#39;))
+    n_chan = idx.sum()
+    lg.warning(f&#39;# of ECOG/SEEG channels for this recording: {n_chan}&#39;)
+
+    xyz = import_electrodes(mat_file, n_chan)
+    if xyz is None:
+        print(&#39;you need to do this manually&#39;)
+        return
+
+    elec = Electrodes.add(self.db)
+    elec_data = elec.empty(n_chan)
+    elec_data[&#39;name&#39;] = chan_data[&#39;name&#39;][idx]
+    elec_data[&#39;x&#39;] = xyz[:, 0]
+    elec_data[&#39;y&#39;] = xyz[:, 1]
+    elec_data[&#39;z&#39;] = xyz[:, 2]
+    elec.data = elec_data
+    rec.attach_electrodes(elec)
+
+    self.modified()
+    self.list_recordings()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_events"><code class="name flex">
+<span>def <span class="ident">io_events</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_events(self):
+    run = self.current(&#39;runs&#39;)
+    recording = self.current(&#39;recordings&#39;)
+
+    if recording is None or recording.modality != &#39;ieeg&#39;:
+        return
+
+    ieeg_files = recording.list_files()
+    if len(ieeg_files) == 0:
+        return
+
+    if not ieeg_files[0].path.exists():
+        return
+
+    compare_events = CompareEvents(self, run, ieeg_files[0].path)
+    result = compare_events.exec()
+
+    if result == QDialog.Accepted:
+        run.start_time = compare_events.info[&#39;start_time&#39;]
+        run.duration = compare_events.info[&#39;duration&#39;]
+        run.events = compare_events.info[&#39;events&#39;]
+
+        self.list_params()
+        self.show_events(run)
+        self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_events_only"><code class="name flex">
+<span>def <span class="ident">io_events_only</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_events_only(self):
+    run = self.current(&#39;runs&#39;)
+    recording = self.current(&#39;recordings&#39;)
+
+    if recording is None or recording.modality != &#39;ieeg&#39;:
+        return
+
+    ieeg_files = recording.list_files()
+    if len(ieeg_files) == 0:
+        return
+
+    if not ieeg_files[0].path.exists():
+        return
+
+    events = read_events_from_ieeg(run, recording, ieeg_files[0])
+
+    if len(events) &gt; 0:
+        run.events = events
+        self.show_events(run)
+
+        self.modified()
+    else:
+        print(&#39;there were no events&#39;)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_ieeg"><code class="name flex">
+<span>def <span class="ident">io_ieeg</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_ieeg(self):
+    sess = self.current(&#39;sessions&#39;)
+
+    ieeg_file = QFileDialog.getOpenFileName(
+        self,
+        &#34;Select File&#34;,
+        None)[0]
+
+    if ieeg_file == &#39;&#39;:
+        return
+
+    add_ieeg_to_sess(sess, Path(ieeg_file))
+
+    self.list_runs(sess)
+    self.list_params()
+    self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_parrec"><code class="name flex">
+<span>def <span class="ident">io_parrec</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_parrec(self):
+    run = self.current(&#39;runs&#39;)
+    recording = self.current(&#39;recordings&#39;)
+
+    success = False
+    for file in recording.list_files():
+        if file.format == &#39;parrec&#39;:
+            add_parrec(file.path, run=run, recording=recording)
+            success = True
+            break
+
+    if success:
+        self.list_recordings(run)
+        self.list_params()
+        self.modified()
+    else:
+        self.statusBar().showMessage(&#39;Cound not find PAR/REC to collect info from&#39;)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.io_parrec_sess"><code class="name flex">
+<span>def <span class="ident">io_parrec_sess</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def io_parrec_sess(self):
+    sess = self.current(&#39;sessions&#39;)
+
+    par_folder = QFileDialog.getExistingDirectory()
+    if par_folder == &#39;&#39;:
+        return
+
+    list_parrec = list(Path(par_folder).glob(&#39;*.PAR&#39;))
+    progress = QProgressDialog(&#39;&#39;, &#39;Cancel&#39;, 0, len(list_parrec), self)
+    progress.setWindowTitle(f&#39;Importing PAR/REC files to &#34;{sess.subject}&#34;/&#34;{sess.name}&#34;&#39;)
+    progress.setMinimumDuration(0)
+    progress.setWindowModality(Qt.WindowModal)
+
+    for i, par_file in enumerate(list_parrec):
+        progress.setValue(i)
+        progress.setLabelText(f&#39;Importing {par_file.name}&#39;)
+        QGuiApplication.processEvents()
+        add_parrec(par_file, sess=sess)
+
+        if progress.wasCanceled():
+            break
+
+    progress.setValue(i + 1)
+    self.list_runs(sess)
+    self.list_params()
+    self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_channels_electrodes"><code class="name flex">
+<span>def <span class="ident">list_channels_electrodes</span></span>(<span>self, recording=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_channels_electrodes(self, recording=None):
+
+    for level, l in self.lists.items():
+        if level in (&#39;channels&#39;, &#39;electrodes&#39;):
+            l.clear()
+
+    self.channels_model.setFilter(&#39;channel_group_id = 0&#39;)
+    self.channels_model.select()
+    self.channels_view.setEnabled(False)
+    self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
+    self.electrodes_model.select()
+    self.electrodes_view.setEnabled(False)
+
+    if recording is None:
+        return
+
+    sess = self.current(&#39;sessions&#39;)
+
+    if recording.modality == &#39;ieeg&#39;:
+        for chan in sess.list_channels():
+            item = QListWidgetItem(_name(chan.name))
+            item.setData(Qt.UserRole, chan)
+            self.lists[&#39;channels&#39;].addItem(item)
+
+        for elec in sess.list_electrodes():
+            item = QListWidgetItem(_name(elec.name))
+            item.setData(Qt.UserRole, elec)
+            self.lists[&#39;electrodes&#39;].addItem(item)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_exports"><code class="name flex">
+<span>def <span class="ident">list_exports</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_exports(self):
+
+    self.t_export.clearContents()
+    n_exports = len(self.exports)
+
+    self.t_export.setRowCount(n_exports)
+
+    for i, l in enumerate(self.exports):
+        item = QTableWidgetItem(l[&#39;subjects&#39;])
+        self.t_export.setItem(i, 0, item)
+        item = QTableWidgetItem(l[&#39;sessions&#39;])
+        self.t_export.setItem(i, 1, item)
+        item = QTableWidgetItem(l[&#39;runs&#39;])
+        self.t_export.setItem(i, 2, item)
+        item = QTableWidgetItem(l[&#39;start_time&#39;])
+        self.t_export.setItem(i, 3, item)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_files"><code class="name flex">
+<span>def <span class="ident">list_files</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_files(self):
+
+    self.t_files.blockSignals(True)
+    self.t_files.clearContents()
+
+    all_files = []
+    for k, v in self.lists.items():
+        item = v.currentItem()
+        if item is None:
+            continue
+        obj = item.data(Qt.UserRole)
+        for file in obj.list_files():
+            all_files.append({
+                &#39;level&#39;: self.groups[k].title(),
+                &#39;format&#39;: file.format,
+                &#39;path&#39;: file.path,
+                &#39;obj&#39;: [obj, file],
+                })
+
+    self.t_files.setRowCount(len(all_files))
+
+    for i, val in enumerate(all_files):
+
+        item = QTableWidgetItem(val[&#39;level&#39;])
+        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+        item.setData(Qt.UserRole, val[&#39;obj&#39;])
+        self.t_files.setItem(i, 0, item)
+
+        item = QTableWidgetItem(val[&#39;format&#39;])
+        item.setData(Qt.UserRole, val[&#39;obj&#39;])
+        self.t_files.setItem(i, 1, item)
+
+        item = QTableWidgetItem(str(val[&#39;path&#39;]))
+        try:
+            path_exists = val[&#39;path&#39;].exists()
+
+        except PermissionError as err:
+            lg.warning(err)
+            item.setForeground(QBrush(QColor(&#39;orange&#39;)))
+
+        else:
+            if not path_exists:
+                item.setForeground(QBrush(QColor(&#39;red&#39;)))
+
+        item.setData(Qt.UserRole, val[&#39;obj&#39;])
+        self.t_files.setItem(i, 2, item)
+
+    self.t_files.blockSignals(False)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_params"><code class="name flex">
+<span>def <span class="ident">list_params</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_params(self):
+    self.statusbar_selected()
+
+    self.t_params.blockSignals(True)
+    self.t_params.clearContents()
+
+    all_params = []
+    for k, v in self.lists.items():
+        item = v.currentItem()
+        if item is None:
+            continue
+        obj = item.data(Qt.UserRole)
+
+        parameters = {}
+        parameters.update(list_parameters(obj, self))
+
+        if k == &#39;runs&#39;:
+            w = Popup_Experimenters(obj, self)
+            parameters.update({&#39;Experimenters&#39;: w})
+            w = Popup_Protocols(obj, self)
+            parameters.update({&#39;Protocols&#39;: w})
+
+        elif k == &#39;recordings&#39;:
+
+            if obj.modality == &#39;ieeg&#39;:
+                parameters.update(list_parameters(obj, self))
+
+                sess = self.current(&#39;sessions&#39;)
+
+                w = QComboBox()  # add callback here
+                w.addItem(&#39;(undefined channels)&#39;, None)
+                for chan in sess.list_channels():
+                    w.addItem(_name(chan.name), chan)
+                channels = obj.channels
+                if channels is None:
+                    w.setCurrentText(&#39;&#39;)
+                else:
+                    w.setCurrentText(_name(channels.name))
+                w.activated.connect(partial(self.combo_chanelec, widget=w))
+                parameters.update({&#39;Channels&#39;: w})
+
+                w = QComboBox()
+                w.addItem(&#39;(undefined electrodes)&#39;, None)
+                for elec in sess.list_electrodes():
+                    w.addItem(_name(elec.name), elec)
+                electrodes = obj.electrodes
+                if electrodes is None:
+                    w.setCurrentText(&#39;&#39;)
+                else:
+                    w.setCurrentText(_name(electrodes.name))
+                w.activated.connect(partial(self.combo_chanelec, widget=w))
+                parameters.update({&#39;Electrodes&#39;: w})
+
+            if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
+                parameters.update(list_parameters(obj, self))
+
+            if obj.run.session.name == &#39;MRI&#39;:
+                parameters.update(list_parameters(obj, self))
+
+        for p_k, p_v in parameters.items():
+            all_params.append({
+                &#39;level&#39;: self.groups[k].title(),
+                &#39;parameter&#39;: p_k,
+                &#39;value&#39;: p_v,
+                })
+
+    self.t_params.setRowCount(len(all_params))
+
+    for i, val in enumerate(all_params):
+        item = QTableWidgetItem(val[&#39;level&#39;])
+        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        item.setBackground(QBrush(QColor(&#39;lightGray&#39;)))
+        self.t_params.setItem(i, 0, item)
+        item = QTableWidgetItem(val[&#39;parameter&#39;])
+        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        self.t_params.setItem(i, 1, item)
+        item = QTableWidgetItem(str(val[&#39;value&#39;]))
+        self.t_params.setCellWidget(i, 2, val[&#39;value&#39;])
+
+    self.t_params.blockSignals(False)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_recordings"><code class="name flex">
+<span>def <span class="ident">list_recordings</span></span>(<span>self, run=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_recordings(self, run=None):
+
+    if run is None or run is False:
+        run = self.current(&#39;runs&#39;)
+
+    for level, l in self.lists.items():
+        if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;, &#39;runs&#39;):
+            continue
+        l.clear()
+
+    for recording in run.list_recordings():
+        item = QListWidgetItem(recording.modality)
+        item.setData(Qt.UserRole, recording)
+        if recording.id in self.search.recordings:
+            highlight(item)
+        self.lists[&#39;recordings&#39;].addItem(item)
+    self.lists[&#39;recordings&#39;].setCurrentRow(0)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_runs"><code class="name flex">
+<span>def <span class="ident">list_runs</span></span>(<span>self, sess=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_runs(self, sess=None):
+
+    if sess is None or sess is False:
+        sess = self.current(&#39;sessions&#39;)
+
+    for level, l in self.lists.items():
+        if level in (&#39;subjects&#39;, &#39;sessions&#39;, &#39;protocols&#39;):
+            continue
+        l.clear()
+
+    for run in sess.list_runs():
+        item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+        if run.id in self.search.runs:
+            highlight(item)
+        self.lists[&#39;runs&#39;].addItem(item)
+    self.lists[&#39;runs&#39;].setCurrentRow(0)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_sessions_and_protocols"><code class="name flex">
+<span>def <span class="ident">list_sessions_and_protocols</span></span>(<span>self, subj=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_sessions_and_protocols(self, subj=None):
+
+    if subj is None or subj is False:
+        subj = self.current(&#39;subjects&#39;)
+
+    for level, l in self.lists.items():
+        if level in (&#39;subjects&#39;, ):
+            continue
+        l.clear()
+
+    for sess in subj.list_sessions():
+        item = QListWidgetItem_time(sess, _session_name(sess))
+        if sess.id in self.search.sessions:
+            highlight(item)
+        self.lists[&#39;sessions&#39;].addItem(item)
+    self.lists[&#39;sessions&#39;].setCurrentRow(0)
+
+    for protocol in subj.list_protocols():
+        item = QListWidgetItem(_protocol_name(protocol))
+        item.setData(Qt.UserRole, protocol)
+        self.lists[&#39;protocols&#39;].addItem(item)
+    self.lists[&#39;protocols&#39;].setCurrentRow(0)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.list_subjects"><code class="name flex">
+<span>def <span class="ident">list_subjects</span></span>(<span>self, code_to_select=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>code_to_select : str
+code of the subject to select</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_subjects(self, code_to_select=None):
+    &#34;&#34;&#34;
+    code_to_select : str
+        code of the subject to select
+    &#34;&#34;&#34;
+    for line in self.lists.values():
+        line.clear()
+
+    to_select = None
+    if self.subjsort.isChecked():
+        args = {
+            &#39;alphabetical&#39;: True,
+            &#39;reverse&#39;: False,
+            }
+    else:
+        args = {
+            &#39;alphabetical&#39;: False,
+            &#39;reverse&#39;: True,
+            }
+    for subj in list_subjects(self.db, **args):
+        item = QListWidgetItem(str(subj))
+        if subj.id in self.search.subjects:
+            highlight(item)
+        item.setData(Qt.UserRole, subj)
+        self.lists[&#39;subjects&#39;].addItem(item)
+        if code_to_select is not None and code_to_select == str(subj):
+            to_select = item
+        if to_select is None:  # select first one
+            to_select = item
+    self.lists[&#39;subjects&#39;].setCurrentItem(to_select)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.modified"><code class="name flex">
+<span>def <span class="ident">modified</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def modified(self):
+    self.unsaved_changes = True
+    self.setWindowTitle(&#39;*&#39; + self.windowTitle())</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.new_file"><code class="name flex">
+<span>def <span class="ident">new_file</span></span>(<span>self, checked=None, filename=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def new_file(self, checked=None, filename=None):
+    get_new_file = NewFile(self, filename=filename)
+    result = get_new_file.exec()
+
+    if result:
+        level = get_new_file.level.currentText().lower() + &#39;s&#39;
+        item = self.current(level)
+        format = get_new_file.format.currentText()
+        path = get_new_file.filepath.text()
+        item.add_file(format, path)
+
+        self.list_files()
+        self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.new_item"><code class="name flex">
+<span>def <span class="ident">new_item</span></span>(<span>self, checked=None, level=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def new_item(self, checked=None, level=None):
+
+    if level == &#39;subjects&#39;:
+        text, ok = QInputDialog.getText(
+            self,
+            &#39;Add New Subject&#39;,
+            &#39;Subject Code:&#39;,
+            )
+
+    elif level == &#39;sessions&#39;:
+        current_subject = self.current(&#39;subjects&#39;)
+        text, ok = QInputDialog.getItem(
+            self,
+            f&#39;Add New Session for {current_subject}&#39;,
+            &#39;Session Name:&#39;,
+            TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+            0, False)
+
+    elif level == &#39;protocols&#39;:
+        current_subject = self.current(&#39;subjects&#39;)
+        text, ok = QInputDialog.getItem(
+            self,
+            f&#39;Add New Protocol for {current_subject}&#39;,
+            &#39;Protocol Name:&#39;,
+            TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+            0, False)
+
+    elif level == &#39;runs&#39;:
+        current_session = self.current(&#39;sessions&#39;)
+
+        text, ok = QInputDialog.getItem(
+            self,
+            f&#39;Add New Run for {current_session.name}&#39;,
+            &#39;Task Name:&#39;,
+            TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+            0, False)
+
+    elif level == &#39;recordings&#39;:
+        current_run = self.current(&#39;runs&#39;)
+
+        text, ok = QInputDialog.getItem(
+            self,
+            f&#39;Add New Recording for {current_run.task_name}&#39;,
+            &#39;Modality:&#39;,
+            TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+            0, False)
+
+    elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+        current_recording = self.current(&#39;recordings&#39;)
+        if current_recording is None or current_recording.modality != &#39;ieeg&#39;:
+            QMessageBox.warning(
+                self,
+                f&#39;Cannot add {level}&#39;,
+                &#39;You should first select an &#34;ieeg&#34; recording&#39;)
+            return
+
+        text, ok = QInputDialog.getText(
+            self,
+            f&#39;Add new {level}&#39;,
+            &#39;Name to identify this setup:&#39;,
+            )
+
+    if ok and text != &#39;&#39;:
+        if level == &#39;subjects&#39;:
+            code = text.strip()
+            Subject.add(self.db, code)
+            self.list_subjects(code)
+
+        elif level == &#39;sessions&#39;:
+            current_subject.add_session(text)
+            self.list_sessions_and_protocols(current_subject)
+
+        elif level == &#39;protocols&#39;:
+            current_subject.add_protocol(text)
+            self.list_sessions_and_protocols(current_subject)
+
+        elif level == &#39;runs&#39;:
+            current_session.add_run(text)
+            self.list_runs(current_session)
+
+        elif level == &#39;recordings&#39;:
+            current_run.add_recording(text)
+            self.list_recordings(current_run)
+
+        elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
+            if level in &#39;channels&#39;:
+                chan = Channels.add(self.db)
+                chan.name = text
+                current_recording.attach_channels(chan)
+
+            elif level in &#39;electrodes&#39;:
+                elec = Electrodes.add(self.db)
+                elec.name = text
+                current_recording.attach_electrodes(elec)
+
+            self.list_recordings(self.current(&#39;runs&#39;))
+            self.list_channels_electrodes(current_recording)
+            self.list_params()
+
+        self.modified()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.open_file"><code class="name flex">
+<span>def <span class="ident">open_file</span></span>(<span>self, file_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def open_file(self, file_path):
+    if file_path.suffix.lower() == &#39;.par&#39;:
+        print(f&#39;converting {file_path}&#39;)
+        file_path = convert_parrec_nibabel(file_path)
+        print(f&#39;converted to {file_path}&#39;)
+
+    url_file = QUrl.fromLocalFile(str(file_path))
+    QDesktopServices.openUrl(url_file)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.proc_all"><code class="name flex">
+<span>def <span class="ident">proc_all</span></span>(<span>self, current=None, previous=None, item=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GUI calls current and previous. You can call item</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pyqtSlot(QListWidgetItem, QListWidgetItem)
+def proc_all(self, current=None, previous=None, item=None):
+    &#34;&#34;&#34;GUI calls current and previous. You can call item&#34;&#34;&#34;
+
+    self.list_channels_electrodes()
+    if item is None:
+        # when clicking on a previously selected list, it sends a signal where current is None, but I don&#39;t understand why
+        if current is None:
+            return
+        item = current.data(Qt.UserRole)
+
+    if item.t == &#39;subject&#39;:
+        self.list_sessions_and_protocols(item)
+
+    elif item.t == &#39;session&#39;:
+        self.list_runs(item)
+
+    elif item.t == &#39;protocol&#39;:
+        pass
+
+    elif item.t == &#39;run&#39;:
+        self.list_recordings(item)
+        self.show_events(item)
+
+    elif item.t == &#39;recording&#39;:
+        self.list_channels_electrodes(item)
+
+    self.list_params()
+    self.list_files()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.rename_item"><code class="name flex">
+<span>def <span class="ident">rename_item</span></span>(<span>self, item)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rename_item(self, item):
+    text, ok = QInputDialog.getText(
+        self,
+        f&#39;Rename {item.t.split(&#34;_&#34;)[0]}&#39;,
+        &#39;New title:&#39;,
+        )
+
+    if ok and text != &#39;&#39;:
+        item.name = text</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.rightclick_files"><code class="name flex">
+<span>def <span class="ident">rightclick_files</span></span>(<span>self, pos)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rightclick_files(self, pos):
+    item = self.t_files.itemAt(pos)
+
+    if item is None:
+        menu = QMenu(self)
+        action = QAction(&#39;Add File&#39;, self)
+        action.triggered.connect(lambda x: self.new_file(self))
+        menu.addAction(action)
+        menu.popup(self.t_files.mapToGlobal(pos))
+
+    else:
+        level_obj, file_obj = item.data(Qt.UserRole)
+        file_path = file_obj.path.resolve()
+        url_directory = QUrl.fromLocalFile(str(file_path.parent))
+
+        action_edit = QAction(&#39;Edit File&#39;, self)
+        action_edit.triggered.connect(lambda x: self.edit_file(level_obj, file_obj))
+        action_copy = QAction(&#39;Copy Path to File&#39;, self)
+        action_copy.triggered.connect(lambda x: copy_to_clipboard(str(file_obj.path)))
+        action_openfile = QAction(&#39;Open File&#39;, self)
+        action_openfile.triggered.connect(lambda x: self.open_file(file_path))
+
+        action_opendirectory = QAction(&#39;Open Containing Folder&#39;, self)
+        action_opendirectory.triggered.connect(lambda x: QDesktopServices.openUrl(url_directory))
+        action_delete = QAction(&#39;Delete&#39;, self)
+        action_delete.triggered.connect(lambda x: self.delete_file(level_obj, file_obj))
+        menu = QMenu(&#39;File Information&#39;, self)
+        menu.addAction(action_edit)
+        menu.addAction(action_copy)
+        menu.addAction(action_openfile)
+        menu.addAction(action_opendirectory)
+        menu.addSeparator()
+        menu.addAction(action_delete)
+        menu.popup(self.t_files.mapToGlobal(pos))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.rightclick_list"><code class="name flex">
+<span>def <span class="ident">rightclick_list</span></span>(<span>self, pos, level=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rightclick_list(self, pos, level=None):
+    item = self.lists[level].itemAt(pos)
+
+    menu = QMenu(self)
+    if item is None:
+        action = QAction(f&#39;Add {level}&#39;, self)
+        action.triggered.connect(lambda x: self.new_item(level=level))
+        menu.addAction(action)
+
+    else:
+        obj = item.data(Qt.UserRole)
+
+        if obj.t in (&#39;channel_group&#39;, &#39;electrode_group&#39;):
+            action_rename = QAction(&#39;Rename&#39;, self)
+            action_rename.triggered.connect(lambda x: self.rename_item(obj))
+            menu.addAction(action_rename)
+        action_delete = QAction(&#39;Delete&#39;, self)
+        action_delete.triggered.connect(lambda x: self.delete_item(obj))
+        menu.addAction(action_delete)
+
+    menu.popup(self.lists[level].mapToGlobal(pos))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.rightclick_table"><code class="name flex">
+<span>def <span class="ident">rightclick_table</span></span>(<span>self, pos, table=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rightclick_table(self, pos, table=None):
+    if table == &#39;events&#39;:
+        view = self.events_view
+    elif table == &#39;channels&#39;:
+        view = self.channels_view
+    elif table == &#39;electrodes&#39;:
+        view = self.electrodes_view
+
+    menu = QMenu(self)
+    action = QAction(f&#39;Import {table} from tsv ...&#39;, self)
+    action.triggered.connect(lambda x: self.tsv_import(table=table))
+    menu.addAction(action)
+    action = QAction(f&#39;Export {table} to tsv ...&#39;, self)
+    action.triggered.connect(lambda x: self.tsv_export(table=table))
+    menu.addAction(action)
+    menu.popup(view.mapToGlobal(pos))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.show_channels_electrodes"><code class="name flex">
+<span>def <span class="ident">show_channels_electrodes</span></span>(<span>self, current=None, previous=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pyqtSlot(QListWidgetItem, QListWidgetItem)
+def show_channels_electrodes(self, current=None, previous=None):
+    if current is None:
+        return
+
+    self.statusbar_selected()
+
+    item = current.data(Qt.UserRole)
+
+    if item.t == &#39;channel_group&#39;:
+        self.channels_view.setEnabled(True)
+        self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
+        self.channels_model.select()
+
+    elif item.t == &#39;electrode_group&#39;:
+        self.elec_form.blockSignals(True)
+
+        parameters = list_parameters(item, self)
+        self.elec_form.setRowCount(len(parameters))
+        for i, kv in enumerate(parameters.items()):
+            k, v = kv
+            table_item = QTableWidgetItem(k)
+            self.elec_form.setItem(i, 0, table_item)
+            self.elec_form.setCellWidget(i, 1, v)
+        self.elec_form.blockSignals(False)
+
+        self.electrodes_view.setEnabled(True)
+        self.electrodes_model.setFilter(f&#39;electrode_group_id = {item.id}&#39;)
+        self.electrodes_model.select()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.show_events"><code class="name flex">
+<span>def <span class="ident">show_events</span></span>(<span>self, item)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def show_events(self, item):
+    self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
+    self.events_model.select()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.sql_access"><code class="name flex">
+<span>def <span class="ident">sql_access</span></span>(<span>self, db_type=None, db_name=None, username=None, password=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is where you access the database</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+    &#34;&#34;&#34;This is where you access the database
+    &#34;&#34;&#34;
+    self.db = open_database(db_type, db_name, username, password)
+    self.db.transaction()
+
+    self.events_model = QSqlTableModel(self, self.db)
+    self.events_model.setTable(&#39;events&#39;)
+    self.events_view.setModel(self.events_model)
+    self.events_view.hideColumn(0)
+
+    self.channels_model = QSqlTableModel(self, self.db)
+    self.channels_model.setTable(&#39;channels&#39;)
+    self.channels_view.setModel(self.channels_model)
+    self.channels_view.hideColumn(0)
+
+    self.electrodes_model = QSqlTableModel(self, self.db)
+    self.electrodes_model.setTable(&#39;electrodes&#39;)
+    self.electrodes_view.setModel(self.electrodes_model)
+    self.electrodes_view.hideColumn(0)
+
+    self.list_subjects()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.sql_commit"><code class="name flex">
+<span>def <span class="ident">sql_commit</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sql_commit(self):
+
+    self.db.commit()
+    self.setWindowTitle(&#39;&#39;)
+    self.unsaved_changes = False
+    self.db.transaction()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.sql_rollback"><code class="name flex">
+<span>def <span class="ident">sql_rollback</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sql_rollback(self):
+    self.db.rollback()
+    self.unsaved_changes = False
+    self.setWindowTitle(&#39;&#39;)
+    self.db.transaction()
+    self.list_subjects()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.sql_search"><code class="name flex">
+<span>def <span class="ident">sql_search</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sql_search(self):
+
+    text, ok = QInputDialog.getText(
+        self,
+        &#39;Search the database&#39;,
+        &#39;WHERE statement&#39; + &#39; &#39; * 200,
+        QLineEdit.Normal,
+        self.search.previous,
+        )
+
+    if ok and text != &#39;&#39;:
+        self.search.where(self.db, text)
+        self.list_subjects()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.sql_search_clear"><code class="name flex">
+<span>def <span class="ident">sql_search_clear</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sql_search_clear(self):
+    self.search.clear()
+    self.list_subjects()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.statusbar_selected"><code class="name flex">
+<span>def <span class="ident">statusbar_selected</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def statusbar_selected(self):
+
+    statusbar = []
+    for k, v in self.lists.items():
+        item = v.currentItem()
+        if item is None:
+            continue
+        obj = item.data(Qt.UserRole)
+        statusbar.append(repr(obj))
+
+    self.statusBar().showMessage(&#39;\t&#39;.join(statusbar))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.tsv_export"><code class="name flex">
+<span>def <span class="ident">tsv_export</span></span>(<span>self, table)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tsv_export(self, table):
+
+    tsv_file = QFileDialog.getSaveFileName(
+        self,
+        f&#34;Save {table} to file&#34;,
+        None,
+        &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+    if tsv_file == &#39;&#39;:
+        return
+
+    if table == &#39;events&#39;:
+        run = self.current(&#39;runs&#39;)
+        X = run.events
+    else:
+        current = self.current(table)
+        X = current.data
+
+    save_tsv(Path(tsv_file), X)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.tsv_import"><code class="name flex">
+<span>def <span class="ident">tsv_import</span></span>(<span>self, table)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tsv_import(self, table):
+
+    tsv_file = QFileDialog.getOpenFileName(
+        self,
+        f&#34;Import {table} from file&#34;,
+        None,
+        &#34;Tab-separated values (*.tsv)&#34;)[0]
+
+    if tsv_file == &#39;&#39;:
+        return
+
+    if table == &#39;events&#39;:
+        run = self.current(&#39;runs&#39;)
+        X = run.events
+    else:
+        current = self.current(table)
+        X = current.data
+
+    X = load_tsv(Path(tsv_file), X.dtype)
+
+    if table == &#39;events&#39;:
+        run.events = X
+        self.show_events(run)
+
+    else:
+        current.data = _fake_names(X)
+        recording = self.current(&#39;recordings&#39;)
+        self.list_channels_electrodes(recording=recording)
+
+    self.modified()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="xelo2.gui.interface.QListWidgetItem_time"><code class="flex name class">
+<span>class <span class="ident">QListWidgetItem_time</span></span>
+<span>(</span><span>obj, title)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QListWidgetItem(parent: QListWidget = None, type: int = QListWidgetItem.Type)
+QListWidgetItem(str, parent: QListWidget = None, type: int = QListWidgetItem.Type)
+QListWidgetItem(QIcon, str, parent: QListWidget = None, type: int = QListWidgetItem.Type)
+QListWidgetItem(QListWidgetItem)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class QListWidgetItem_time(QListWidgetItem):
+    def __init__(self, obj, title):
+        self.obj = obj
+        super().__init__(title)
+        self.setData(Qt.UserRole, obj)
+
+    def __lt__(self, other):
+        return self.obj.start_time &lt; other.obj.start_time</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QListWidgetItem</li>
+<li>sip.wrapper</li>
+<li>sip.simplewrapper</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="xelo2.gui" href="index.html">xelo2.gui</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="xelo2.gui.interface.copy_to_clipboard" href="#xelo2.gui.interface.copy_to_clipboard">copy_to_clipboard</a></code></li>
+<li><code><a title="xelo2.gui.interface.highlight" href="#xelo2.gui.interface.highlight">highlight</a></code></li>
+<li><code><a title="xelo2.gui.interface.list_parameters" href="#xelo2.gui.interface.list_parameters">list_parameters</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_combobox" href="#xelo2.gui.interface.make_combobox">make_combobox</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_date" href="#xelo2.gui.interface.make_date">make_date</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_datetime" href="#xelo2.gui.interface.make_datetime">make_datetime</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_edit" href="#xelo2.gui.interface.make_edit">make_edit</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_float" href="#xelo2.gui.interface.make_float">make_float</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_integer" href="#xelo2.gui.interface.make_integer">make_integer</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="xelo2.gui.interface.Interface" href="#xelo2.gui.interface.Interface">Interface</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.interface.Interface.add_search_results_to_export" href="#xelo2.gui.interface.Interface.add_search_results_to_export">add_search_results_to_export</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.changed" href="#xelo2.gui.interface.Interface.changed">changed</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.clear_export" href="#xelo2.gui.interface.Interface.clear_export">clear_export</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.closeEvent" href="#xelo2.gui.interface.Interface.closeEvent">closeEvent</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.combo_chanelec" href="#xelo2.gui.interface.Interface.combo_chanelec">combo_chanelec</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.current" href="#xelo2.gui.interface.Interface.current">current</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.db" href="#xelo2.gui.interface.Interface.db">db</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.delete_file" href="#xelo2.gui.interface.Interface.delete_file">delete_file</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.delete_item" href="#xelo2.gui.interface.Interface.delete_item">delete_item</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.do_export" href="#xelo2.gui.interface.Interface.do_export">do_export</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.edit_file" href="#xelo2.gui.interface.Interface.edit_file">edit_file</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.edit_subject_codes" href="#xelo2.gui.interface.Interface.edit_subject_codes">edit_subject_codes</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.export_tsv" href="#xelo2.gui.interface.Interface.export_tsv">export_tsv</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.exporting" href="#xelo2.gui.interface.Interface.exporting">exporting</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_channels" href="#xelo2.gui.interface.Interface.io_channels">io_channels</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_electrodes" href="#xelo2.gui.interface.Interface.io_electrodes">io_electrodes</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_events" href="#xelo2.gui.interface.Interface.io_events">io_events</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_events_only" href="#xelo2.gui.interface.Interface.io_events_only">io_events_only</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_ieeg" href="#xelo2.gui.interface.Interface.io_ieeg">io_ieeg</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_parrec" href="#xelo2.gui.interface.Interface.io_parrec">io_parrec</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.io_parrec_sess" href="#xelo2.gui.interface.Interface.io_parrec_sess">io_parrec_sess</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_channels_electrodes" href="#xelo2.gui.interface.Interface.list_channels_electrodes">list_channels_electrodes</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_exports" href="#xelo2.gui.interface.Interface.list_exports">list_exports</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_files" href="#xelo2.gui.interface.Interface.list_files">list_files</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_params" href="#xelo2.gui.interface.Interface.list_params">list_params</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_recordings" href="#xelo2.gui.interface.Interface.list_recordings">list_recordings</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_runs" href="#xelo2.gui.interface.Interface.list_runs">list_runs</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_sessions_and_protocols" href="#xelo2.gui.interface.Interface.list_sessions_and_protocols">list_sessions_and_protocols</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.list_subjects" href="#xelo2.gui.interface.Interface.list_subjects">list_subjects</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.modified" href="#xelo2.gui.interface.Interface.modified">modified</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.new_file" href="#xelo2.gui.interface.Interface.new_file">new_file</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.new_item" href="#xelo2.gui.interface.Interface.new_item">new_item</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.open_file" href="#xelo2.gui.interface.Interface.open_file">open_file</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.proc_all" href="#xelo2.gui.interface.Interface.proc_all">proc_all</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.rename_item" href="#xelo2.gui.interface.Interface.rename_item">rename_item</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.rightclick_files" href="#xelo2.gui.interface.Interface.rightclick_files">rightclick_files</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.rightclick_list" href="#xelo2.gui.interface.Interface.rightclick_list">rightclick_list</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.rightclick_table" href="#xelo2.gui.interface.Interface.rightclick_table">rightclick_table</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.show_channels_electrodes" href="#xelo2.gui.interface.Interface.show_channels_electrodes">show_channels_electrodes</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.show_events" href="#xelo2.gui.interface.Interface.show_events">show_events</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.sql_access" href="#xelo2.gui.interface.Interface.sql_access">sql_access</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.sql_commit" href="#xelo2.gui.interface.Interface.sql_commit">sql_commit</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.sql_rollback" href="#xelo2.gui.interface.Interface.sql_rollback">sql_rollback</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.sql_search" href="#xelo2.gui.interface.Interface.sql_search">sql_search</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.sql_search_clear" href="#xelo2.gui.interface.Interface.sql_search_clear">sql_search_clear</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.statusbar_selected" href="#xelo2.gui.interface.Interface.statusbar_selected">statusbar_selected</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.test" href="#xelo2.gui.interface.Interface.test">test</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.tsv_export" href="#xelo2.gui.interface.Interface.tsv_export">tsv_export</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.tsv_import" href="#xelo2.gui.interface.Interface.tsv_import">tsv_import</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.unsaved_changes" href="#xelo2.gui.interface.Interface.unsaved_changes">unsaved_changes</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.interface.QListWidgetItem_time" href="#xelo2.gui.interface.QListWidgetItem_time">QListWidgetItem_time</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

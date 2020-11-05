@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>xelo2.io.channels API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>xelo2.io.channels</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from wonambi import Dataset
+from xelo2.api import Channels
+from numpy import nan
+from re import match
+
+ECOG_PATTERN = r&#39;([A-Za-z ]+)\d+&#39;
+
+
+def create_channels(db, ieeg_path):
+    if ieeg_path.suffix.lower() == &#39;.trc&#39;:
+        return create_channels_trc(db, ieeg_path)
+    elif ieeg_path.suffix.lower() == &#39;.nev&#39; or ieeg_path.suffix.startswith(&#39;.ns&#39;):
+        return create_channels_blackrock(db, ieeg_path)
+    else:
+        print(f&#39;Cannot extract channel labels from {ieeg_path}&#39;)
+
+
+def create_channels_trc(db, trc_path):
+    d = Dataset(trc_path)
+    trc_chans = d.header[&#39;orig&#39;][&#39;chans&#39;]
+
+    chan = Channels.add(db)
+    channels = chan.empty(len(trc_chans))
+
+    labels = [ch[&#39;chan_name&#39;] for ch in trc_chans]
+    chan_types = [def_chan_type(label) for label in labels]
+    chan_groups = def_groups(labels, chan_types)
+
+    channels[&#39;name&#39;] = labels
+    channels[&#39;type&#39;] = chan_types
+    channels[&#39;units&#39;] = [ch[&#39;units&#39;].replace(&#39;dimentionless&#39;, &#39;&#39;) for ch in trc_chans]
+    channels[&#39;high_cutoff&#39;] = [ch[&#39;HiPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff = [ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff[low_cutoff == 0] = nan
+    channels[&#39;low_cutoff&#39;] = low_cutoff
+    channels[&#39;reference&#39;] = [ch[&#39;ground&#39;] for ch in trc_chans]  # it&#39;s called ground but I&#39;m pretty sure it&#39;s the reference
+    channels[&#39;groups&#39;] = chan_groups
+    channels[&#39;status&#39;] = &#39;good&#39;
+
+    chan.data = channels
+
+    return chan
+
+
+def create_channels_blackrock(db, blackrock_path):
+    if blackrock_path.suffix == &#39;.nev&#39;:
+        blackrock_path = blackrock_path.with_suffix(&#39;.ns3&#39;)
+    d = Dataset(blackrock_path)
+    b_chans = d.header[&#39;orig&#39;][&#39;ElectrodesInfo&#39;]
+
+    chan = Channels.add(db)
+    channels = chan.empty(len(b_chans))
+
+    labels = [ch[&#39;Label&#39;] for ch in b_chans]
+
+    channels[&#39;name&#39;] = labels
+    channels[&#39;type&#39;] = &#39;ECOG&#39;
+    channels[&#39;units&#39;] = [ch[&#39;AnalogUnits&#39;].replace(&#39;uV&#39;, &#39;μV&#39;) for ch in b_chans]
+    channels[&#39;high_cutoff&#39;] = [ch[&#39;HighFreqCorner&#39;] / 1000 for ch in b_chans]
+    channels[&#39;low_cutoff&#39;] = [ch[&#39;LowFreqCorner&#39;] / 1000 for ch in b_chans]
+    channels[&#39;groups&#39;] = &#39;HD&#39;
+    channels[&#39;status&#39;] = &#39;good&#39;
+
+    chan.data = channels
+
+    return chan
+
+
+def def_chan_type(label):
+    if label == &#39;&#39;:
+        return &#39;OTHER&#39;
+
+    if match(&#39;[Rr][1-9]&#39;, label):
+        return &#39;MISC&#39;
+    if label == &#39;&#39;:
+        return &#39;OTHER&#39;  # TODO: empty?
+    if label.endswith(&#39;+&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;-&#39;):
+        return &#39;OTHER&#39;
+    if &#39;...&#39; in label:
+        return &#39;OTHER&#39;
+    if label.lower() in (&#39;wangl&#39;, &#39;wangr&#39;):
+        return &#39;MISC&#39;
+    if label.lower().startswith(&#39;ah&#39;):
+        return &#39;ECG&#39;
+    if label.lower().startswith(&#39;ecg&#39;):
+        return &#39;ECG&#39;
+    if label.lower().startswith(&#39;ekg&#39;):
+        return &#39;ECG&#39;
+    if label[:3].lower() in (&#39;kin&#39;, &#39;emg&#39;, &#39;arm&#39;, &#39;nek&#39;) or label == &#39;MOND&#39;:
+        return &#39;EMG&#39;
+    if label[:3].lower() == &#39;orb&#39;:
+        return &#39;EOG&#39;
+    if label.startswith(&#39;el&#39;):
+        return &#39;OTHER&#39;
+    if label.startswith(&#39;x&#39;):
+        return &#39;OTHER&#39;
+    if label.startswith(&#39;D&#39;):
+        return &#39;SEEG&#39;
+
+    if match(ECOG_PATTERN, label):
+        return &#39;ECOG&#39;
+    else:
+        return &#39;OTHER&#39;
+
+
+def def_groups(labels, chan_types):
+
+    groups = _make_groups(labels, chan_types)
+
+    return [_choose_group(label, groups) for label in labels]
+
+
+select_letters = lambda label: match(ECOG_PATTERN, label).group(1)
+
+
+def _make_groups(labels, chan_types):
+    group_names = {select_letters(label) for label, chan_type in zip(labels, chan_types) if chan_type in (&#39;ECOG&#39;, &#39;SEEG&#39;)}
+
+    groups = {}
+    for group_name in group_names:
+        groups[group_name] = [label for label, chan_type in zip(labels, chan_types) if chan_type in (&#39;ECOG&#39;, &#39;SEEG&#39;) and select_letters(label) == group_name]
+
+    return groups
+
+
+def _choose_group(label, groups):
+
+    for k, v in groups.items():
+        if label in v:
+            return k
+
+    return &#39;n/a&#39;</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="xelo2.io.channels.create_channels"><code class="name flex">
+<span>def <span class="ident">create_channels</span></span>(<span>db, ieeg_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_channels(db, ieeg_path):
+    if ieeg_path.suffix.lower() == &#39;.trc&#39;:
+        return create_channels_trc(db, ieeg_path)
+    elif ieeg_path.suffix.lower() == &#39;.nev&#39; or ieeg_path.suffix.startswith(&#39;.ns&#39;):
+        return create_channels_blackrock(db, ieeg_path)
+    else:
+        print(f&#39;Cannot extract channel labels from {ieeg_path}&#39;)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.io.channels.create_channels_blackrock"><code class="name flex">
+<span>def <span class="ident">create_channels_blackrock</span></span>(<span>db, blackrock_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_channels_blackrock(db, blackrock_path):
+    if blackrock_path.suffix == &#39;.nev&#39;:
+        blackrock_path = blackrock_path.with_suffix(&#39;.ns3&#39;)
+    d = Dataset(blackrock_path)
+    b_chans = d.header[&#39;orig&#39;][&#39;ElectrodesInfo&#39;]
+
+    chan = Channels.add(db)
+    channels = chan.empty(len(b_chans))
+
+    labels = [ch[&#39;Label&#39;] for ch in b_chans]
+
+    channels[&#39;name&#39;] = labels
+    channels[&#39;type&#39;] = &#39;ECOG&#39;
+    channels[&#39;units&#39;] = [ch[&#39;AnalogUnits&#39;].replace(&#39;uV&#39;, &#39;μV&#39;) for ch in b_chans]
+    channels[&#39;high_cutoff&#39;] = [ch[&#39;HighFreqCorner&#39;] / 1000 for ch in b_chans]
+    channels[&#39;low_cutoff&#39;] = [ch[&#39;LowFreqCorner&#39;] / 1000 for ch in b_chans]
+    channels[&#39;groups&#39;] = &#39;HD&#39;
+    channels[&#39;status&#39;] = &#39;good&#39;
+
+    chan.data = channels
+
+    return chan</code></pre>
+</details>
+</dd>
+<dt id="xelo2.io.channels.create_channels_trc"><code class="name flex">
+<span>def <span class="ident">create_channels_trc</span></span>(<span>db, trc_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_channels_trc(db, trc_path):
+    d = Dataset(trc_path)
+    trc_chans = d.header[&#39;orig&#39;][&#39;chans&#39;]
+
+    chan = Channels.add(db)
+    channels = chan.empty(len(trc_chans))
+
+    labels = [ch[&#39;chan_name&#39;] for ch in trc_chans]
+    chan_types = [def_chan_type(label) for label in labels]
+    chan_groups = def_groups(labels, chan_types)
+
+    channels[&#39;name&#39;] = labels
+    channels[&#39;type&#39;] = chan_types
+    channels[&#39;units&#39;] = [ch[&#39;units&#39;].replace(&#39;dimentionless&#39;, &#39;&#39;) for ch in trc_chans]
+    channels[&#39;high_cutoff&#39;] = [ch[&#39;HiPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff = [ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff[low_cutoff == 0] = nan
+    channels[&#39;low_cutoff&#39;] = low_cutoff
+    channels[&#39;reference&#39;] = [ch[&#39;ground&#39;] for ch in trc_chans]  # it&#39;s called ground but I&#39;m pretty sure it&#39;s the reference
+    channels[&#39;groups&#39;] = chan_groups
+    channels[&#39;status&#39;] = &#39;good&#39;
+
+    chan.data = channels
+
+    return chan</code></pre>
+</details>
+</dd>
+<dt id="xelo2.io.channels.def_chan_type"><code class="name flex">
+<span>def <span class="ident">def_chan_type</span></span>(<span>label)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def def_chan_type(label):
+    if label == &#39;&#39;:
+        return &#39;OTHER&#39;
+
+    if match(&#39;[Rr][1-9]&#39;, label):
+        return &#39;MISC&#39;
+    if label == &#39;&#39;:
+        return &#39;OTHER&#39;  # TODO: empty?
+    if label.endswith(&#39;+&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;-&#39;):
+        return &#39;OTHER&#39;
+    if &#39;...&#39; in label:
+        return &#39;OTHER&#39;
+    if label.lower() in (&#39;wangl&#39;, &#39;wangr&#39;):
+        return &#39;MISC&#39;
+    if label.lower().startswith(&#39;ah&#39;):
+        return &#39;ECG&#39;
+    if label.lower().startswith(&#39;ecg&#39;):
+        return &#39;ECG&#39;
+    if label.lower().startswith(&#39;ekg&#39;):
+        return &#39;ECG&#39;
+    if label[:3].lower() in (&#39;kin&#39;, &#39;emg&#39;, &#39;arm&#39;, &#39;nek&#39;) or label == &#39;MOND&#39;:
+        return &#39;EMG&#39;
+    if label[:3].lower() == &#39;orb&#39;:
+        return &#39;EOG&#39;
+    if label.startswith(&#39;el&#39;):
+        return &#39;OTHER&#39;
+    if label.startswith(&#39;x&#39;):
+        return &#39;OTHER&#39;
+    if label.startswith(&#39;D&#39;):
+        return &#39;SEEG&#39;
+
+    if match(ECOG_PATTERN, label):
+        return &#39;ECOG&#39;
+    else:
+        return &#39;OTHER&#39;</code></pre>
+</details>
+</dd>
+<dt id="xelo2.io.channels.def_groups"><code class="name flex">
+<span>def <span class="ident">def_groups</span></span>(<span>labels, chan_types)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def def_groups(labels, chan_types):
+
+    groups = _make_groups(labels, chan_types)
+
+    return [_choose_group(label, groups) for label in labels]</code></pre>
+</details>
+</dd>
+<dt id="xelo2.io.channels.select_letters"><code class="name flex">
+<span>def <span class="ident">select_letters</span></span>(<span>label)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">select_letters = lambda label: match(ECOG_PATTERN, label).group(1)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="xelo2.io" href="index.html">xelo2.io</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="xelo2.io.channels.create_channels" href="#xelo2.io.channels.create_channels">create_channels</a></code></li>
+<li><code><a title="xelo2.io.channels.create_channels_blackrock" href="#xelo2.io.channels.create_channels_blackrock">create_channels_blackrock</a></code></li>
+<li><code><a title="xelo2.io.channels.create_channels_trc" href="#xelo2.io.channels.create_channels_trc">create_channels_trc</a></code></li>
+<li><code><a title="xelo2.io.channels.def_chan_type" href="#xelo2.io.channels.def_chan_type">def_chan_type</a></code></li>
+<li><code><a title="xelo2.io.channels.def_groups" href="#xelo2.io.channels.def_groups">def_groups</a></code></li>
+<li><code><a title="xelo2.io.channels.select_letters" href="#xelo2.io.channels.select_letters">select_letters</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

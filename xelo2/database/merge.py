@@ -1,6 +1,6 @@
 from PyQt5.QtSql import QSqlQuery
 
-from ..api.structure import Subject
+from ..api.frontend import Subject
 from .tables import TABLES
 
 
