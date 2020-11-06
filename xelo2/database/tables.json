@@ -659,7 +659,8 @@
     },
     "MultibandAccelerationFactor": {
       "name": "Multiband Acceleration Factor",
-      "type": "INTEGER"
+      "type": "INTEGER", 
+      "doc": "1 means No multiband"
     },
     "PhaseEncodingDirection": {
       "name": "Phase Encoding Direction",
@@ -683,6 +684,15 @@
         "PA",
         "SI",
         "IS"
+      ]
+    },
+    "SliceOrder": {
+      "name": "Slice Order",
+      "type": "TEXT",
+      "doc": "This parameter is not in BIDS but it's used to compute SliceTiming. Use 'Sequential' when Multiband is present",
+      "values": [
+        "Sequential",
+        "Interleaved"
       ]
     },
     "RepetitionTime": {

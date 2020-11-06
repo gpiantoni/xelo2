@@ -1,6 +1,7 @@
 from logging import getLogger
 from json import dump
 from os import environ
+from numpy import linspace, r_, tile
 from pathlib import Path
 from shutil import move, copyfile, copyfileobj
 from subprocess import run, DEVNULL
@@ -12,9 +13,20 @@ from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
+from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription, set_notnone
 
 lg = getLogger(__name__)
+
+# DIRECTION might depend on the way that the data is stored in Nifti file.
+# Hopefully nibabel is consistent in how it converts the data but we need to check
+DIRECTION = {
+    'LR': 'i-',
+    'RL': 'i',
+    'PA': 'j-',
+    'AP': 'j',
+    'IS': 'k-',
+    'SI': 'k',
+    }
 
 
 def convert_mri(run, rec, dest_path, name, deface=True):
@@ -58,7 +70,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec)
+    sidecar = _convert_sidecar(run, rec, PAR)
     sidecar_file = replace_extension(output_nii, '.json')
 
     with sidecar_file.open('w') as f:
@@ -102,19 +114,47 @@ def _fix_tr(nii, RepetitionTime):
     nisave(img, str(nii))
 
 
-def _convert_sidecar(run, rec):
+def _convert_sidecar(run, rec, hdr=None):
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
         'TaskDescription': make_taskdescription(run),
         }
+
+    if run.session.MagneticFieldStrength is not None:
+        D['MagneticFieldStrength'] = float(run.session.MagneticFieldStrength[:-1])
+
+    if rec.PhaseEncodingDirection is not None:
+        D['PhaseEncodingDirection'] = DIRECTION[rec.PhaseEncodingDirection]
+    if rec.SliceEncodingDirection is not None:
+        D['SliceEncodingDirection'] = DIRECTION[rec.SliceEncodingDirection]
+
+    set_notnone(D, hdr, 'EchoTime')
+
+    for field in 'FlipAngle', 'PulseSequenceType', 'MultibandAccelerationFactor':
+        set_notnone(D, rec, field)
+
     if rec.modality == 'bold':
-        D = {
-            'RepetitionTime': rec.RepetitionTime,
-            'TaskName': rename_task(run.task_name),
-            }
+        set_notnone(D, rec, 'RepetitionTime')
+        D['TaskName'] = rename_task(run.task_name)
+        if hdr is not None:
+            add_slicetiming(D, hdr, rec)
 
     return D
+
+
+def add_slicetiming(D, hdr, rec):
+    n_slices = hdr['n_slices']
+
+    multiband = D.get('MultibandAccelerationFactor', 1)
+    n_slices = int(n_slices / multiband)
+
+    SliceTiming = linspace(0, D['RepetitionTime'], n_slices + 1)[:-1]
+    if rec.SliceOrder == 'Interleaved':
+        SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
+
+    SliceTiming = tile(SliceTiming, multiband)
+    D['SliceTiming'] = SliceTiming.tolist()
 
 
 def run_deface(nii):

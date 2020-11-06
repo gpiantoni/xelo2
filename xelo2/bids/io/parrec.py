@@ -10,6 +10,7 @@ lg = getLogger(__name__)
 MR_TYPES = {
     0: 'magnitude',
     3: 'phase',
+    -1: 'reconstructed',  # relevant for MP2RAGE
     }
 
 def convert_parrec_nibabel(par_file):
@@ -55,9 +56,11 @@ def parse_PAR(par_file):
         hdr, info = parse_PAR_header(f)
 
     out['n_dynamics'] = info['dynamic scan number'].max()
+    out['EchoTime'] = info['echo_time'][0] / 1000  # ms -> s
+    out['n_slices'] = info['slice number'].max()
     try:
         out['image_types'] = [MR_TYPES[x] for x in unique(info['image_type_mr'])]
-    except KeyError as key:
+    except KeyError:
         raise ValueError('Unrecognized "image_type_mr" in PAR file. Please add it to MR_TYPES in this function')
 
     return out

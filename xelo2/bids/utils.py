@@ -4,6 +4,20 @@ from logging import getLogger
 lg = getLogger(__name__)
 
 
+def set_notnone(d, s, field):
+    """Set value from field if it's not None
+    """
+    if s is not None:
+
+        if isinstance(s, dict):
+            value = s.get(field, None)
+        else:
+            value = getattr(s, field)
+
+        if value is not None:
+            d[field] = value
+
+
 def rename_task(task_name):
     """To be consistent with BIDS (no dashes)"""
     if task_name.startswith('bair_'):
