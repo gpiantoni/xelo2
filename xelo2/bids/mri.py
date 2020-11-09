@@ -144,12 +144,19 @@ def _convert_sidecar(run, rec, hdr=None):
 
 
 def add_slicetiming(D, hdr, rec):
+    # get TR from SQL, but if it's not specified used PAR/REC
+    TR = D.get('RepetitionTime', hdr['RepetitionTime'])
+
     n_slices = hdr['n_slices']
 
     multiband = D.get('MultibandAccelerationFactor', 1)
     n_slices = int(n_slices / multiband)
 
-    SliceTiming = linspace(0, D['RepetitionTime'], n_slices + 1)[:-1]
+    SliceTiming = linspace(0, TR, n_slices + 1)[:-1]
+    if rec.SliceOrder is None:
+        lg.warning(f'Please specify SliceOrder for Recording(db, id={rec.id})')
+        return
+
     if rec.SliceOrder == 'Interleaved':
         SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
 
