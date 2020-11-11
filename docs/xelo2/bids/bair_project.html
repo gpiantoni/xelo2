@@ -57,6 +57,16 @@ def make_bair_compatible(bids_dir):
     add_info_to_participants(bids_dir)
     add_electrodes(bids_dir)
 
+    remove_phase(bids_dir)
+
+
+def remove_phase(bids_dir):
+    &#34;&#34;&#34;I cannot specify phase.json so we get lots of errors when including phase.nii.gz
+    https://github.com/bids-standard/bids-validator/issues/1074
+    &#34;&#34;&#34;
+    for phase in bids_dir.rglob(&#39;*_phase.nii.gz&#39;):
+        phase.unlink()
+
 
 def add_umcu_to_sub_ses(bids_dir):
 
@@ -281,7 +291,27 @@ def _find_task_type(subj_path, task_type):
 
     add_umcu_to_sub_ses(bids_dir)
     add_info_to_participants(bids_dir)
-    add_electrodes(bids_dir)</code></pre>
+    add_electrodes(bids_dir)
+
+    remove_phase(bids_dir)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.bair_project.remove_phase"><code class="name flex">
+<span>def <span class="ident">remove_phase</span></span>(<span>bids_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>I cannot specify phase.json so we get lots of errors when including phase.nii.gz
+<a href="https://github.com/bids-standard/bids-validator/issues/1074">https://github.com/bids-standard/bids-validator/issues/1074</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_phase(bids_dir):
+    &#34;&#34;&#34;I cannot specify phase.json so we get lots of errors when including phase.nii.gz
+    https://github.com/bids-standard/bids-validator/issues/1074
+    &#34;&#34;&#34;
+    for phase in bids_dir.rglob(&#39;*_phase.nii.gz&#39;):
+        phase.unlink()</code></pre>
 </details>
 </dd>
 </dl>
@@ -306,6 +336,7 @@ def _find_task_type(subj_path, task_type):
 <li><code><a title="xelo2.bids.bair_project.add_info_to_participants" href="#xelo2.bids.bair_project.add_info_to_participants">add_info_to_participants</a></code></li>
 <li><code><a title="xelo2.bids.bair_project.add_umcu_to_sub_ses" href="#xelo2.bids.bair_project.add_umcu_to_sub_ses">add_umcu_to_sub_ses</a></code></li>
 <li><code><a title="xelo2.bids.bair_project.make_bair_compatible" href="#xelo2.bids.bair_project.make_bair_compatible">make_bair_compatible</a></code></li>
+<li><code><a title="xelo2.bids.bair_project.remove_phase" href="#xelo2.bids.bair_project.remove_phase">remove_phase</a></code></li>
 </ul>
 </li>
 </ul>

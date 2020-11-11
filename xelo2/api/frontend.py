@@ -387,6 +387,38 @@ class Run(Table_with_files):
             else:
                 lg.warning(f'Could not find Experimenter called "{exp}". You should add it to "Experimenters" table')
 
+    @property
+    def intendedfor(self):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT target FROM intended_for WHERE run_id = :id")
+        query.bindValue(':id', self.id)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        list_of_intendedfor = []
+        while query.next():
+            list_of_intendedfor.append(
+                Run(self.db, query.value('target')))
+        return list_of_intendedfor
+
+    @intendedfor.setter
+    def intendedfor(self, runs):
+        query = QSqlQuery(self.db)
+        query.prepare('DELETE FROM intended_for WHERE run_id = :id')
+        query.bindValue(':id', self.id)
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        query = QSqlQuery(self.db)
+        query.prepare("INSERT INTO intended_for (`run_id`, `target`) VALUES (:id, :target_id)")
+        query.bindValue(':id', self.id)
+
+        for one_run in runs:
+            query.bindValue(':target_id', one_run.id)
+            if not query.exec():
+                raise SyntaxError(query.lastError().text())
+
     def attach_protocol(self, protocol):
         query = QSqlQuery(self.db)
         query.prepare("INSERT INTO runs_protocols (`run_id`, `protocol_id`) VALUES (:id, :protocol_id)")

@@ -30,6 +30,20 @@ from logging import getLogger
 lg = getLogger(__name__)
 
 
+def set_notnone(d, s, field):
+    &#34;&#34;&#34;Set value from field if it&#39;s not None
+    &#34;&#34;&#34;
+    if s is not None:
+
+        if isinstance(s, dict):
+            value = s.get(field, None)
+        else:
+            value = getattr(s, field)
+
+        if value is not None:
+            d[field] = value
+
+
 def rename_task(task_name):
     &#34;&#34;&#34;To be consistent with BIDS (no dashes)&#34;&#34;&#34;
     if task_name.startswith(&#39;bair_&#39;):
@@ -188,6 +202,29 @@ performance and acquisition</p></div>
     return task_name</code></pre>
 </details>
 </dd>
+<dt id="xelo2.bids.utils.set_notnone"><code class="name flex">
+<span>def <span class="ident">set_notnone</span></span>(<span>d, s, field)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set value from field if it's not None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_notnone(d, s, field):
+    &#34;&#34;&#34;Set value from field if it&#39;s not None
+    &#34;&#34;&#34;
+    if s is not None:
+
+        if isinstance(s, dict):
+            value = s.get(field, None)
+        else:
+            value = getattr(s, field)
+
+        if value is not None:
+            d[field] = value</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -210,6 +247,7 @@ performance and acquisition</p></div>
 <li><code><a title="xelo2.bids.utils.make_bids_name" href="#xelo2.bids.utils.make_bids_name">make_bids_name</a></code></li>
 <li><code><a title="xelo2.bids.utils.make_taskdescription" href="#xelo2.bids.utils.make_taskdescription">make_taskdescription</a></code></li>
 <li><code><a title="xelo2.bids.utils.rename_task" href="#xelo2.bids.utils.rename_task">rename_task</a></code></li>
+<li><code><a title="xelo2.bids.utils.set_notnone" href="#xelo2.bids.utils.set_notnone">set_notnone</a></code></li>
 </ul>
 </li>
 </ul>

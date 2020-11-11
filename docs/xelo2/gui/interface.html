@@ -453,8 +453,8 @@ class Interface(QMainWindow):
                 continue
             l.clear()
 
-        for run in sess.list_runs():
-            item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+        for i, run in enumerate(sess.list_runs()):
+            item = QListWidgetItem_time(run, f&#39;#{i + 1: 3d}: {run.task_name}&#39;)
             if run.id in self.search.runs:
                 highlight(item)
             self.lists[&#39;runs&#39;].addItem(item)
@@ -2097,8 +2097,8 @@ def _fake_names(X):
                 continue
             l.clear()
 
-        for run in sess.list_runs():
-            item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+        for i, run in enumerate(sess.list_runs()):
+            item = QListWidgetItem_time(run, f&#39;#{i + 1: 3d}: {run.task_name}&#39;)
             if run.id in self.search.runs:
                 highlight(item)
             self.lists[&#39;runs&#39;].addItem(item)
@@ -3828,8 +3828,8 @@ def _fake_names(X):
             continue
         l.clear()
 
-    for run in sess.list_runs():
-        item = QListWidgetItem_time(run, f&#39;{run.task_name}&#39;)
+    for i, run in enumerate(sess.list_runs()):
+        item = QListWidgetItem_time(run, f&#39;#{i + 1: 3d}: {run.task_name}&#39;)
         if run.id in self.search.runs:
             highlight(item)
         self.lists[&#39;runs&#39;].addItem(item)

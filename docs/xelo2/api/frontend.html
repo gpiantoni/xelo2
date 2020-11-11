@@ -413,6 +413,38 @@ class Run(Table_with_files):
             else:
                 lg.warning(f&#39;Could not find Experimenter called &#34;{exp}&#34;. You should add it to &#34;Experimenters&#34; table&#39;)
 
+    @property
+    def intendedfor(self):
+        query = QSqlQuery(self.db)
+        query.prepare(&#34;SELECT target FROM intended_for WHERE run_id = :id&#34;)
+        query.bindValue(&#39;:id&#39;, self.id)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        list_of_intendedfor = []
+        while query.next():
+            list_of_intendedfor.append(
+                Run(self.db, query.value(&#39;target&#39;)))
+        return list_of_intendedfor
+
+    @intendedfor.setter
+    def intendedfor(self, runs):
+        query = QSqlQuery(self.db)
+        query.prepare(&#39;DELETE FROM intended_for WHERE run_id = :id&#39;)
+        query.bindValue(&#39;:id&#39;, self.id)
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        query = QSqlQuery(self.db)
+        query.prepare(&#34;INSERT INTO intended_for (`run_id`, `target`) VALUES (:id, :target_id)&#34;)
+        query.bindValue(&#39;:id&#39;, self.id)
+
+        for one_run in runs:
+            query.bindValue(&#39;:target_id&#39;, one_run.id)
+            if not query.exec():
+                raise SyntaxError(query.lastError().text())
+
     def attach_protocol(self, protocol):
         query = QSqlQuery(self.db)
         query.prepare(&#34;INSERT INTO runs_protocols (`run_id`, `protocol_id`) VALUES (:id, :protocol_id)&#34;)
@@ -1170,6 +1202,38 @@ objects which might be associated with files.</p></div>
             else:
                 lg.warning(f&#39;Could not find Experimenter called &#34;{exp}&#34;. You should add it to &#34;Experimenters&#34; table&#39;)
 
+    @property
+    def intendedfor(self):
+        query = QSqlQuery(self.db)
+        query.prepare(&#34;SELECT target FROM intended_for WHERE run_id = :id&#34;)
+        query.bindValue(&#39;:id&#39;, self.id)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        list_of_intendedfor = []
+        while query.next():
+            list_of_intendedfor.append(
+                Run(self.db, query.value(&#39;target&#39;)))
+        return list_of_intendedfor
+
+    @intendedfor.setter
+    def intendedfor(self, runs):
+        query = QSqlQuery(self.db)
+        query.prepare(&#39;DELETE FROM intended_for WHERE run_id = :id&#39;)
+        query.bindValue(&#39;:id&#39;, self.id)
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        query = QSqlQuery(self.db)
+        query.prepare(&#34;INSERT INTO intended_for (`run_id`, `target`) VALUES (:id, :target_id)&#34;)
+        query.bindValue(&#39;:id&#39;, self.id)
+
+        for one_run in runs:
+            query.bindValue(&#39;:target_id&#39;, one_run.id)
+            if not query.exec():
+                raise SyntaxError(query.lastError().text())
+
     def attach_protocol(self, protocol):
         query = QSqlQuery(self.db)
         query.prepare(&#34;INSERT INTO runs_protocols (`run_id`, `protocol_id`) VALUES (:id, :protocol_id)&#34;)
@@ -1266,6 +1330,29 @@ def experimenters(self):
     while query.next():
         list_of_experimenters.append(query.value(&#39;name&#39;))
     return sorted(list_of_experimenters)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.api.frontend.Run.intendedfor"><code class="name">var <span class="ident">intendedfor</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def intendedfor(self):
+    query = QSqlQuery(self.db)
+    query.prepare(&#34;SELECT target FROM intended_for WHERE run_id = :id&#34;)
+    query.bindValue(&#39;:id&#39;, self.id)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    list_of_intendedfor = []
+    while query.next():
+        list_of_intendedfor.append(
+            Run(self.db, query.value(&#39;target&#39;)))
+    return list_of_intendedfor</code></pre>
 </details>
 </dd>
 </dl>
@@ -1996,6 +2083,7 @@ def codes(self):
 <li><code><a title="xelo2.api.frontend.Run.detach_protocol" href="#xelo2.api.frontend.Run.detach_protocol">detach_protocol</a></code></li>
 <li><code><a title="xelo2.api.frontend.Run.events" href="#xelo2.api.frontend.Run.events">events</a></code></li>
 <li><code><a title="xelo2.api.frontend.Run.experimenters" href="#xelo2.api.frontend.Run.experimenters">experimenters</a></code></li>
+<li><code><a title="xelo2.api.frontend.Run.intendedfor" href="#xelo2.api.frontend.Run.intendedfor">intendedfor</a></code></li>
 <li><code><a title="xelo2.api.frontend.Run.list_protocols" href="#xelo2.api.frontend.Run.list_protocols">list_protocols</a></code></li>
 <li><code><a title="xelo2.api.frontend.Run.list_recordings" href="#xelo2.api.frontend.Run.list_recordings">list_recordings</a></code></li>
 <li><code><a title="xelo2.api.frontend.Run.session" href="#xelo2.api.frontend.Run.session">session</a></code></li>

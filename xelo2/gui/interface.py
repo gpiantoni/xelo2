@@ -427,8 +427,8 @@ class Interface(QMainWindow):
                 continue
             l.clear()
 
-        for run in sess.list_runs():
-            item = QListWidgetItem_time(run, f'{run.task_name}')
+        for i, run in enumerate(sess.list_runs()):
+            item = QListWidgetItem_time(run, f'#{i + 1: 3d}: {run.task_name}')
             if run.id in self.search.runs:
                 highlight(item)
             self.lists['runs'].addItem(item)

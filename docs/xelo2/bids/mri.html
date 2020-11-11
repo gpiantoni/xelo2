@@ -27,6 +27,7 @@
 <pre><code class="python">from logging import getLogger
 from json import dump
 from os import environ
+from numpy import linspace, r_, tile
 from pathlib import Path
 from shutil import move, copyfile, copyfileobj
 from subprocess import run, DEVNULL
@@ -38,9 +39,20 @@ from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
+from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription, set_notnone
 
 lg = getLogger(__name__)
+
+# DIRECTION might depend on the way that the data is stored in Nifti file.
+# Hopefully nibabel is consistent in how it converts the data but we need to check (also the sign of qform)
+DIRECTION = {
+    &#39;RL&#39;: &#39;i&#39;,
+    &#39;LR&#39;: &#39;i-&#39;,
+    &#39;PA&#39;: &#39;j&#39;,
+    &#39;AP&#39;: &#39;j-&#39;,
+    &#39;IS&#39;: &#39;k&#39;,
+    &#39;SI&#39;: &#39;k-&#39;,
+    }
 
 
 def convert_mri(run, rec, dest_path, name, deface=True):
@@ -84,7 +96,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec)
+    sidecar = _convert_sidecar(run, rec, PAR)
     sidecar_file = replace_extension(output_nii, &#39;.json&#39;)
 
     with sidecar_file.open(&#39;w&#39;) as f:
@@ -128,19 +140,54 @@ def _fix_tr(nii, RepetitionTime):
     nisave(img, str(nii))
 
 
-def _convert_sidecar(run, rec):
+def _convert_sidecar(run, rec, hdr=None):
     D = {
         &#39;InstitutionName&#39;: &#39;University Medical Center Utrecht&#39;,
         &#39;InstitutionAddress&#39;: &#39;Heidelberglaan 100, 3584 CX Utrecht, the Netherlands&#39;,
         &#39;TaskDescription&#39;: make_taskdescription(run),
         }
+
+    if run.session.MagneticFieldStrength is not None:
+        D[&#39;MagneticFieldStrength&#39;] = float(run.session.MagneticFieldStrength[:-1])
+
+    if rec.PhaseEncodingDirection is not None:
+        D[&#39;PhaseEncodingDirection&#39;] = DIRECTION[rec.PhaseEncodingDirection]
+    if rec.SliceEncodingDirection is not None:
+        D[&#39;SliceEncodingDirection&#39;] = DIRECTION[rec.SliceEncodingDirection]
+
+    set_notnone(D, hdr, &#39;EchoTime&#39;)
+
+    for field in &#39;FlipAngle&#39;, &#39;PulseSequenceType&#39;, &#39;MultibandAccelerationFactor&#39;:
+        set_notnone(D, rec, field)
+
     if rec.modality == &#39;bold&#39;:
-        D = {
-            &#39;RepetitionTime&#39;: rec.RepetitionTime,
-            &#39;TaskName&#39;: rename_task(run.task_name),
-            }
+        set_notnone(D, rec, &#39;RepetitionTime&#39;)
+        D[&#39;TaskName&#39;] = rename_task(run.task_name)
+        if hdr is not None:
+            add_slicetiming(D, hdr, rec)
 
     return D
+
+
+def add_slicetiming(D, hdr, rec):
+    # get TR from SQL, but if it&#39;s not specified used PAR/REC
+    TR = D.get(&#39;RepetitionTime&#39;, hdr[&#39;RepetitionTime&#39;])
+
+    n_slices = hdr[&#39;n_slices&#39;]
+
+    multiband = D.get(&#39;MultibandAccelerationFactor&#39;, 1)
+    n_slices = int(n_slices / multiband)
+
+    SliceTiming = linspace(0, TR, n_slices + 1)[:-1]
+    if rec.SliceOrder is None:
+        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
+        return
+
+    if rec.SliceOrder == &#39;Interleaved&#39;:
+        SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
+
+    SliceTiming = tile(SliceTiming, multiband)
+    D[&#39;SliceTiming&#39;] = SliceTiming.tolist()
 
 
 def run_deface(nii):
@@ -181,6 +228,36 @@ def gz(input_file, output_file):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="xelo2.bids.mri.add_slicetiming"><code class="name flex">
+<span>def <span class="ident">add_slicetiming</span></span>(<span>D, hdr, rec)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_slicetiming(D, hdr, rec):
+    # get TR from SQL, but if it&#39;s not specified used PAR/REC
+    TR = D.get(&#39;RepetitionTime&#39;, hdr[&#39;RepetitionTime&#39;])
+
+    n_slices = hdr[&#39;n_slices&#39;]
+
+    multiband = D.get(&#39;MultibandAccelerationFactor&#39;, 1)
+    n_slices = int(n_slices / multiband)
+
+    SliceTiming = linspace(0, TR, n_slices + 1)[:-1]
+    if rec.SliceOrder is None:
+        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
+        return
+
+    if rec.SliceOrder == &#39;Interleaved&#39;:
+        SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
+
+    SliceTiming = tile(SliceTiming, multiband)
+    D[&#39;SliceTiming&#39;] = SliceTiming.tolist()</code></pre>
+</details>
+</dd>
 <dt id="xelo2.bids.mri.convert_mri"><code class="name flex">
 <span>def <span class="ident">convert_mri</span></span>(<span>run, rec, dest_path, name, deface=True)</span>
 </code></dt>
@@ -231,7 +308,7 @@ def gz(input_file, output_file):
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec)
+    sidecar = _convert_sidecar(run, rec, PAR)
     sidecar_file = replace_extension(output_nii, &#39;.json&#39;)
 
     with sidecar_file.open(&#39;w&#39;) as f:
@@ -338,6 +415,7 @@ def gz(input_file, output_file):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="xelo2.bids.mri.add_slicetiming" href="#xelo2.bids.mri.add_slicetiming">add_slicetiming</a></code></li>
 <li><code><a title="xelo2.bids.mri.convert_mri" href="#xelo2.bids.mri.convert_mri">convert_mri</a></code></li>
 <li><code><a title="xelo2.bids.mri.gz" href="#xelo2.bids.mri.gz">gz</a></code></li>
 <li><code><a title="xelo2.bids.mri.run_deface" href="#xelo2.bids.mri.run_deface">run_deface</a></code></li>

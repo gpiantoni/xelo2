@@ -59,7 +59,7 @@ class Table():
         return f'<{self.t} (#{self.id})>'
 
     def __repr__(self):
-        return f'{self.t.capitalize()}(id={self.id})'
+        return f'{self.t.capitalize()}(db, id={self.id})'
 
     def __eq__(self, other):
         """So that we can compare instances very easily with set"""
@@ -149,6 +149,7 @@ class Table():
             'run',
             'events',
             'data',
+            'intendedfor',
             '_tb_data',
             '__class__',
             )

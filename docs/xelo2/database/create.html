@@ -341,14 +341,16 @@ def add_triggers_to_add_id(db, TABLES):
                 lg.warning(query.lastError().text())
 
             if db.driverName() == &#39;QSQLITE&#39;:
+                parent_id = f&#39;{parent_table[:-1]}_id&#39;
                 sql_cmd = dedent(f&#34;&#34;&#34;\
                     CREATE TRIGGER replace_id_to_subtable_{table_name}
                     BEFORE UPDATE ON {parent_table}
                     WHEN
                       NEW.{WHEN[&#39;parameter&#39;]} &lt;&gt; OLD.{WHEN[&#39;parameter&#39;]} AND
-                      NEW.{WHEN[&#39;parameter&#39;]} {sql_in(WHEN[&#39;value&#39;])}
+                      NEW.{WHEN[&#39;parameter&#39;]} {sql_in(WHEN[&#39;value&#39;])} AND
+                      NEW.id NOT IN (SELECT {parent_id} FROM {table_name})
                     BEGIN
-                      INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                      INSERT INTO {table_name} ({parent_id}) VALUES (NEW.id) ;
                     END;&#34;&#34;&#34;)
 
             else:
@@ -555,14 +557,16 @@ that session. Maybe it's not bad to keep this info but it's also not useful</p><
                 lg.warning(query.lastError().text())
 
             if db.driverName() == &#39;QSQLITE&#39;:
+                parent_id = f&#39;{parent_table[:-1]}_id&#39;
                 sql_cmd = dedent(f&#34;&#34;&#34;\
                     CREATE TRIGGER replace_id_to_subtable_{table_name}
                     BEFORE UPDATE ON {parent_table}
                     WHEN
                       NEW.{WHEN[&#39;parameter&#39;]} &lt;&gt; OLD.{WHEN[&#39;parameter&#39;]} AND
-                      NEW.{WHEN[&#39;parameter&#39;]} {sql_in(WHEN[&#39;value&#39;])}
+                      NEW.{WHEN[&#39;parameter&#39;]} {sql_in(WHEN[&#39;value&#39;])} AND
+                      NEW.id NOT IN (SELECT {parent_id} FROM {table_name})
                     BEGIN
-                      INSERT INTO {table_name} ({parent_table[:-1]}_id) VALUES (NEW.id) ;
+                      INSERT INTO {table_name} ({parent_id}) VALUES (NEW.id) ;
                     END;&#34;&#34;&#34;)
 
             else:

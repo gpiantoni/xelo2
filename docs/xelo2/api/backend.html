@@ -85,7 +85,7 @@ class Table():
         return f&#39;&lt;{self.t} (#{self.id})&gt;&#39;
 
     def __repr__(self):
-        return f&#39;{self.t.capitalize()}(id={self.id})&#39;
+        return f&#39;{self.t.capitalize()}(db, id={self.id})&#39;
 
     def __eq__(self, other):
         &#34;&#34;&#34;So that we can compare instances very easily with set&#34;&#34;&#34;
@@ -175,6 +175,7 @@ class Table():
             &#39;run&#39;,
             &#39;events&#39;,
             &#39;data&#39;,
+            &#39;intendedfor&#39;,
             &#39;_tb_data&#39;,
             &#39;__class__&#39;,
             )
@@ -699,7 +700,7 @@ use this class but only its subclasses.</p>
         return f&#39;&lt;{self.t} (#{self.id})&gt;&#39;
 
     def __repr__(self):
-        return f&#39;{self.t.capitalize()}(id={self.id})&#39;
+        return f&#39;{self.t.capitalize()}(db, id={self.id})&#39;
 
     def __eq__(self, other):
         &#34;&#34;&#34;So that we can compare instances very easily with set&#34;&#34;&#34;
@@ -789,6 +790,7 @@ use this class but only its subclasses.</p>
             &#39;run&#39;,
             &#39;events&#39;,
             &#39;data&#39;,
+            &#39;intendedfor&#39;,
             &#39;_tb_data&#39;,
             &#39;__class__&#39;,
             )
