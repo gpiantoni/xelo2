@@ -71,6 +71,7 @@ from .modal import (
     NewFile,
     Popup_Experimenters,
     Popup_Protocols,
+    Popup_IntendedFor,
     CompareEvents,
     parse_accessdatabase,
     )
@@ -514,6 +515,9 @@ class Interface(QMainWindow):
                 parameters.update({'Experimenters': w})
                 w = Popup_Protocols(obj, self)
                 parameters.update({'Protocols': w})
+                if obj.task_name == 'top_up':
+                    w = Popup_IntendedFor(obj, self)
+                    parameters.update({'Intended For': w})
 
             elif k == 'recordings':
 
