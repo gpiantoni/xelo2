@@ -31,6 +31,16 @@ def make_bair_compatible(bids_dir):
     add_info_to_participants(bids_dir)
     add_electrodes(bids_dir)
 
+    remove_phase(bids_dir)
+
+
+def remove_phase(bids_dir):
+    """I cannot specify phase.json so we get lots of errors when including phase.nii.gz
+    https://github.com/bids-standard/bids-validator/issues/1074
+    """
+    for phase in bids_dir.rglob('*_phase.nii.gz'):
+        phase.unlink()
+
 
 def add_umcu_to_sub_ses(bids_dir):
 

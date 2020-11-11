@@ -18,14 +18,14 @@ from .utils import rename_task, make_bids_name, find_one_file, make_taskdescript
 lg = getLogger(__name__)
 
 # DIRECTION might depend on the way that the data is stored in Nifti file.
-# Hopefully nibabel is consistent in how it converts the data but we need to check
+# Hopefully nibabel is consistent in how it converts the data but we need to check (also the sign of qform)
 DIRECTION = {
-    'LR': 'i-',
     'RL': 'i',
-    'PA': 'j-',
-    'AP': 'j',
-    'IS': 'k-',
-    'SI': 'k',
+    'LR': 'i-',
+    'PA': 'j',
+    'AP': 'j-',
+    'IS': 'k',
+    'SI': 'k-',
     }
 
 
