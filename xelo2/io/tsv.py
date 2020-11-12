@@ -32,9 +32,12 @@ def save_tsv(fname, X):
     # BIDS wants 'group' but it's a reserved word in SQL
     X = rename_fields(X, {'groups': 'group'})
     X = _remove_empty_columns(X)
-    dtypes = X.dtype
 
     with fname.open('w') as f:
+        if X is None:  # when all the columns are empty
+            return
+
+        dtypes = X.dtype
         f.write('\t'.join(dtypes.names) + '\n')
 
         for x in X:

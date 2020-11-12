@@ -26,15 +26,15 @@
 </summary>
 <pre><code class="python">from collections import defaultdict
 from numpy import floating, character, issubdtype, isnan, empty, NaN
-from numpy.lib.recfunctions import rename_fields
+from numpy.lib.recfunctions import rename_fields, drop_fields
 
 
 def load_tsv(fname, dtypes):
     with fname.open() as f:
         header = f.readline().strip().split(&#39;\t&#39;)
         d = defaultdict(list)
-        for l in f:
-            values = l.strip(&#39;\n&#39;).split(&#39;\t&#39;)
+        for line in f:
+            values = line.strip(&#39;\n&#39;).split(&#39;\t&#39;)
             for h, v in zip(header, values):
                 if h == &#39;group&#39;:
                     h = &#39;groups&#39;
@@ -57,9 +57,13 @@ def load_tsv(fname, dtypes):
 def save_tsv(fname, X):
     # BIDS wants &#39;group&#39; but it&#39;s a reserved word in SQL
     X = rename_fields(X, {&#39;groups&#39;: &#39;group&#39;})
-    dtypes = X.dtype
+    X = _remove_empty_columns(X)
 
     with fname.open(&#39;w&#39;) as f:
+        if X is None:  # when all the columns are empty
+            return
+
+        dtypes = X.dtype
         f.write(&#39;\t&#39;.join(dtypes.names) + &#39;\n&#39;)
 
         for x in X:
@@ -77,7 +81,26 @@ def save_tsv(fname, X):
                         values.append(&#39;n/a&#39;)
                     else:
                         values.append(x[name])
-            f.write(&#39;\t&#39;.join(values) + &#39;\n&#39;)</code></pre>
+            f.write(&#39;\t&#39;.join(values) + &#39;\n&#39;)
+
+
+def _remove_empty_columns(tsv):
+    &#34;&#34;&#34;Remove column where all the values are empty (either NaN or &#39;&#39;)
+    &#34;&#34;&#34;
+    dtypes = tsv.dtype
+
+    to_remove = []
+    for name in dtypes.names:
+
+        if issubdtype(dtypes[name], floating):
+            if isnan(tsv[name]).all():
+                to_remove.append(name)
+
+        elif issubdtype(dtypes[name], character):
+            if (tsv[name] == &#39;&#39;).all():
+                to_remove.append(name)
+
+    return drop_fields(tsv, to_remove)</code></pre>
 </details>
 </section>
 <section>
@@ -100,8 +123,8 @@ def save_tsv(fname, X):
     with fname.open() as f:
         header = f.readline().strip().split(&#39;\t&#39;)
         d = defaultdict(list)
-        for l in f:
-            values = l.strip(&#39;\n&#39;).split(&#39;\t&#39;)
+        for line in f:
+            values = line.strip(&#39;\n&#39;).split(&#39;\t&#39;)
             for h, v in zip(header, values):
                 if h == &#39;group&#39;:
                     h = &#39;groups&#39;
@@ -133,9 +156,13 @@ def save_tsv(fname, X):
 <pre><code class="python">def save_tsv(fname, X):
     # BIDS wants &#39;group&#39; but it&#39;s a reserved word in SQL
     X = rename_fields(X, {&#39;groups&#39;: &#39;group&#39;})
-    dtypes = X.dtype
+    X = _remove_empty_columns(X)
 
     with fname.open(&#39;w&#39;) as f:
+        if X is None:  # when all the columns are empty
+            return
+
+        dtypes = X.dtype
         f.write(&#39;\t&#39;.join(dtypes.names) + &#39;\n&#39;)
 
         for x in X:

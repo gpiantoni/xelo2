@@ -296,6 +296,52 @@ class Popup_Protocols(QPushButton):
         self.setText(&#39;, &#39;.join(_protocol_name(x) for x in self.run.list_protocols()))
 
 
+class Popup_IntendedFor(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        current_targets = [x.id for x in run.intendedfor]
+
+        self.menu = QMenu(self)
+        for i, one_run in enumerate(run.session.list_runs()):
+            if one_run.id == run.id:
+                continue
+            name = f&#39;#{i + 1: 3d}: {one_run.task_name}&#39;
+            action = QAction(name, self)
+            action.setCheckable(True)
+            if one_run.id in current_targets:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, target=one_run))
+            self.menu.addAction(action)
+
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked, target):
+
+        current_targets = self.run.intendedfor
+        if checked:
+            current_targets.append(target)
+        else:
+            current_targets = [x for x in current_targets if x.id != target.id]
+
+        self.run.intendedfor = current_targets
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        len_intendedfor = len(self.run.intendedfor)
+        if len_intendedfor == 1:
+            plural = &#39;&#39;
+        else:
+            plural = &#39;s&#39;
+
+        self.setText(f&#39;({len_intendedfor} target task{plural})&#39;)
+
+
 class AccessDatabase(QDialog):
     EMPTY_PUSHBUTTON = &#39;(click to select file)&#39;
 
@@ -887,6 +933,119 @@ QPushButton(QIcon, str, parent: QWidget = None)</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="xelo2.gui.modal.Popup_IntendedFor"><code class="flex name class">
+<span>class <span class="ident">Popup_IntendedFor</span></span>
+<span>(</span><span>run, parent)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QPushButton(parent: QWidget = None)
+QPushButton(str, parent: QWidget = None)
+QPushButton(QIcon, str, parent: QWidget = None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Popup_IntendedFor(QPushButton):
+
+    def __init__(self, run, parent):
+        self.run = run
+        super().__init__(parent)
+        self.set_title()
+
+        current_targets = [x.id for x in run.intendedfor]
+
+        self.menu = QMenu(self)
+        for i, one_run in enumerate(run.session.list_runs()):
+            if one_run.id == run.id:
+                continue
+            name = f&#39;#{i + 1: 3d}: {one_run.task_name}&#39;
+            action = QAction(name, self)
+            action.setCheckable(True)
+            if one_run.id in current_targets:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, target=one_run))
+            self.menu.addAction(action)
+
+        self.setMenu(self.menu)
+
+    def action_toggle(self, checked, target):
+
+        current_targets = self.run.intendedfor
+        if checked:
+            current_targets.append(target)
+        else:
+            current_targets = [x for x in current_targets if x.id != target.id]
+
+        self.run.intendedfor = current_targets
+
+        self.set_title()
+        self.showMenu()
+
+    def set_title(self):
+        len_intendedfor = len(self.run.intendedfor)
+        if len_intendedfor == 1:
+            plural = &#39;&#39;
+        else:
+            plural = &#39;s&#39;
+
+        self.setText(f&#39;({len_intendedfor} target task{plural})&#39;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QPushButton</li>
+<li>PyQt5.QtWidgets.QAbstractButton</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="xelo2.gui.modal.Popup_IntendedFor.action_toggle"><code class="name flex">
+<span>def <span class="ident">action_toggle</span></span>(<span>self, checked, target)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def action_toggle(self, checked, target):
+
+    current_targets = self.run.intendedfor
+    if checked:
+        current_targets.append(target)
+    else:
+        current_targets = [x for x in current_targets if x.id != target.id]
+
+    self.run.intendedfor = current_targets
+
+    self.set_title()
+    self.showMenu()</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.modal.Popup_IntendedFor.set_title"><code class="name flex">
+<span>def <span class="ident">set_title</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_title(self):
+    len_intendedfor = len(self.run.intendedfor)
+    if len_intendedfor == 1:
+        plural = &#39;&#39;
+    else:
+        plural = &#39;s&#39;
+
+    self.setText(f&#39;({len_intendedfor} target task{plural})&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="xelo2.gui.modal.Popup_Protocols"><code class="flex name class">
 <span>class <span class="ident">Popup_Protocols</span></span>
 <span>(</span><span>run, parent)</span>
@@ -1023,6 +1182,13 @@ QPushButton(QIcon, str, parent: QWidget = None)</p></div>
 <ul class="">
 <li><code><a title="xelo2.gui.modal.Popup_Experimenters.action_toggle" href="#xelo2.gui.modal.Popup_Experimenters.action_toggle">action_toggle</a></code></li>
 <li><code><a title="xelo2.gui.modal.Popup_Experimenters.set_title" href="#xelo2.gui.modal.Popup_Experimenters.set_title">set_title</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.Popup_IntendedFor" href="#xelo2.gui.modal.Popup_IntendedFor">Popup_IntendedFor</a></code></h4>
+<ul class="">
+<li><code><a title="xelo2.gui.modal.Popup_IntendedFor.action_toggle" href="#xelo2.gui.modal.Popup_IntendedFor.action_toggle">action_toggle</a></code></li>
+<li><code><a title="xelo2.gui.modal.Popup_IntendedFor.set_title" href="#xelo2.gui.modal.Popup_IntendedFor.set_title">set_title</a></code></li>
 </ul>
 </li>
 <li>

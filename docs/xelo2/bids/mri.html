@@ -61,7 +61,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
     file = find_one_file(rec, (&#39;parrec&#39;, ))
     if file is not None:
-        input_nii, PAR = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path, MagneticFieldStrength=run.session.MagneticFieldStrength)
         move(input_nii, output_nii)
 
     else:
@@ -85,7 +85,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         lg.info(&#39;Keeping only the first volume for MP2RAGE&#39;)
         select(output_nii, &#39;first&#39;)
 
-    _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
 
     if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
         phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
@@ -96,7 +96,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec, PAR)
+    sidecar = _convert_sidecar(run, rec, PAR, nii_shape)
     sidecar_file = replace_extension(output_nii, &#39;.json&#39;)
 
     with sidecar_file.open(&#39;w&#39;) as f:
@@ -128,7 +128,12 @@ def select(nii, slicing):
 
 
 def _fix_tr(nii, RepetitionTime):
-
+    &#34;&#34;&#34;
+    Returns
+    -------
+    tuple
+        shape of the nifti file
+    &#34;&#34;&#34;
     img = niload(str(nii))
 
     # this seems a bug in nibabel. It stores time in sec, not in msec
@@ -139,8 +144,10 @@ def _fix_tr(nii, RepetitionTime):
 
     nisave(img, str(nii))
 
+    return img.shape
 
-def _convert_sidecar(run, rec, hdr=None):
+
+def _convert_sidecar(run, rec, hdr=None, shape=None):
     D = {
         &#39;InstitutionName&#39;: &#39;University Medical Center Utrecht&#39;,
         &#39;InstitutionAddress&#39;: &#39;Heidelberglaan 100, 3584 CX Utrecht, the Netherlands&#39;,
@@ -155,16 +162,21 @@ def _convert_sidecar(run, rec, hdr=None):
     if rec.SliceEncodingDirection is not None:
         D[&#39;SliceEncodingDirection&#39;] = DIRECTION[rec.SliceEncodingDirection]
 
-    set_notnone(D, hdr, &#39;EchoTime&#39;)
+    for field in &#39;EchoTime&#39;, &#39;EffectiveEchoSpacing&#39;:
+        set_notnone(D, hdr, field)
 
     for field in &#39;FlipAngle&#39;, &#39;PulseSequenceType&#39;, &#39;MultibandAccelerationFactor&#39;:
         set_notnone(D, rec, field)
 
-    if rec.modality == &#39;bold&#39;:
+    if rec.modality in (&#39;bold&#39;, &#39;epi&#39;):
         set_notnone(D, rec, &#39;RepetitionTime&#39;)
         D[&#39;TaskName&#39;] = rename_task(run.task_name)
         if hdr is not None:
             add_slicetiming(D, hdr, rec)
+        if shape is not None and &#39;EffectiveEchoSpacing&#39; in D and &#39;PhaseEncodingDirection&#39; in D:
+            NIFTI_INDEX = {&#39;i&#39;: 0, &#39;j&#39;: 1, &#39;k&#39;: 2}
+            ReconMatrixPE = shape[NIFTI_INDEX[D[&#39;PhaseEncodingDirection&#39;][0]]]
+            D[&#39;TotalReadoutTime&#39;] = D[&#39;EffectiveEchoSpacing&#39;] * (ReconMatrixPE - 1)
 
     return D
 
@@ -273,7 +285,7 @@ def gz(input_file, output_file):
 
     file = find_one_file(rec, (&#39;parrec&#39;, ))
     if file is not None:
-        input_nii, PAR = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path, MagneticFieldStrength=run.session.MagneticFieldStrength)
         move(input_nii, output_nii)
 
     else:
@@ -297,7 +309,7 @@ def gz(input_file, output_file):
         lg.info(&#39;Keeping only the first volume for MP2RAGE&#39;)
         select(output_nii, &#39;first&#39;)
 
-    _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
 
     if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
         phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
@@ -308,7 +320,7 @@ def gz(input_file, output_file):
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec, PAR)
+    sidecar = _convert_sidecar(run, rec, PAR, nii_shape)
     sidecar_file = replace_extension(output_nii, &#39;.json&#39;)
 
     with sidecar_file.open(&#39;w&#39;) as f:

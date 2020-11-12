@@ -97,6 +97,7 @@ from .modal import (
     NewFile,
     Popup_Experimenters,
     Popup_Protocols,
+    Popup_IntendedFor,
     CompareEvents,
     parse_accessdatabase,
     )
@@ -540,6 +541,9 @@ class Interface(QMainWindow):
                 parameters.update({&#39;Experimenters&#39;: w})
                 w = Popup_Protocols(obj, self)
                 parameters.update({&#39;Protocols&#39;: w})
+                if obj.task_name == &#39;top_up&#39;:
+                    w = Popup_IntendedFor(obj, self)
+                    parameters.update({&#39;Intended For&#39;: w})
 
             elif k == &#39;recordings&#39;:
 
@@ -2184,6 +2188,9 @@ def _fake_names(X):
                 parameters.update({&#39;Experimenters&#39;: w})
                 w = Popup_Protocols(obj, self)
                 parameters.update({&#39;Protocols&#39;: w})
+                if obj.task_name == &#39;top_up&#39;:
+                    w = Popup_IntendedFor(obj, self)
+                    parameters.update({&#39;Intended For&#39;: w})
 
             elif k == &#39;recordings&#39;:
 
@@ -3720,6 +3727,9 @@ def _fake_names(X):
             parameters.update({&#39;Experimenters&#39;: w})
             w = Popup_Protocols(obj, self)
             parameters.update({&#39;Protocols&#39;: w})
+            if obj.task_name == &#39;top_up&#39;:
+                w = Popup_IntendedFor(obj, self)
+                parameters.update({&#39;Intended For&#39;: w})
 
         elif k == &#39;recordings&#39;:
 
