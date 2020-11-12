@@ -292,6 +292,37 @@ def get_bids_acquisition(run):
 
 
 def add_intended_for(db, subset):
+    run_t1w = add_intended_for_elec(db, subset)
+    run_topup = add_intended_for_topup(db, subset)
+
+    intendedfor = run_t1w + run_topup
+
+    if len(intendedfor) == 0:
+        return subset
+    else:
+        intendedfor_str = ', '.join(str(x) for x in intendedfor)
+        run_id_sql = f'`runs`.`id` in ({intendedfor_str})'
+        return prepare_subset(db, run_id_sql, subset=subset)
+
+
+def add_intended_for_topup(db, subset):
+    """Add topup"""
+    topups = []
+    for run_id in subset['runs']:
+        query = QSqlQuery(db)
+        query.prepare("SELECT run_id FROM intended_for WHERE target = :targetid")
+        query.bindValue(':targetid', run_id)
+
+        if not query.exec():
+            raise SyntaxError(query.lastError().text())
+
+        while query.next():
+            topups.append(query.value('run_id'))
+
+    return topups
+
+
+def add_intended_for_elec(db, subset):
     """Electrodes also need the reference T1w images, so we add it here"""
 
     reference_t1w = []
@@ -304,16 +335,7 @@ def add_intended_for(db, subset):
                 if t1w_id is not None:
                     reference_t1w.append(t1w_id)
 
-    if len(reference_t1w) == 0:
-        return subset
-
-    elif len(reference_t1w) == 1:
-        run_id_sql = f'runs.id = {reference_t1w[0]}'
-
-    else:
-        run_id_sql = 'runs.id IN (' + ', '.join(str(x) for x in reference_t1w) + ')'
-
-    return prepare_subset(db, run_id_sql, subset=subset)
+    return reference_t1w
 
 
 def _make_README(data_path):
