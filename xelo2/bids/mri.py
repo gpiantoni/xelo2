@@ -31,9 +31,6 @@ DIRECTION = {
 
 def convert_mri(run, rec, dest_path, name, deface=True):
     """Return base name for this run"""
-    if rec.PhaseEncodingDirection is not None:
-        name['dir'] = rec.PhaseEncodingDirection
-
     output_nii = dest_path / f'{make_bids_name(name)}_{rec.modality}.nii.gz'
 
     file = find_one_file(rec, ('parrec', ))

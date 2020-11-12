@@ -64,7 +64,7 @@ def parse_PAR(par_file, MagneticFieldStrength=None):
     out['n_slices'] = info['slice number'].max()
     if MagneticFieldStrength is not None:
         MagneticFieldStrength = float(MagneticFieldStrength[:-1])
-        out['EffectiveEchoSpacing'] = calculate_dwell_time(hdr['water_fat_shift'], hdr['epi_factor'], MagneticFieldStrength)
+        out['EffectiveEchoSpacing'] = calculate_dwell_time(hdr['water_fat_shift'], hdr['epi_factor'], MagneticFieldStrength) / 1000
 
     try:
         out['image_types'] = [MR_TYPES[x] for x in unique(info['image_type_mr'])]

@@ -182,6 +182,12 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 for rec in run.list_recordings():
 
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
+
+                        if rec.PhaseEncodingDirection is not None:
+                            bids_name['dir'] = 'dir-' + rec.PhaseEncodingDirection
+                        else:
+                            bids_name['dir'] = None
+
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
                     elif rec.modality == 'ieeg':
@@ -230,6 +236,8 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _list_scans(tsv_file, participants)
     json_participants = tsv_file.with_suffix('.json')
     copy(JSON_PARTICIPANTS, json_participants)
+
+    return intendedfor
 
 
 def _list_scans(tsv_file, scans):
