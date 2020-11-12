@@ -277,6 +277,8 @@ class Popup_IntendedFor(QPushButton):
         super().__init__(parent)
         self.set_title()
 
+        current_targets = [x.id for x in run.intendedfor]
+
         self.menu = QMenu(self)
         for i, one_run in enumerate(run.session.list_runs()):
             if one_run.id == run.id:
@@ -284,20 +286,34 @@ class Popup_IntendedFor(QPushButton):
             name = f'#{i + 1: 3d}: {one_run.task_name}'
             action = QAction(name, self)
             action.setCheckable(True)
-            action.toggled.connect(self.action_toggle)
+            if one_run.id in current_targets:
+                action.setChecked(True)
+            action.toggled.connect(partial(self.action_toggle, target=one_run))
             self.menu.addAction(action)
 
         self.setMenu(self.menu)
 
-    def action_toggle(self, checked):
-        print(checked)
+    def action_toggle(self, checked, target):
+
+        current_targets = self.run.intendedfor
+        if checked:
+            current_targets.append(target)
+        else:
+            current_targets = [x for x in current_targets if x.id != target.id]
+
+        self.run.intendedfor = current_targets
 
         self.set_title()
         self.showMenu()
 
     def set_title(self):
-        pass
-        # self.setText(', '.join(self.run.experimenters))
+        len_intendedfor = len(self.run.intendedfor)
+        if len_intendedfor == 1:
+            plural = ''
+        else:
+            plural = 's'
+
+        self.setText(f'({len_intendedfor} target task{plural})')
 
 
 class AccessDatabase(QDialog):
