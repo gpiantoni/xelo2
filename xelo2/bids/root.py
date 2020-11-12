@@ -211,10 +211,9 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                         convert_events(run, mod_path, c(bids_name))
 
                     if data_name is not None and rec.modality != 'physio':  # secondary modality
-                        relative_filename = str(data_name.relative_to(data_path))
-                        intendedfor[run.id] = relative_filename
+                        intendedfor[run.id] = data_name
                         run_files.append({
-                            'filename': relative_filename,
+                            'filename': data_name,
                             'acq_time': _set_date_to_1900(reference_date, run.start_time).isoformat(timespec='seconds'),
                             })
 
@@ -222,11 +221,11 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 continue
             tsv_file = sess_path / f'{bids_name["sub"]}_{bids_name["ses"]}_scans.tsv'
             if run_files:
-                _list_scans(tsv_file, run_files)
+                _list_scans(tsv_file, c(run_files), sess_path)
 
         tsv_file = subj_path / f'{bids_name["sub"]}_sessions.tsv'
         if sess_files:
-            _list_scans(tsv_file, sess_files)
+            _list_scans(tsv_file, sess_files, data_path)
 
         json_sessions = tsv_file.with_suffix('.json')
         copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
@@ -234,15 +233,25 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     # add IntendedFor for top_up scans
     _add_intendedfor(db, data_path, intendedfor)
 
+    # remove phase because we get lots of warnings from BIDS
+    remove_phase(data_path)
+
     # here the rest
     _make_README(data_path)
     tsv_file = data_path / 'participants.tsv'
-    _list_scans(tsv_file, participants)
+    _list_scans(tsv_file, participants, data_path)
     json_participants = tsv_file.with_suffix('.json')
     copy(JSON_PARTICIPANTS, json_participants)
 
 
-def _list_scans(tsv_file, scans):
+def _list_scans(tsv_file, scans, root_dir):
+    """
+    Parameters
+    ----------
+    """
+    if 'filename' in scans[0]:
+        for scan in scans:
+            scan['filename'] = str(scan['filename'].relative_to(root_dir))
 
     with tsv_file.open('w') as f:
         f.write('\t'.join(scans[0].keys()) + '\n')
@@ -428,3 +437,11 @@ def find_intendedfor(db, run_id):
     while query.next():
         topups.append(query.value('target'))
     return topups
+
+
+def remove_phase(bids_dir):
+    """I cannot specify phase.json so we get lots of errors when including phase.nii.gz
+    https://github.com/bids-standard/bids-validator/issues/1074
+    """
+    for phase in bids_dir.rglob('*_phase.nii.gz'):
+        phase.unlink()
