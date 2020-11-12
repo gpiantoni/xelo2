@@ -48,6 +48,7 @@ def add_umcu_to_sub_ses(bids_dir):
         bids_dir.glob('**/*.tsv'),
         bids_dir.glob('**/*.vhdr'),
         bids_dir.glob('**/*.vmrk'),
+        bids_dir.glob('**/*.json'),
         )
 
     for tsv_file in TEXT_FILES:

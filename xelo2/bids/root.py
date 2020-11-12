@@ -1,4 +1,4 @@
-from json import dump
+from json import dump, load
 from pathlib import Path
 from copy import copy as c
 from collections import defaultdict
@@ -6,6 +6,7 @@ from logging import getLogger
 from datetime import date, datetime
 from shutil import copy, rmtree
 
+from bidso.utils import replace_extension
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtSql import QSqlQuery
 
@@ -230,14 +231,15 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
         json_sessions = tsv_file.with_suffix('.json')
         copy(JSON_SESSIONS, json_sessions)  # https://github.com/bids-standard/bids-validator/issues/888
 
+    # add IntendedFor for top_up scans
+    _add_intendedfor(db, data_path, intendedfor)
+
     # here the rest
     _make_README(data_path)
     tsv_file = data_path / 'participants.tsv'
     _list_scans(tsv_file, participants)
     json_participants = tsv_file.with_suffix('.json')
     copy(JSON_PARTICIPANTS, json_participants)
-
-    return intendedfor
 
 
 def _list_scans(tsv_file, scans):
@@ -380,3 +382,49 @@ def _make_sess_name(sess):
     else:
         sess_name = sess.name.lower()
     return sess_name
+
+
+def _add_intendedfor(db, bids_dir, intendedfor):
+    for run_id, relative_path in intendedfor.items():
+        targets = find_intendedfor(db, run_id)  # find all the targets
+        targets = set(targets) & set(intendedfor)  # only targets in this dataset
+        if len(targets) == 0:
+            continue
+
+        fields = []
+        for target_id in targets:
+            target_file = intendedfor[target_id]
+            # remove sub- from the path (note the inconsistency between fieldmaps and T1w/elec)
+            target_file = target_file.partition('/')[-1]
+            fields.append(target_file)
+
+        json_file = replace_extension(bids_dir / relative_path, '.json')
+        _add_intendedfor_to_json(json_file, fields)
+
+
+def _add_intendedfor_to_json(json_file, fields):
+    if json_file.exists():
+        with json_file.open() as f:
+            sidecar = load(f)
+    else:
+        lg.warning('Adding IntendedFor to {json_file}, but this file does not exist')
+        sidecar = {}
+
+    sidecar['IntendedFor'] = fields
+
+    with json_file.open('w') as f:
+        dump(sidecar, f, indent=2)
+
+
+def find_intendedfor(db, run_id):
+    query = QSqlQuery(db)
+    query.prepare("SELECT target FROM intended_for WHERE run_id = :runid")
+    query.bindValue(':runid', run_id)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    topups = []
+    while query.next():
+        topups.append(query.value('target'))
+    return topups
