@@ -31,11 +31,14 @@ DIRECTION = {
 
 def convert_mri(run, rec, dest_path, name, deface=True):
     """Return base name for this run"""
+    if rec.PhaseEncodingDirection is not None:
+        name['dir'] = rec.PhaseEncodingDirection
+
     output_nii = dest_path / f'{make_bids_name(name)}_{rec.modality}.nii.gz'
 
     file = find_one_file(rec, ('parrec', ))
     if file is not None:
-        input_nii, PAR = convert_parrec_nibabel(file.path)
+        input_nii, PAR = convert_parrec_nibabel(file.path, MagneticFieldStrength=run.session.MagneticFieldStrength)
         move(input_nii, output_nii)
 
     else:
@@ -59,7 +62,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         lg.info('Keeping only the first volume for MP2RAGE')
         select(output_nii, 'first')
 
-    _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
 
     if PAR is not None and 'phase' in PAR['image_types']:
         phase_nii = dest_path / f'{make_bids_name(name)}_phase.nii.gz'
@@ -70,7 +73,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
         run_deface(output_nii)
 
-    sidecar = _convert_sidecar(run, rec, PAR)
+    sidecar = _convert_sidecar(run, rec, PAR, nii_shape)
     sidecar_file = replace_extension(output_nii, '.json')
 
     with sidecar_file.open('w') as f:
@@ -102,7 +105,12 @@ def select(nii, slicing):
 
 
 def _fix_tr(nii, RepetitionTime):
-
+    """
+    Returns
+    -------
+    tuple
+        shape of the nifti file
+    """
     img = niload(str(nii))
 
     # this seems a bug in nibabel. It stores time in sec, not in msec
@@ -113,8 +121,10 @@ def _fix_tr(nii, RepetitionTime):
 
     nisave(img, str(nii))
 
+    return img.shape
 
-def _convert_sidecar(run, rec, hdr=None):
+
+def _convert_sidecar(run, rec, hdr=None, shape=None):
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
@@ -129,16 +139,21 @@ def _convert_sidecar(run, rec, hdr=None):
     if rec.SliceEncodingDirection is not None:
         D['SliceEncodingDirection'] = DIRECTION[rec.SliceEncodingDirection]
 
-    set_notnone(D, hdr, 'EchoTime')
+    for field in 'EchoTime', 'EffectiveEchoSpacing':
+        set_notnone(D, hdr, field)
 
     for field in 'FlipAngle', 'PulseSequenceType', 'MultibandAccelerationFactor':
         set_notnone(D, rec, field)
 
-    if rec.modality == 'bold':
+    if rec.modality in ('bold', 'epi'):
         set_notnone(D, rec, 'RepetitionTime')
         D['TaskName'] = rename_task(run.task_name)
         if hdr is not None:
             add_slicetiming(D, hdr, rec)
+        if shape is not None and 'EffectiveEchoSpacing' in D and 'PhaseEncodingDirection' in D:
+            NIFTI_INDEX = {'i': 0, 'j': 1, 'k': 2}
+            ReconMatrixPE = shape[NIFTI_INDEX[D['PhaseEncodingDirection'][0]]]
+            D['TotalReadoutTime'] = D['EffectiveEchoSpacing'] * (ReconMatrixPE - 1)
 
     return D
 

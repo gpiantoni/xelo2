@@ -3,6 +3,7 @@ from pathlib import Path
 from numpy import unique
 from nibabel.parrec import parse_PAR_header
 from nibabel.cmdline.parrec2nii import get_opt_parser, proc_file, verbose
+from nibabel.mriutils import calculate_dwell_time
 from tempfile import mkdtemp
 
 lg = getLogger(__name__)
@@ -13,12 +14,12 @@ MR_TYPES = {
     -1: 'reconstructed',  # relevant for MP2RAGE
     }
 
-def convert_parrec_nibabel(par_file):
+def convert_parrec_nibabel(par_file, MagneticFieldStrength=None):
     """
 
     """
     input_par = Path(par_file).resolve()
-    hdr = parse_PAR(input_par)
+    hdr = parse_PAR(input_par, MagneticFieldStrength)
 
     tmp_dir = mkdtemp()
     lg.debug(f'Temporary directory for PAR/REC conversion: {tmp_dir}')
@@ -41,7 +42,7 @@ def convert_parrec_nibabel(par_file):
     return output, hdr
 
 
-def parse_PAR(par_file):
+def parse_PAR(par_file, MagneticFieldStrength=None):
     """Get some useful information from PAR file. It's quite slow but reading
     the PAR file twice seems the best solution.
 
@@ -50,6 +51,8 @@ def parse_PAR(par_file):
     dict
         "n_dynamics" : int
             actual number of recorded dynamics (not the planned number of dyns)
+        "EffectiveEchoSpacing" : float
+            use nibabel to compute EffectiveEchoSpacing (dwell time in nibabel is not the same as DwellTime in BIDS)
     """
     out = {}
     with par_file.open() as f:
@@ -59,6 +62,10 @@ def parse_PAR(par_file):
     out['n_dynamics'] = info['dynamic scan number'].max()
     out['EchoTime'] = info['echo_time'][0] / 1000  # ms -> s
     out['n_slices'] = info['slice number'].max()
+    if MagneticFieldStrength is not None:
+        MagneticFieldStrength = float(MagneticFieldStrength[:-1])
+        out['EffectiveEchoSpacing'] = calculate_dwell_time(hdr['water_fat_shift'], hdr['epi_factor'], MagneticFieldStrength)
+
     try:
         out['image_types'] = [MR_TYPES[x] for x in unique(info['image_type_mr'])]
     except KeyError:
