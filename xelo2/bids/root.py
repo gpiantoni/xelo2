@@ -403,8 +403,9 @@ def _add_intendedfor(db, bids_dir, intendedfor):
         fields = []
         for target_id in targets:
             target_file = intendedfor[target_id]
+            target_file = target_file.relative_to(bids_dir)
             # remove sub- from the path (note the inconsistency between fieldmaps and T1w/elec)
-            target_file = target_file.partition('/')[-1]
+            target_file.relative_to(target_file.parts[0])
             fields.append(target_file)
 
         json_file = replace_extension(bids_dir / relative_path, '.json')
