@@ -95,8 +95,7 @@ def _convert_sidecar(run, rec, d):
 
 def save_coordsystem(electrodes_json, electrodes, intendedfor):
     D = {
-        "iEEGCoordinateSystem": "other",
-        "iEEGCoordinateSystemDescription": "native T1w",
+        "iEEGCoordinateSystem": "ACPC",  # T1w should be an option https://github.com/bids-standard/bids-specification/issues/661
         "iEEGCoordinateUnits": "mm",
         "iEEGCoordinateProcessingDescription": "surface_projection",
         "iEEGCoordinateProcessingReference": "PMID: 19836416",

@@ -64,8 +64,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     if PAR is not None and 'phase' in PAR['image_types']:
         phase_nii = dest_path / f'{make_bids_name(name)}_phase.nii.gz'
         lg.info(f'Splitting phase info to {phase_nii.name}')
-        phase = select(output_nii, 'split')
-        phase.to_filename(phase_nii)
+        select(output_nii, 'splithalf')
 
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
         run_deface(output_nii)
@@ -80,6 +79,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
 
 def select(nii, slicing):
+    """If slicing is "split", it returns the nifti of the second half"""
     img = niload(nii)
     half = int(img.shape[3] / 2)
     secondhalf = None
