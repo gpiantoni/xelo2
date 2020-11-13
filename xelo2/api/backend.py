@@ -96,7 +96,7 @@ class Table():
         query.bindValue(':id', self.id)
 
         if not query.exec():
-            raise SyntaxError(query.lastError().error())
+            raise SyntaxError(query.lastError().text())
 
         # we need to use QVariant, because QMYSQL in PyQt5 does not distinguish between null and 0.0
         # see https://www.riverbankcomputing.com/static/Docs/PyQt5/pyqt_qvariant.html

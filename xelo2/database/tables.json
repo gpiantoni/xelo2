@@ -641,17 +641,6 @@
     "PulseSequenceType": {
       "name": "Pulse Sequence Type",
       "type": "TEXT"
-    }
-  },
-  "recordings_epi": {
-    "recording_id": null,
-    "when": {
-      "parent": "recordings",
-      "parameter": "modality",
-      "value": [
-        "bold",
-        "epi"
-      ]
     },
     "FlipAngle": {
       "name": "Flip Angle",
@@ -694,10 +683,25 @@
         "Sequential",
         "Interleaved"
       ]
+    }
+  },
+  "recordings_epi": {
+    "recording_id": null,
+    "when": {
+      "parent": "recordings",
+      "parameter": "modality",
+      "value": [
+        "bold",
+        "epi"
+      ]
     },
     "RepetitionTime": {
       "name": "Repetition Time (TR)",
       "type": "FLOAT"
+    },
+    "NumberOfVolumesDiscardedByScanner": {
+      "name": "# Volumes discared by Scanner",
+      "type": "INTEGER"
     }
   },
   "recordings_ieeg": {

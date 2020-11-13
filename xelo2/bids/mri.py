@@ -125,7 +125,6 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     D = {
         'InstitutionName': 'University Medical Center Utrecht',
         'InstitutionAddress': 'Heidelberglaan 100, 3584 CX Utrecht, the Netherlands',
-        'TaskDescription': make_taskdescription(run),
         }
 
     if run.session.MagneticFieldStrength is not None:
@@ -145,6 +144,8 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     if rec.modality in ('bold', 'epi'):
         set_notnone(D, rec, 'RepetitionTime')
         D['TaskName'] = rename_task(run.task_name)
+        D['TaskDescription'] = make_taskdescription(run)
+
         if hdr is not None:
             add_slicetiming(D, hdr, rec)
         if shape is not None and 'EffectiveEchoSpacing' in D and 'PhaseEncodingDirection' in D:
