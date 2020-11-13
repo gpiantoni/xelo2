@@ -80,7 +80,6 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
             'rec': None,
             'dir': None,
             'run': None,
-            'rec': None,
             }
         if subset is not None and subj.id not in subset_subj:
             continue

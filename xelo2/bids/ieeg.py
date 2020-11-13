@@ -2,8 +2,6 @@ from logging import getLogger
 from datetime import timedelta
 from json import dump
 
-from bidso.utils import add_underscore
-
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
 from ..io.ieeg import localize_blackrock
@@ -31,7 +29,7 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
         name['acq'] = 'acq-none'
     else:
         name['acq'] = f'acq-{rec.Manufacturer.lower()}'
-    output_ieeg = dest_path / f'{make_bids_name(name)}_{rec.modality}.ieeg'
+    output_ieeg = dest_path / f'{make_bids_name(name, "ieeg")}'
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ieeg, 'brainvision', markers=markers, anonymize=True)
 
@@ -40,23 +38,22 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
-    base_name = dest_path / make_bids_name(name)
-    _convert_chan_elec(rec, base_name, intendedfor)
+    _convert_chan_elec(rec, dest_path, name, intendedfor)
     return output_ieeg
 
 
-def _convert_chan_elec(rec, base_name, intendedfor):
+def _convert_chan_elec(rec, dest_path, name, intendedfor):
     channels = rec.channels
     if channels is not None:
-        channels_tsv = add_underscore(base_name, 'channels.tsv')
+        channels_tsv = dest_path / make_bids_name(name, 'channels')
         save_tsv(channels_tsv, channels.data, ['name', 'type', 'units'])
         replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
+        electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
         save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z'])
-        electrodes_json = add_underscore(base_name, 'coordsystem.json')
+        electrodes_json = dest_path / make_bids_name(name, 'coordsystem')
         save_coordsystem(electrodes_json, electrodes, intendedfor)
 
 

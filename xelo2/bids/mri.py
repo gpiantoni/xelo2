@@ -59,7 +59,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         lg.info('Keeping only the first volume for MP2RAGE')
         select(output_nii, 'first')
 
-    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec)
 
     if PAR is not None and 'phase' in PAR['image_types']:
         phase_nii = dest_path / f'{make_bids_name(name)}_phase.nii.gz'
@@ -101,7 +101,7 @@ def select(nii, slicing):
     return secondhalf
 
 
-def _fix_tr(nii, RepetitionTime):
+def _fix_tr(nii, rec):
     """
     Returns
     -------
@@ -113,8 +113,8 @@ def _fix_tr(nii, RepetitionTime):
     # this seems a bug in nibabel. It stores time in sec, not in msec
     img.header.set_xyzt_units('mm', 'sec')
 
-    if RepetitionTime is not None:
-        img.header['pixdim'][4] = RepetitionTime
+    if rec.modality in ('bold', 'epi') and rec.RepetitionTime is not None:
+        img.header['pixdim'][4] = rec.RepetitionTime
 
     nisave(img, str(nii))
 

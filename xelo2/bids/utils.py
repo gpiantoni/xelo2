@@ -28,8 +28,37 @@ def rename_task(task_name):
     return task_name
 
 
-def make_bids_name(bids_name):
-    return '_'.join([str(x) for x in bids_name.values() if x is not None])
+def make_bids_name(bids_name, level=None):
+    """
+    Parameters
+    ----------
+    level : str
+        'channels', 'electrodes', 'coordsystem', 'ieeg'
+    """
+    appendix = ''
+    acceptable_levels = ['sub', 'ses', 'task', 'run', 'acq', 'dir', 'rec']
+    if level == 'channels':
+        acceptable_levels = ['sub', 'ses', 'task', 'run']
+        appendix = '_channels.tsv'
+
+    elif level == 'electrodes':
+        acceptable_levels = ['sub', 'ses', 'acq', 'space']
+        appendix = '_electrodes.tsv'
+
+    elif level == 'coordsystem':
+        acceptable_levels = ['sub', 'ses', 'space']
+        appendix = '_coordsystem.json'
+
+    elif level == 'ieeg':
+        acceptable_levels = ['sub', 'ses', 'task', 'run']
+        appendix = '_ieeg.eeg'
+
+    values = []
+    for k, v in bids_name.items():
+        if k in acceptable_levels and v is not None:
+            values.append(str(v))
+
+    return '_'.join(values) + appendix
 
 
 def find_one_file(rec, formats):
