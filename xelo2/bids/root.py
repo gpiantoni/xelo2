@@ -15,6 +15,7 @@ from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .physio import convert_physio
 from .events import convert_events
+from ..database import TABLES
 from ..io.export_db import prepare_query
 from .utils import rename_task
 from .templates import (
@@ -177,23 +178,27 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     bids_name['task'] = None
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
-                lg.info(f'Adding {bids_name["sub"]} / {bids_name["ses"]} / {acquisition} / {bids_name["task"]} / {bids_name["run"]}')
+                lg.info(f'Adding {bids_name["sub"]} / {bids_name["ses"]} / {acquisition} / {bids_name["task"]} ({run})')
 
                 data_name = None
                 for rec in run.list_recordings():
 
+                    # PhaseEncodingDirection is only present for 'recordings_epi'
+                    # If you don't use this check, you get a warning (I don't know what's better to have a warning or to look up TABLES)
+                    parameter = TABLES['recordings_epi']['when']['parameter']
+                    values = TABLES['recordings_epi']['when']['parameter']
+
+                    if getattr(rec, parameter) in values and rec.PhaseEncodingDirection is not None:
+                        bids_name['dir'] = 'dir-' + rec.PhaseEncodingDirection
+                    else:
+                        bids_name['dir'] = None
+
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
-
-                        if rec.PhaseEncodingDirection is not None:
-                            bids_name['dir'] = 'dir-' + rec.PhaseEncodingDirection
-                        else:
-                            bids_name['dir'] = None
-
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
                     elif rec.modality == 'ieeg':
                         if run.duration is None:
-                            lg.warning(f'You need to specify duration for {subj.codes}/{run.task_name}')
+                            lg.warning(f'You need to specify duration for {subj.codes}/{run}')
                             continue
                         data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
 

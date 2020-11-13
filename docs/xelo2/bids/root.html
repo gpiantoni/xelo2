@@ -203,23 +203,22 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     bids_name[&#39;task&#39;] = None
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
-                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} / {bids_name[&#34;run&#34;]}&#39;)
+                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} ({run})&#39;)
 
                 data_name = None
                 for rec in run.list_recordings():
 
+                    if rec.PhaseEncodingDirection is not None:
+                        bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
+                    else:
+                        bids_name[&#39;dir&#39;] = None
+
                     if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
-
-                        if rec.PhaseEncodingDirection is not None:
-                            bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
-                        else:
-                            bids_name[&#39;dir&#39;] = None
-
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
                     elif rec.modality == &#39;ieeg&#39;:
                         if run.duration is None:
-                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run.task_name}&#39;)
+                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run}&#39;)
                             continue
                         data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
 
@@ -691,23 +690,22 @@ def remove_phase(bids_dir):
                     bids_name[&#39;task&#39;] = None
                 mod_path = sess_path / acquisition
                 mod_path.mkdir(parents=True, exist_ok=True)
-                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} / {bids_name[&#34;run&#34;]}&#39;)
+                lg.info(f&#39;Adding {bids_name[&#34;sub&#34;]} / {bids_name[&#34;ses&#34;]} / {acquisition} / {bids_name[&#34;task&#34;]} ({run})&#39;)
 
                 data_name = None
                 for rec in run.list_recordings():
 
+                    if rec.PhaseEncodingDirection is not None:
+                        bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
+                    else:
+                        bids_name[&#39;dir&#39;] = None
+
                     if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
-
-                        if rec.PhaseEncodingDirection is not None:
-                            bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
-                        else:
-                            bids_name[&#39;dir&#39;] = None
-
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
                     elif rec.modality == &#39;ieeg&#39;:
                         if run.duration is None:
-                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run.task_name}&#39;)
+                            lg.warning(f&#39;You need to specify duration for {subj.codes}/{run}&#39;)
                             continue
                         data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
 

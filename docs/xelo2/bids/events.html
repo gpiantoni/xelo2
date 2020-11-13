@@ -31,7 +31,7 @@ from .utils import make_bids_name
 def convert_events(run, dest_path, name):
     events_tsv = dest_path / f&#39;{make_bids_name(name)}_events.tsv&#39;
 
-    save_tsv(events_tsv, run.events)</code></pre>
+    save_tsv(events_tsv, run.events, [&#39;onset&#39;, &#39;duration&#39;])</code></pre>
 </details>
 </section>
 <section>
@@ -53,7 +53,7 @@ def convert_events(run, dest_path, name):
 <pre><code class="python">def convert_events(run, dest_path, name):
     events_tsv = dest_path / f&#39;{make_bids_name(name)}_events.tsv&#39;
 
-    save_tsv(events_tsv, run.events)</code></pre>
+    save_tsv(events_tsv, run.events, [&#39;onset&#39;, &#39;duration&#39;])</code></pre>
 </details>
 </dd>
 </dl>

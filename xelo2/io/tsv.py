@@ -28,10 +28,10 @@ def load_tsv(fname, dtypes):
     return X
 
 
-def save_tsv(fname, X):
+def save_tsv(fname, X, necessary_columns=None):
     # BIDS wants 'group' but it's a reserved word in SQL
     X = rename_fields(X, {'groups': 'group'})
-    X = _remove_empty_columns(X)
+    X = _remove_empty_columns(X, necessary_columns)
 
     with fname.open('w') as f:
         if X is None:  # when all the columns are empty
@@ -58,13 +58,29 @@ def save_tsv(fname, X):
             f.write('\t'.join(values) + '\n')
 
 
-def _remove_empty_columns(tsv):
+def _remove_empty_columns(tsv, necessary_columns=None):
     """Remove column where all the values are empty (either NaN or '')
+
+    Parameters
+    ----------
+    tsv
+
+    necessary_columns : list of str
+        list of columns that you need to keep
+
+    Returns
+    -------
+    tsv
     """
+    if necessary_columns is None:
+        necessary_columns = []
+
     dtypes = tsv.dtype
 
     to_remove = []
     for name in dtypes.names:
+        if name in necessary_columns:
+            continue
 
         if issubdtype(dtypes[name], floating):
             if isnan(tsv[name]).all():

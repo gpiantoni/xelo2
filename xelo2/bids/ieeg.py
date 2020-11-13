@@ -49,13 +49,13 @@ def _convert_chan_elec(rec, base_name, intendedfor):
     channels = rec.channels
     if channels is not None:
         channels_tsv = add_underscore(base_name, 'channels.tsv')
-        save_tsv(channels_tsv, channels.data)
+        save_tsv(channels_tsv, channels.data, ['name', 'type', 'units'])
         replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = add_underscore(base_name, 'electrodes.tsv')
-        save_tsv(electrodes_tsv, electrodes.data)
+        save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z'])
         electrodes_json = add_underscore(base_name, 'coordsystem.json')
         save_coordsystem(electrodes_json, electrodes, intendedfor)
 
@@ -107,7 +107,7 @@ def save_coordsystem(electrodes_json, electrodes, intendedfor):
 
     if electrodes.IntendedFor is not None:
         if electrodes.IntendedFor in intendedfor:
-            D['IntendedFor'] = intendedfor[electrodes.IntendedFor]
+            D['IntendedFor'] = str(intendedfor[electrodes.IntendedFor])
         else:
             lg.warning(f'Could not find the intended-for t1w for electrodes {electrodes}')
 
