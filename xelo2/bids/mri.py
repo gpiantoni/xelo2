@@ -142,7 +142,8 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
         set_notnone(D, rec, field)
 
     if rec.modality in ('bold', 'epi'):
-        set_notnone(D, rec, 'RepetitionTime')
+        set_notnone(D, hdr, 'RepetitionTime')  # first get RepetitionTime from Header,
+        set_notnone(D, rec, 'RepetitionTime')  # then, use the one specified in rec
         D['TaskName'] = rename_task(run.task_name)
         D['TaskDescription'] = make_taskdescription(run)
 

@@ -58,7 +58,7 @@ def parse_PAR(par_file, MagneticFieldStrength=None):
     with par_file.open() as f:
         hdr, info = parse_PAR_header(f)
 
-    out['RepetitionTime'] = hdr['repetition_time'] / 1000
+    out['RepetitionTime'] = hdr['repetition_time'].item() / 1000
     out['n_dynamics'] = info['dynamic scan number'].max()
     out['EchoTime'] = info['echo_time'][0] / 1000  # ms -> s
     out['n_slices'] = info['slice number'].max()

@@ -52,7 +52,7 @@ def _convert_chan_elec(rec, dest_path, name, intendedfor):
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
-        save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z'])
+        save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z', 'size'])
         electrodes_json = dest_path / make_bids_name(name, 'coordsystem')
         save_coordsystem(electrodes_json, electrodes, intendedfor)
 
@@ -104,7 +104,10 @@ def save_coordsystem(electrodes_json, electrodes, intendedfor):
 
     if electrodes.IntendedFor is not None:
         if electrodes.IntendedFor in intendedfor:
-            D['IntendedFor'] = str(intendedfor[electrodes.IntendedFor])
+            path_to_t1 = intendedfor[electrodes.IntendedFor]
+            # assume we have to go back three folders
+            path_to_t1 = path_to_t1.relative_to(path_to_t1.parents[3])
+            D['IntendedFor'] = '/' + str(path_to_t1)
         else:
             lg.warning(f'Could not find the intended-for t1w for electrodes {electrodes}')
 
