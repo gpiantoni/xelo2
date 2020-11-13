@@ -135,10 +135,10 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     if rec.SliceEncodingDirection is not None:
         D['SliceEncodingDirection'] = DIRECTION[rec.SliceEncodingDirection]
 
-    for field in 'EchoTime', 'EffectiveEchoSpacing':
+    for field in 'EchoTime', 'EffectiveEchoSpacing', 'FlipAngle':
         set_notnone(D, hdr, field)
 
-    for field in 'FlipAngle', 'PulseSequenceType', 'MultibandAccelerationFactor':
+    for field in 'PulseSequenceType', 'MultibandAccelerationFactor':
         set_notnone(D, rec, field)
 
     if rec.modality in ('bold', 'epi'):

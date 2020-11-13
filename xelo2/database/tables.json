@@ -642,10 +642,6 @@
       "name": "Pulse Sequence Type",
       "type": "TEXT"
     },
-    "FlipAngle": {
-      "name": "Flip Angle",
-      "type": "FLOAT"
-    },
     "MultibandAccelerationFactor": {
       "name": "Multiband Acceleration Factor",
       "type": "INTEGER", 

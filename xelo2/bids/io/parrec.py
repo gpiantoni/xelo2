@@ -62,6 +62,7 @@ def parse_PAR(par_file, MagneticFieldStrength=None):
     out['n_dynamics'] = info['dynamic scan number'].max()
     out['EchoTime'] = info['echo_time'][0] / 1000  # ms -> s
     out['n_slices'] = info['slice number'].max()
+    out['FlipAngle'] = info['image_flip_angle'][0]
     if MagneticFieldStrength is not None:
         MagneticFieldStrength = float(MagneticFieldStrength[:-1])
         out['EffectiveEchoSpacing'] = calculate_dwell_time(hdr['water_fat_shift'], hdr['epi_factor'], MagneticFieldStrength) / 1000
