@@ -241,6 +241,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _list_scans(tsv_file, participants, data_path)
     json_participants = tsv_file.with_suffix('.json')
     copy(JSON_PARTICIPANTS, json_participants)
+    _make_bids_config(data_path)
 
 
 def _list_scans(tsv_file, scans, root_dir):
@@ -356,16 +357,31 @@ def add_intended_for_elec(db, subset):
     return reference_t1w
 
 
+def _make_bids_config(data_path):
+
+    d = {
+        "ignore": [
+            "INCONSISTENT_SUBJECTS",  # different tasks
+            "INCONSISTENT_PARAMETERS",  # different tasks
+            "SLICETIMING_ELEMENTS",  # https://github.com/bids-standard/bids-validator/issues/1111
+            "MISSING_SESSION",  # not all subjects have the same sessions
+            ],
+        "warn": [],
+        "error": [],
+        "ignoredFiles": [
+            "/sub-*/ses-*/ieeg/*_physio.tsv.gz",  # https://github.com/bids-standard/bids-specification/issues/209
+            "/sub-*/ses-*/ieeg/*_physio.json",
+            ]
+        }
+
+    with (data_path / '.bids-validator-config.json').open('w') as f:
+        dump(d, f, ensure_ascii=False, indent=' ')
+
+
 def _make_README(data_path):
 
     with (data_path / 'README').open('w') as f:
         f.write('Converted with xelo2')
-
-    # this is necessary to work around this issue
-    # https://github.com/bids-standard/bids-specification/issues/209
-    with (data_path / '.bidsignore').open('w') as f:
-        f.write('sub-*/ses-*/ieeg/*_physio.tsv.gz\n')
-        f.write('sub-*/ses-*/ieeg/*_physio.json\n')
 
 
 def _set_date_to_1900(base_date, datetime_of_interest):
