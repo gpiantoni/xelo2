@@ -84,10 +84,11 @@ def parse_PAR(par_file, MagneticFieldStrength=None):
     with par_file.open() as f:
         hdr, info = parse_PAR_header(f)
 
-    out[&#39;RepetitionTime&#39;] = hdr[&#39;repetition_time&#39;] / 1000
+    out[&#39;RepetitionTime&#39;] = hdr[&#39;repetition_time&#39;].item() / 1000
     out[&#39;n_dynamics&#39;] = info[&#39;dynamic scan number&#39;].max()
     out[&#39;EchoTime&#39;] = info[&#39;echo_time&#39;][0] / 1000  # ms -&gt; s
     out[&#39;n_slices&#39;] = info[&#39;slice number&#39;].max()
+    out[&#39;FlipAngle&#39;] = info[&#39;image_flip_angle&#39;][0]
     if MagneticFieldStrength is not None:
         MagneticFieldStrength = float(MagneticFieldStrength[:-1])
         out[&#39;EffectiveEchoSpacing&#39;] = calculate_dwell_time(hdr[&#39;water_fat_shift&#39;], hdr[&#39;epi_factor&#39;], MagneticFieldStrength) / 1000
@@ -178,10 +179,11 @@ use nibabel to compute EffectiveEchoSpacing (dwell time in nibabel is not the sa
     with par_file.open() as f:
         hdr, info = parse_PAR_header(f)
 
-    out[&#39;RepetitionTime&#39;] = hdr[&#39;repetition_time&#39;] / 1000
+    out[&#39;RepetitionTime&#39;] = hdr[&#39;repetition_time&#39;].item() / 1000
     out[&#39;n_dynamics&#39;] = info[&#39;dynamic scan number&#39;].max()
     out[&#39;EchoTime&#39;] = info[&#39;echo_time&#39;][0] / 1000  # ms -&gt; s
     out[&#39;n_slices&#39;] = info[&#39;slice number&#39;].max()
+    out[&#39;FlipAngle&#39;] = info[&#39;image_flip_angle&#39;][0]
     if MagneticFieldStrength is not None:
         MagneticFieldStrength = float(MagneticFieldStrength[:-1])
         out[&#39;EffectiveEchoSpacing&#39;] = calculate_dwell_time(hdr[&#39;water_fat_shift&#39;], hdr[&#39;epi_factor&#39;], MagneticFieldStrength) / 1000

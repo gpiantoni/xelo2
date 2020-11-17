@@ -56,11 +56,11 @@ def convert_physio(rec, dest_path, name):
     &#34;&#34;&#34;
     for file in rec.list_files():
         if file.format == &#39;dataglove&#39;:
-            name[&#39;rec&#39;] = &#39;rec-dataglove&#39;
+            name[&#39;recording&#39;] = &#39;recording-dataglove&#39;
             tsv, hdr = parse_dataglove_log(file.path)
 
         elif file.format == &#39;scanphyslog&#39;:
-            name[&#39;rec&#39;] = &#39;rec-resp&#39;
+            name[&#39;recording&#39;] = &#39;recording-resp&#39;
             tsv, hdr = parse_scanner_physio(file.path)
 
         else:
@@ -138,11 +138,11 @@ with the recording (so you don't need to add StartTime.</p></div>
     &#34;&#34;&#34;
     for file in rec.list_files():
         if file.format == &#39;dataglove&#39;:
-            name[&#39;rec&#39;] = &#39;rec-dataglove&#39;
+            name[&#39;recording&#39;] = &#39;recording-dataglove&#39;
             tsv, hdr = parse_dataglove_log(file.path)
 
         elif file.format == &#39;scanphyslog&#39;:
-            name[&#39;rec&#39;] = &#39;rec-resp&#39;
+            name[&#39;recording&#39;] = &#39;recording-resp&#39;
             tsv, hdr = parse_scanner_physio(file.path)
 
         else:

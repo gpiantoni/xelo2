@@ -30,11 +30,11 @@ def convert_physio(rec, dest_path, name):
     """
     for file in rec.list_files():
         if file.format == 'dataglove':
-            name['rec'] = 'rec-dataglove'
+            name['recording'] = 'recording-dataglove'
             tsv, hdr = parse_dataglove_log(file.path)
 
         elif file.format == 'scanphyslog':
-            name['rec'] = 'rec-resp'
+            name['recording'] = 'recording-resp'
             tsv, hdr = parse_scanner_physio(file.path)
 
         else:

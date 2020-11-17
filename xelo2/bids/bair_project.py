@@ -3,24 +3,27 @@ from bidso.utils import replace_underscore
 from json import dump
 from re import sub, match
 
+from .utils import rename_task, prepare_subset
+from ..api import Subject
 
-TASK_TYPES = {
+
+TASK_TYPES = {  # use original names, they'll get converted to bids-compliant names later
     'visual': [
-        'spatialobject',
-        'spatialpattern',
-        'temporalpattern',
-        'prf',
-        'hrfpattern',
+        'bair_spatialobject',
+        'bair_spatialpattern',
+        'bair_temporalpattern',
+        'bair_prf',
+        'bair_hrfpattern',
         ],
     'motor': [
-        'fingermapping',
+        'finger_mapping',
         'gestures',
         'boldfinger',
         'boldsat',
         ],
     'tactile': [
-        'vtsprf',
-        'vtstemporalpattern',
+        'vts_prf',
+        'vts_temporalpattern',
         ],
     }
 
@@ -29,7 +32,8 @@ def make_bair_compatible(bids_dir):
 
     add_umcu_to_sub_ses(bids_dir)
     add_info_to_participants(bids_dir)
-    add_electrodes(bids_dir)
+    print('check if it"s necessary to add electrodes here as well')
+    # add_electrodes(bids_dir)
 
 
 def add_umcu_to_sub_ses(bids_dir):
@@ -138,7 +142,53 @@ def _find_hdgrid(subj_path):
 
 def _find_task_type(subj_path, task_type):
     for t in TASK_TYPES[task_type]:
-        if len(list(subj_path.rglob(f'*/*/*_task-{t}_*'))) > 0:
+        t_bids = rename_task(t)
+        if len(list(subj_path.rglob(f'*/*/*_task-{t_bids}_*'))) > 0:
             return 'yes'
 
     return 'no'
+
+
+def list_bair_ids(db, healthy_visual=True, subset=None):
+
+    subjects = ('boskoop', 'elst', 'sittard')
+    subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects)
+
+    tasks = [
+        "bair_prf",
+        "bair_hrfpattern",
+        "bair_spatialobject",
+        "bair_temporalpattern",
+        "bair_spatialpattern",
+        "vts_prf",
+        "vts_temporalpattern",
+        "finger_mapping",
+        "gestures",
+        "boldfinger",
+        "boldsat",
+        ]
+    task_list = ', '.join(f'"{t}"' for t in tasks)
+    subset = prepare_subset(
+        db,
+        f'`task_name` IN ({task_list}) AND `start_time` > "2016-06-01" AND `subjects`.`id` NOT IN ({subj_ids})',
+        subset=subset)
+
+    if healthy_visual:
+        subjects = [f'umcu{x + 1:04d}' for x in range(13)]
+        subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects)
+        subset = prepare_subset(db, f'`subjects`.`id` IN ({subj_ids})', subset=subset)
+
+    # add structural scans
+    subj_ids = ', '.join(f'"{x}"' for x in subset['subjects'])
+    tasks = [
+        "t1_anatomy_scan",
+        "t2star_anatomy_scan",
+        "flair_anatomy_scan"
+        "top_up",
+    ]
+    task_list = ', '.join(f'"{t}"' for t in tasks)
+    subset = prepare_subset(
+        db,
+        f'`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})',
+        subset=subset)
+

@@ -29,24 +29,27 @@ from bidso.utils import replace_underscore
 from json import dump
 from re import sub, match
 
+from .utils import rename_task, prepare_subset
+from ..api import Subject
 
-TASK_TYPES = {
+
+TASK_TYPES = {  # use original names, they&#39;ll get converted to bids-compliant names later
     &#39;visual&#39;: [
-        &#39;spatialobject&#39;,
-        &#39;spatialpattern&#39;,
-        &#39;temporalpattern&#39;,
-        &#39;prf&#39;,
-        &#39;hrfpattern&#39;,
+        &#39;bair_spatialobject&#39;,
+        &#39;bair_spatialpattern&#39;,
+        &#39;bair_temporalpattern&#39;,
+        &#39;bair_prf&#39;,
+        &#39;bair_hrfpattern&#39;,
         ],
     &#39;motor&#39;: [
-        &#39;fingermapping&#39;,
+        &#39;finger_mapping&#39;,
         &#39;gestures&#39;,
         &#39;boldfinger&#39;,
         &#39;boldsat&#39;,
         ],
     &#39;tactile&#39;: [
-        &#39;vtsprf&#39;,
-        &#39;vtstemporalpattern&#39;,
+        &#39;vts_prf&#39;,
+        &#39;vts_temporalpattern&#39;,
         ],
     }
 
@@ -55,7 +58,8 @@ def make_bair_compatible(bids_dir):
 
     add_umcu_to_sub_ses(bids_dir)
     add_info_to_participants(bids_dir)
-    add_electrodes(bids_dir)
+    print(&#39;check if it&#34;s necessary to add electrodes here as well&#39;)
+    # add_electrodes(bids_dir)
 
 
 def add_umcu_to_sub_ses(bids_dir):
@@ -164,10 +168,55 @@ def _find_hdgrid(subj_path):
 
 def _find_task_type(subj_path, task_type):
     for t in TASK_TYPES[task_type]:
-        if len(list(subj_path.rglob(f&#39;*/*/*_task-{t}_*&#39;))) &gt; 0:
+        t_bids = rename_task(t)
+        if len(list(subj_path.rglob(f&#39;*/*/*_task-{t_bids}_*&#39;))) &gt; 0:
             return &#39;yes&#39;
 
-    return &#39;no&#39;</code></pre>
+    return &#39;no&#39;
+
+
+def list_bair_ids(db, healthy_visual=True, subset=None):
+
+    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;)
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+
+    tasks = [
+        &#34;bair_prf&#34;,
+        &#34;bair_hrfpattern&#34;,
+        &#34;bair_spatialobject&#34;,
+        &#34;bair_temporalpattern&#34;,
+        &#34;bair_spatialpattern&#34;,
+        &#34;vts_prf&#34;,
+        &#34;vts_temporalpattern&#34;,
+        &#34;finger_mapping&#34;,
+        &#34;gestures&#34;,
+        &#34;boldfinger&#34;,
+        &#34;boldsat&#34;,
+        ]
+    task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+    subset = prepare_subset(
+        db,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
+        subset=subset)
+
+    if healthy_visual:
+        subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
+        subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({subj_ids})&#39;, subset=subset)
+
+    # add structural scans
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{x}&#34;&#39; for x in subset[&#39;subjects&#39;])
+    tasks = [
+        &#34;t1_anatomy_scan&#34;,
+        &#34;t2star_anatomy_scan&#34;,
+        &#34;flair_anatomy_scan&#34;
+        &#34;top_up&#34;,
+    ]
+    task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+    subset = prepare_subset(
+        db,
+        f&#39;`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})&#39;,
+        subset=subset)</code></pre>
 </details>
 </section>
 <section>
@@ -270,6 +319,59 @@ def _find_task_type(subj_path, task_type):
         old_file.rename(old_file.parent / new_name)</code></pre>
 </details>
 </dd>
+<dt id="xelo2.bids.bair_project.list_bair_ids"><code class="name flex">
+<span>def <span class="ident">list_bair_ids</span></span>(<span>db, healthy_visual=True, subset=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_bair_ids(db, healthy_visual=True, subset=None):
+
+    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;)
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+
+    tasks = [
+        &#34;bair_prf&#34;,
+        &#34;bair_hrfpattern&#34;,
+        &#34;bair_spatialobject&#34;,
+        &#34;bair_temporalpattern&#34;,
+        &#34;bair_spatialpattern&#34;,
+        &#34;vts_prf&#34;,
+        &#34;vts_temporalpattern&#34;,
+        &#34;finger_mapping&#34;,
+        &#34;gestures&#34;,
+        &#34;boldfinger&#34;,
+        &#34;boldsat&#34;,
+        ]
+    task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+    subset = prepare_subset(
+        db,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
+        subset=subset)
+
+    if healthy_visual:
+        subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
+        subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({subj_ids})&#39;, subset=subset)
+
+    # add structural scans
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{x}&#34;&#39; for x in subset[&#39;subjects&#39;])
+    tasks = [
+        &#34;t1_anatomy_scan&#34;,
+        &#34;t2star_anatomy_scan&#34;,
+        &#34;flair_anatomy_scan&#34;
+        &#34;top_up&#34;,
+    ]
+    task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+    subset = prepare_subset(
+        db,
+        f&#39;`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})&#39;,
+        subset=subset)</code></pre>
+</details>
+</dd>
 <dt id="xelo2.bids.bair_project.make_bair_compatible"><code class="name flex">
 <span>def <span class="ident">make_bair_compatible</span></span>(<span>bids_dir)</span>
 </code></dt>
@@ -283,7 +385,7 @@ def _find_task_type(subj_path, task_type):
 
     add_umcu_to_sub_ses(bids_dir)
     add_info_to_participants(bids_dir)
-    add_electrodes(bids_dir)</code></pre>
+    print(&#39;check if it&#34;s necessary to add electrodes here as well&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -307,6 +409,7 @@ def _find_task_type(subj_path, task_type):
 <li><code><a title="xelo2.bids.bair_project.add_electrodes" href="#xelo2.bids.bair_project.add_electrodes">add_electrodes</a></code></li>
 <li><code><a title="xelo2.bids.bair_project.add_info_to_participants" href="#xelo2.bids.bair_project.add_info_to_participants">add_info_to_participants</a></code></li>
 <li><code><a title="xelo2.bids.bair_project.add_umcu_to_sub_ses" href="#xelo2.bids.bair_project.add_umcu_to_sub_ses">add_umcu_to_sub_ses</a></code></li>
+<li><code><a title="xelo2.bids.bair_project.list_bair_ids" href="#xelo2.bids.bair_project.list_bair_ids">list_bair_ids</a></code></li>
 <li><code><a title="xelo2.bids.bair_project.make_bair_compatible" href="#xelo2.bids.bair_project.make_bair_compatible">make_bair_compatible</a></code></li>
 </ul>
 </li>

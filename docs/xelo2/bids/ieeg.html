@@ -28,8 +28,6 @@
 from datetime import timedelta
 from json import dump
 
-from bidso.utils import add_underscore
-
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
 from ..io.ieeg import localize_blackrock
@@ -57,7 +55,7 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ieeg = dest_path / f&#39;{make_bids_name(name)}_{rec.modality}.ieeg&#39;
+    output_ieeg = dest_path / f&#39;{make_bids_name(name, &#34;ieeg&#34;)}&#39;
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ieeg, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
@@ -66,23 +64,22 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
     with sidecar_file.open(&#39;w&#39;) as f:
         dump(sidecar, f, indent=2)
 
-    base_name = dest_path / make_bids_name(name)
-    _convert_chan_elec(rec, base_name, intendedfor)
+    _convert_chan_elec(rec, dest_path, name, intendedfor)
     return output_ieeg
 
 
-def _convert_chan_elec(rec, base_name, intendedfor):
+def _convert_chan_elec(rec, dest_path, name, intendedfor):
     channels = rec.channels
     if channels is not None:
-        channels_tsv = add_underscore(base_name, &#39;channels.tsv&#39;)
+        channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
         save_tsv(channels_tsv, channels.data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;])
         replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        electrodes_tsv = add_underscore(base_name, &#39;electrodes.tsv&#39;)
-        save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;])
-        electrodes_json = add_underscore(base_name, &#39;coordsystem.json&#39;)
+        electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
+        save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
+        electrodes_json = dest_path / make_bids_name(name, &#39;coordsystem&#39;)
         save_coordsystem(electrodes_json, electrodes, intendedfor)
 
 
@@ -124,8 +121,7 @@ def _convert_sidecar(run, rec, d):
 
 def save_coordsystem(electrodes_json, electrodes, intendedfor):
     D = {
-        &#34;iEEGCoordinateSystem&#34;: &#34;other&#34;,
-        &#34;iEEGCoordinateSystemDescription&#34;: &#34;native T1w&#34;,
+        &#34;iEEGCoordinateSystem&#34;: &#34;ACPC&#34;,  # T1w should be an option https://github.com/bids-standard/bids-specification/issues/661
         &#34;iEEGCoordinateUnits&#34;: &#34;mm&#34;,
         &#34;iEEGCoordinateProcessingDescription&#34;: &#34;surface_projection&#34;,
         &#34;iEEGCoordinateProcessingReference&#34;: &#34;PMID: 19836416&#34;,
@@ -133,7 +129,10 @@ def save_coordsystem(electrodes_json, electrodes, intendedfor):
 
     if electrodes.IntendedFor is not None:
         if electrodes.IntendedFor in intendedfor:
-            D[&#39;IntendedFor&#39;] = str(intendedfor[electrodes.IntendedFor])
+            path_to_t1 = intendedfor[electrodes.IntendedFor]
+            # assume we have to go back three folders
+            path_to_t1 = path_to_t1.relative_to(path_to_t1.parents[3])
+            D[&#39;IntendedFor&#39;] = &#39;/&#39; + str(path_to_t1)
         else:
             lg.warning(f&#39;Could not find the intended-for t1w for electrodes {electrodes}&#39;)
 
@@ -212,7 +211,7 @@ in wonambi</p></div>
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ieeg = dest_path / f&#39;{make_bids_name(name)}_{rec.modality}.ieeg&#39;
+    output_ieeg = dest_path / f&#39;{make_bids_name(name, &#34;ieeg&#34;)}&#39;
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ieeg, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
@@ -221,8 +220,7 @@ in wonambi</p></div>
     with sidecar_file.open(&#39;w&#39;) as f:
         dump(sidecar, f, indent=2)
 
-    base_name = dest_path / make_bids_name(name)
-    _convert_chan_elec(rec, base_name, intendedfor)
+    _convert_chan_elec(rec, dest_path, name, intendedfor)
     return output_ieeg</code></pre>
 </details>
 </dd>
@@ -259,8 +257,7 @@ in wonambi</p></div>
 </summary>
 <pre><code class="python">def save_coordsystem(electrodes_json, electrodes, intendedfor):
     D = {
-        &#34;iEEGCoordinateSystem&#34;: &#34;other&#34;,
-        &#34;iEEGCoordinateSystemDescription&#34;: &#34;native T1w&#34;,
+        &#34;iEEGCoordinateSystem&#34;: &#34;ACPC&#34;,  # T1w should be an option https://github.com/bids-standard/bids-specification/issues/661
         &#34;iEEGCoordinateUnits&#34;: &#34;mm&#34;,
         &#34;iEEGCoordinateProcessingDescription&#34;: &#34;surface_projection&#34;,
         &#34;iEEGCoordinateProcessingReference&#34;: &#34;PMID: 19836416&#34;,
@@ -268,7 +265,10 @@ in wonambi</p></div>
 
     if electrodes.IntendedFor is not None:
         if electrodes.IntendedFor in intendedfor:
-            D[&#39;IntendedFor&#39;] = str(intendedfor[electrodes.IntendedFor])
+            path_to_t1 = intendedfor[electrodes.IntendedFor]
+            # assume we have to go back three folders
+            path_to_t1 = path_to_t1.relative_to(path_to_t1.parents[3])
+            D[&#39;IntendedFor&#39;] = &#39;/&#39; + str(path_to_t1)
         else:
             lg.warning(f&#39;Could not find the intended-for t1w for electrodes {electrodes}&#39;)
 

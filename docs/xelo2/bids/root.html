@@ -41,8 +41,7 @@ from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .physio import convert_physio
 from .events import convert_events
-from ..io.export_db import prepare_query
-from .utils import rename_task
+from .utils import rename_task, prepare_subset
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -55,25 +54,6 @@ PROTOCOL_HEALTHY = [
 
 
 lg = getLogger(__name__)
-
-
-def prepare_subset(db, where, subset=None):
-
-    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
-    query = QSqlQuery(db)
-    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
-    if not query.exec():
-        raise SyntaxError(query.lastError().text())
-
-    if subset is None:
-        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
-
-    while query.next():
-        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
-        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
-        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
-
-    return subset
 
 
 def create_bids(db, data_path, deface=True, subset=None, progress=None):
@@ -106,7 +86,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
             &#39;rec&#39;: None,
             &#39;dir&#39;: None,
             &#39;run&#39;: None,
-            &#39;rec&#39;: None,
+            &#39;recording&#39;: None,  # only for physiology
             }
         if subset is not None and subj.id not in subset_subj:
             continue
@@ -208,7 +188,8 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 data_name = None
                 for rec in run.list_recordings():
 
-                    if rec.PhaseEncodingDirection is not None:
+                    # dir can only go with bold and epi modality
+                    if rec.modality in (&#39;bold&#39;, &#39;epi&#39;) and rec.PhaseEncodingDirection is not None:
                         bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
                     else:
                         bids_name[&#39;dir&#39;] = None
@@ -267,6 +248,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _list_scans(tsv_file, participants, data_path)
     json_participants = tsv_file.with_suffix(&#39;.json&#39;)
     copy(JSON_PARTICIPANTS, json_participants)
+    _make_bids_config(data_path)
 
 
 def _list_scans(tsv_file, scans, root_dir):
@@ -382,16 +364,32 @@ def add_intended_for_elec(db, subset):
     return reference_t1w
 
 
+def _make_bids_config(data_path):
+
+    d = {
+        &#34;ignore&#34;: [
+            &#34;INCONSISTENT_SUBJECTS&#34;,  # different tasks
+            &#34;INCONSISTENT_PARAMETERS&#34;,  # different tasks
+            &#34;SLICETIMING_ELEMENTS&#34;,  # https://github.com/bids-standard/bids-validator/issues/1111
+            &#34;MISSING_SESSION&#34;,  # not all subjects have the same sessions
+            ],
+        &#34;warn&#34;: [],
+        &#34;error&#34;: [],
+        &#34;ignoredFiles&#34;: [
+            ]
+        }
+
+    #  &#34;/sub-*/ses-*/ieeg/*_physio.tsv.gz&#34;,  # https://github.com/bids-standard/bids-specification/issues/209
+    #  &#34;/sub-*/ses-*/ieeg/*_physio.json&#34;,
+
+    with (data_path / &#39;.bids-validator-config.json&#39;).open(&#39;w&#39;) as f:
+        dump(d, f, ensure_ascii=False, indent=&#39; &#39;)
+
+
 def _make_README(data_path):
 
     with (data_path / &#39;README&#39;).open(&#39;w&#39;) as f:
         f.write(&#39;Converted with xelo2&#39;)
-
-    # this is necessary to work around this issue
-    # https://github.com/bids-standard/bids-specification/issues/209
-    with (data_path / &#39;.bidsignore&#39;).open(&#39;w&#39;) as f:
-        f.write(&#39;sub-*/ses-*/ieeg/*_physio.tsv.gz\n&#39;)
-        f.write(&#39;sub-*/ses-*/ieeg/*_physio.json\n&#39;)
 
 
 def _set_date_to_1900(base_date, datetime_of_interest):
@@ -593,7 +591,7 @@ def remove_phase(bids_dir):
             &#39;rec&#39;: None,
             &#39;dir&#39;: None,
             &#39;run&#39;: None,
-            &#39;rec&#39;: None,
+            &#39;recording&#39;: None,  # only for physiology
             }
         if subset is not None and subj.id not in subset_subj:
             continue
@@ -695,7 +693,8 @@ def remove_phase(bids_dir):
                 data_name = None
                 for rec in run.list_recordings():
 
-                    if rec.PhaseEncodingDirection is not None:
+                    # dir can only go with bold and epi modality
+                    if rec.modality in (&#39;bold&#39;, &#39;epi&#39;) and rec.PhaseEncodingDirection is not None:
                         bids_name[&#39;dir&#39;] = &#39;dir-&#39; + rec.PhaseEncodingDirection
                     else:
                         bids_name[&#39;dir&#39;] = None
@@ -753,7 +752,8 @@ def remove_phase(bids_dir):
     tsv_file = data_path / &#39;participants.tsv&#39;
     _list_scans(tsv_file, participants, data_path)
     json_participants = tsv_file.with_suffix(&#39;.json&#39;)
-    copy(JSON_PARTICIPANTS, json_participants)</code></pre>
+    copy(JSON_PARTICIPANTS, json_participants)
+    _make_bids_config(data_path)</code></pre>
 </details>
 </dd>
 <dt id="xelo2.bids.root.find_intendedfor"><code class="name flex">
@@ -805,34 +805,6 @@ def remove_phase(bids_dir):
     raise ValueError(f&#39;I cannot determine BIDS folder for {repr(run)}&#39;)</code></pre>
 </details>
 </dd>
-<dt id="xelo2.bids.root.prepare_subset"><code class="name flex">
-<span>def <span class="ident">prepare_subset</span></span>(<span>db, where, subset=None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def prepare_subset(db, where, subset=None):
-
-    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
-    query = QSqlQuery(db)
-    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
-    if not query.exec():
-        raise SyntaxError(query.lastError().text())
-
-    if subset is None:
-        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
-
-    while query.next():
-        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
-        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
-        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
-
-    return subset</code></pre>
-</details>
-</dd>
 <dt id="xelo2.bids.root.remove_phase"><code class="name flex">
 <span>def <span class="ident">remove_phase</span></span>(<span>bids_dir)</span>
 </code></dt>
@@ -875,7 +847,6 @@ def remove_phase(bids_dir):
 <li><code><a title="xelo2.bids.root.create_bids" href="#xelo2.bids.root.create_bids">create_bids</a></code></li>
 <li><code><a title="xelo2.bids.root.find_intendedfor" href="#xelo2.bids.root.find_intendedfor">find_intendedfor</a></code></li>
 <li><code><a title="xelo2.bids.root.get_bids_acquisition" href="#xelo2.bids.root.get_bids_acquisition">get_bids_acquisition</a></code></li>
-<li><code><a title="xelo2.bids.root.prepare_subset" href="#xelo2.bids.root.prepare_subset">prepare_subset</a></code></li>
 <li><code><a title="xelo2.bids.root.remove_phase" href="#xelo2.bids.root.remove_phase">remove_phase</a></code></li>
 </ul>
 </li>

@@ -85,13 +85,12 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         lg.info(&#39;Keeping only the first volume for MP2RAGE&#39;)
         select(output_nii, &#39;first&#39;)
 
-    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec)
 
     if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
         phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
         lg.info(f&#39;Splitting phase info to {phase_nii.name}&#39;)
-        phase = select(output_nii, &#39;split&#39;)
-        phase.to_filename(phase_nii)
+        select(output_nii, &#39;splithalf&#39;)
 
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
@@ -106,6 +105,7 @@ def convert_mri(run, rec, dest_path, name, deface=True):
 
 
 def select(nii, slicing):
+    &#34;&#34;&#34;If slicing is &#34;split&#34;, it returns the nifti of the second half&#34;&#34;&#34;
     img = niload(nii)
     half = int(img.shape[3] / 2)
     secondhalf = None
@@ -127,7 +127,7 @@ def select(nii, slicing):
     return secondhalf
 
 
-def _fix_tr(nii, RepetitionTime):
+def _fix_tr(nii, rec):
     &#34;&#34;&#34;
     Returns
     -------
@@ -139,8 +139,8 @@ def _fix_tr(nii, RepetitionTime):
     # this seems a bug in nibabel. It stores time in sec, not in msec
     img.header.set_xyzt_units(&#39;mm&#39;, &#39;sec&#39;)
 
-    if RepetitionTime is not None:
-        img.header[&#39;pixdim&#39;][4] = RepetitionTime
+    if rec.modality in (&#39;bold&#39;, &#39;epi&#39;) and rec.RepetitionTime is not None:
+        img.header[&#39;pixdim&#39;][4] = rec.RepetitionTime
 
     nisave(img, str(nii))
 
@@ -151,7 +151,6 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     D = {
         &#39;InstitutionName&#39;: &#39;University Medical Center Utrecht&#39;,
         &#39;InstitutionAddress&#39;: &#39;Heidelberglaan 100, 3584 CX Utrecht, the Netherlands&#39;,
-        &#39;TaskDescription&#39;: make_taskdescription(run),
         }
 
     if run.session.MagneticFieldStrength is not None:
@@ -162,15 +161,18 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     if rec.SliceEncodingDirection is not None:
         D[&#39;SliceEncodingDirection&#39;] = DIRECTION[rec.SliceEncodingDirection]
 
-    for field in &#39;EchoTime&#39;, &#39;EffectiveEchoSpacing&#39;:
+    for field in &#39;EchoTime&#39;, &#39;EffectiveEchoSpacing&#39;, &#39;FlipAngle&#39;:
         set_notnone(D, hdr, field)
 
-    for field in &#39;FlipAngle&#39;, &#39;PulseSequenceType&#39;, &#39;MultibandAccelerationFactor&#39;:
+    for field in &#39;PulseSequenceType&#39;, &#39;MultibandAccelerationFactor&#39;:
         set_notnone(D, rec, field)
 
     if rec.modality in (&#39;bold&#39;, &#39;epi&#39;):
-        set_notnone(D, rec, &#39;RepetitionTime&#39;)
+        set_notnone(D, hdr, &#39;RepetitionTime&#39;)  # first get RepetitionTime from Header,
+        set_notnone(D, rec, &#39;RepetitionTime&#39;)  # then, use the one specified in rec
         D[&#39;TaskName&#39;] = rename_task(run.task_name)
+        D[&#39;TaskDescription&#39;] = make_taskdescription(run)
+
         if hdr is not None:
             add_slicetiming(D, hdr, rec)
         if shape is not None and &#39;EffectiveEchoSpacing&#39; in D and &#39;PhaseEncodingDirection&#39; in D:
@@ -309,13 +311,12 @@ def gz(input_file, output_file):
         lg.info(&#39;Keeping only the first volume for MP2RAGE&#39;)
         select(output_nii, &#39;first&#39;)
 
-    nii_shape = _fix_tr(output_nii, rec.RepetitionTime)
+    nii_shape = _fix_tr(output_nii, rec)
 
     if PAR is not None and &#39;phase&#39; in PAR[&#39;image_types&#39;]:
         phase_nii = dest_path / f&#39;{make_bids_name(name)}_phase.nii.gz&#39;
         lg.info(f&#39;Splitting phase info to {phase_nii.name}&#39;)
-        phase = select(output_nii, &#39;split&#39;)
-        phase.to_filename(phase_nii)
+        select(output_nii, &#39;splithalf&#39;)
 
     if deface and rec.modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;):
         run_deface(output_nii)
@@ -382,12 +383,13 @@ def gz(input_file, output_file):
 <span>def <span class="ident">select</span></span>(<span>nii, slicing)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>If slicing is "split", it returns the nifti of the second half</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def select(nii, slicing):
+    &#34;&#34;&#34;If slicing is &#34;split&#34;, it returns the nifti of the second half&#34;&#34;&#34;
     img = niload(nii)
     half = int(img.shape[3] / 2)
     secondhalf = None

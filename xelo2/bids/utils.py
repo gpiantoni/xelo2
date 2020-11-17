@@ -1,7 +1,29 @@
 from pathlib import Path
 from logging import getLogger
+from PyQt5.QtSql import QSqlQuery
+
+from ..io.export_db import prepare_query
 
 lg = getLogger(__name__)
+
+
+def prepare_subset(db, where, subset=None):
+
+    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
+    query = QSqlQuery(db)
+    query.prepare(f"""{query_str} WHERE {where}""")
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    if subset is None:
+        subset = {'subjects': [], 'sessions': [], 'runs': []}
+
+    while query.next():
+        subset['subjects'].append(query.value('subjects.id'))
+        subset['sessions'].append(query.value('sessions.id'))
+        subset['runs'].append(query.value('runs.id'))
+
+    return subset
 
 
 def set_notnone(d, s, field):

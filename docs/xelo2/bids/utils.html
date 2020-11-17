@@ -26,8 +26,30 @@
 </summary>
 <pre><code class="python">from pathlib import Path
 from logging import getLogger
+from PyQt5.QtSql import QSqlQuery
+
+from ..io.export_db import prepare_query
 
 lg = getLogger(__name__)
+
+
+def prepare_subset(db, where, subset=None):
+
+    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
+    query = QSqlQuery(db)
+    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    if subset is None:
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+
+    while query.next():
+        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
+        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
+        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
+
+    return subset
 
 
 def set_notnone(d, s, field):
@@ -54,8 +76,37 @@ def rename_task(task_name):
     return task_name
 
 
-def make_bids_name(bids_name):
-    return &#39;_&#39;.join([str(x) for x in bids_name.values() if x is not None])
+def make_bids_name(bids_name, level=None):
+    &#34;&#34;&#34;
+    Parameters
+    ----------
+    level : str
+        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;
+    &#34;&#34;&#34;
+    appendix = &#39;&#39;
+    acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;acq&#39;, &#39;dir&#39;, &#39;rec&#39;]
+    if level == &#39;channels&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;]
+        appendix = &#39;_channels.tsv&#39;
+
+    elif level == &#39;electrodes&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
+        appendix = &#39;_electrodes.tsv&#39;
+
+    elif level == &#39;coordsystem&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;space&#39;]
+        appendix = &#39;_coordsystem.json&#39;
+
+    elif level == &#39;ieeg&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;]
+        appendix = &#39;_ieeg.eeg&#39;
+
+    values = []
+    for k, v in bids_name.items():
+        if k in acceptable_levels and v is not None:
+            values.append(str(v))
+
+    return &#39;_&#39;.join(values) + appendix
 
 
 def find_one_file(rec, formats):
@@ -142,16 +193,49 @@ def make_taskdescription(run):
 </details>
 </dd>
 <dt id="xelo2.bids.utils.make_bids_name"><code class="name flex">
-<span>def <span class="ident">make_bids_name</span></span>(<span>bids_name)</span>
+<span>def <span class="ident">make_bids_name</span></span>(<span>bids_name, level=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>level</code></strong> :&ensp;<code>str</code></dt>
+<dd>'channels', 'electrodes', 'coordsystem', 'ieeg'</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def make_bids_name(bids_name):
-    return &#39;_&#39;.join([str(x) for x in bids_name.values() if x is not None])</code></pre>
+<pre><code class="python">def make_bids_name(bids_name, level=None):
+    &#34;&#34;&#34;
+    Parameters
+    ----------
+    level : str
+        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;
+    &#34;&#34;&#34;
+    appendix = &#39;&#39;
+    acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;acq&#39;, &#39;dir&#39;, &#39;rec&#39;]
+    if level == &#39;channels&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;]
+        appendix = &#39;_channels.tsv&#39;
+
+    elif level == &#39;electrodes&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
+        appendix = &#39;_electrodes.tsv&#39;
+
+    elif level == &#39;coordsystem&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;space&#39;]
+        appendix = &#39;_coordsystem.json&#39;
+
+    elif level == &#39;ieeg&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;]
+        appendix = &#39;_ieeg.eeg&#39;
+
+    values = []
+    for k, v in bids_name.items():
+        if k in acceptable_levels and v is not None:
+            values.append(str(v))
+
+    return &#39;_&#39;.join(values) + appendix</code></pre>
 </details>
 </dd>
 <dt id="xelo2.bids.utils.make_taskdescription"><code class="name flex">
@@ -181,6 +265,34 @@ performance and acquisition</p></div>
             s.append(value)
 
     return &#39;; &#39;.join(s)</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.utils.prepare_subset"><code class="name flex">
+<span>def <span class="ident">prepare_subset</span></span>(<span>db, where, subset=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare_subset(db, where, subset=None):
+
+    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
+    query = QSqlQuery(db)
+    query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    if subset is None:
+        subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
+
+    while query.next():
+        subset[&#39;subjects&#39;].append(query.value(&#39;subjects.id&#39;))
+        subset[&#39;sessions&#39;].append(query.value(&#39;sessions.id&#39;))
+        subset[&#39;runs&#39;].append(query.value(&#39;runs.id&#39;))
+
+    return subset</code></pre>
 </details>
 </dd>
 <dt id="xelo2.bids.utils.rename_task"><code class="name flex">
@@ -246,6 +358,7 @@ performance and acquisition</p></div>
 <li><code><a title="xelo2.bids.utils.find_one_file" href="#xelo2.bids.utils.find_one_file">find_one_file</a></code></li>
 <li><code><a title="xelo2.bids.utils.make_bids_name" href="#xelo2.bids.utils.make_bids_name">make_bids_name</a></code></li>
 <li><code><a title="xelo2.bids.utils.make_taskdescription" href="#xelo2.bids.utils.make_taskdescription">make_taskdescription</a></code></li>
+<li><code><a title="xelo2.bids.utils.prepare_subset" href="#xelo2.bids.utils.prepare_subset">prepare_subset</a></code></li>
 <li><code><a title="xelo2.bids.utils.rename_task" href="#xelo2.bids.utils.rename_task">rename_task</a></code></li>
 <li><code><a title="xelo2.bids.utils.set_notnone" href="#xelo2.bids.utils.set_notnone">set_notnone</a></code></li>
 </ul>

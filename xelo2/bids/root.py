@@ -15,8 +15,7 @@ from .mri import convert_mri
 from .ieeg import convert_ieeg
 from .physio import convert_physio
 from .events import convert_events
-from ..io.export_db import prepare_query
-from .utils import rename_task
+from .utils import rename_task, prepare_subset
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -29,25 +28,6 @@ PROTOCOL_HEALTHY = [
 
 
 lg = getLogger(__name__)
-
-
-def prepare_subset(db, where, subset=None):
-
-    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
-    query = QSqlQuery(db)
-    query.prepare(f"""{query_str} WHERE {where}""")
-    if not query.exec():
-        raise SyntaxError(query.lastError().text())
-
-    if subset is None:
-        subset = {'subjects': [], 'sessions': [], 'runs': []}
-
-    while query.next():
-        subset['subjects'].append(query.value('subjects.id'))
-        subset['sessions'].append(query.value('sessions.id'))
-        subset['runs'].append(query.value('runs.id'))
-
-    return subset
 
 
 def create_bids(db, data_path, deface=True, subset=None, progress=None):
@@ -80,6 +60,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
             'rec': None,
             'dir': None,
             'run': None,
+            'recording': None,  # only for physiology
             }
         if subset is not None and subj.id not in subset_subj:
             continue
@@ -369,10 +350,11 @@ def _make_bids_config(data_path):
         "warn": [],
         "error": [],
         "ignoredFiles": [
-            "/sub-*/ses-*/ieeg/*_physio.tsv.gz",  # https://github.com/bids-standard/bids-specification/issues/209
-            "/sub-*/ses-*/ieeg/*_physio.json",
             ]
         }
+
+    #  "/sub-*/ses-*/ieeg/*_physio.tsv.gz",  # https://github.com/bids-standard/bids-specification/issues/209
+    #  "/sub-*/ses-*/ieeg/*_physio.json",
 
     with (data_path / '.bids-validator-config.json').open('w') as f:
         dump(d, f, ensure_ascii=False, indent=' ')
