@@ -70,8 +70,8 @@ def convert_physio(rec, dest_path, name):
         if &#39;time&#39; in tsv.columns:
             tsv[&#39;time&#39;] += rec.offset
 
-    if name[&#39;rec&#39;] is None:
-        lg.warning(f&#39;No file associated with physio recording&#39;)
+    if name[&#39;recording&#39;] is None:
+        lg.warning(&#39;No file associated with physio recording&#39;)
         return
 
     physio_tsv = dest_path / f&#39;{make_bids_name(name)}_physio.tsv.gz&#39;
@@ -152,8 +152,8 @@ with the recording (so you don't need to add StartTime.</p></div>
         if &#39;time&#39; in tsv.columns:
             tsv[&#39;time&#39;] += rec.offset
 
-    if name[&#39;rec&#39;] is None:
-        lg.warning(f&#39;No file associated with physio recording&#39;)
+    if name[&#39;recording&#39;] is None:
+        lg.warning(&#39;No file associated with physio recording&#39;)
         return
 
     physio_tsv = dest_path / f&#39;{make_bids_name(name)}_physio.tsv.gz&#39;
