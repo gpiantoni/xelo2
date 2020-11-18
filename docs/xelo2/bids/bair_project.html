@@ -176,33 +176,40 @@ def _find_task_type(subj_path, task_type):
 
 
 def list_bair_ids(db, healthy_visual=True, subset=None):
+    &#34;&#34;&#34;Collect all the subjects, sessions and runs for the BAIR project. This is
+    all the subjects that did BAIR tasks since 2016 excluding a couple of
+    subjects.
 
-    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;)
+    Parameters
+    ----------
+    db : instance of Sql database
+        database currently open
+    healthy_visual : bool
+        whether to include the healthy participants who did visual tasks
+    subset : dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
+        runs selected previously
+
+    Returns
+    -------
+    dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
+        ids for subjects, sessions, runs which are part of the BAIR tasks
+    &#34;&#34;&#34;
+
+    healthy_visual_subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
+    healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
+    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;, &#39;bunnik&#39;, &#39;veendam&#39;)
     subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
 
-    tasks = [
-        &#34;bair_prf&#34;,
-        &#34;bair_hrfpattern&#34;,
-        &#34;bair_spatialobject&#34;,
-        &#34;bair_temporalpattern&#34;,
-        &#34;bair_spatialpattern&#34;,
-        &#34;vts_prf&#34;,
-        &#34;vts_temporalpattern&#34;,
-        &#34;finger_mapping&#34;,
-        &#34;gestures&#34;,
-        &#34;boldfinger&#34;,
-        &#34;boldsat&#34;,
-        ]
+    tasks = [x for v in TASK_TYPES.values() for x in v]
+
     task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
     subset = prepare_subset(
         db,
-        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})&#39;,
         subset=subset)
 
     if healthy_visual:
-        subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
-        subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
-        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({subj_ids})&#39;, subset=subset)
+        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({healthy_visual_ids})&#39;, subset=subset)
 
     # add structural scans
     subj_ids = &#39;, &#39;.join(f&#39;&#34;{x}&#34;&#39; for x in subset[&#39;subjects&#39;])
@@ -216,7 +223,11 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
     subset = prepare_subset(
         db,
         f&#39;`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})&#39;,
-        subset=subset)</code></pre>
+        subset=subset)
+
+    print(f&#39;Total number of runs: {len(subset[&#34;runs&#34;])}&#39;)
+
+    return subset</code></pre>
 </details>
 </section>
 <section>
@@ -323,39 +334,62 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
 <span>def <span class="ident">list_bair_ids</span></span>(<span>db, healthy_visual=True, subset=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Collect all the subjects, sessions and runs for the BAIR project. This is
+all the subjects that did BAIR tasks since 2016 excluding a couple of
+subjects.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>db</code></strong> :&ensp;<code>instance</code> of <code>Sql database</code></dt>
+<dd>database currently open</dd>
+<dt><strong><code>healthy_visual</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to include the healthy participants who did visual tasks</dd>
+<dt><strong><code>subset</code></strong> :&ensp;<code>dict with {'subjects', 'sessions', 'runs'}</code></dt>
+<dd>runs selected previously</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict with {'subjects', 'sessions', 'runs'}</code></dt>
+<dd>ids for subjects, sessions, runs which are part of the BAIR tasks</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def list_bair_ids(db, healthy_visual=True, subset=None):
+    &#34;&#34;&#34;Collect all the subjects, sessions and runs for the BAIR project. This is
+    all the subjects that did BAIR tasks since 2016 excluding a couple of
+    subjects.
 
-    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;)
+    Parameters
+    ----------
+    db : instance of Sql database
+        database currently open
+    healthy_visual : bool
+        whether to include the healthy participants who did visual tasks
+    subset : dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
+        runs selected previously
+
+    Returns
+    -------
+    dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
+        ids for subjects, sessions, runs which are part of the BAIR tasks
+    &#34;&#34;&#34;
+
+    healthy_visual_subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
+    healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
+    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;, &#39;bunnik&#39;, &#39;veendam&#39;)
     subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
 
-    tasks = [
-        &#34;bair_prf&#34;,
-        &#34;bair_hrfpattern&#34;,
-        &#34;bair_spatialobject&#34;,
-        &#34;bair_temporalpattern&#34;,
-        &#34;bair_spatialpattern&#34;,
-        &#34;vts_prf&#34;,
-        &#34;vts_temporalpattern&#34;,
-        &#34;finger_mapping&#34;,
-        &#34;gestures&#34;,
-        &#34;boldfinger&#34;,
-        &#34;boldsat&#34;,
-        ]
+    tasks = [x for v in TASK_TYPES.values() for x in v]
+
     task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
     subset = prepare_subset(
         db,
-        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})&#39;,
         subset=subset)
 
     if healthy_visual:
-        subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
-        subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
-        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({subj_ids})&#39;, subset=subset)
+        subset = prepare_subset(db, f&#39;`subjects`.`id` IN ({healthy_visual_ids})&#39;, subset=subset)
 
     # add structural scans
     subj_ids = &#39;, &#39;.join(f&#39;&#34;{x}&#34;&#39; for x in subset[&#39;subjects&#39;])
@@ -369,7 +403,11 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
     subset = prepare_subset(
         db,
         f&#39;`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})&#39;,
-        subset=subset)</code></pre>
+        subset=subset)
+
+    print(f&#39;Total number of runs: {len(subset[&#34;runs&#34;])}&#39;)
+
+    return subset</code></pre>
 </details>
 </dd>
 <dt id="xelo2.bids.bair_project.make_bair_compatible"><code class="name flex">

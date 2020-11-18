@@ -379,9 +379,6 @@ def _make_bids_config(data_path):
             ]
         }
 
-    #  &#34;/sub-*/ses-*/ieeg/*_physio.tsv.gz&#34;,  # https://github.com/bids-standard/bids-specification/issues/209
-    #  &#34;/sub-*/ses-*/ieeg/*_physio.json&#34;,
-
     with (data_path / &#39;.bids-validator-config.json&#39;).open(&#39;w&#39;) as f:
         dump(d, f, ensure_ascii=False, indent=&#39; &#39;)
 

@@ -150,33 +150,40 @@ def _find_task_type(subj_path, task_type):
 
 
 def list_bair_ids(db, healthy_visual=True, subset=None):
+    """Collect all the subjects, sessions and runs for the BAIR project. This is
+    all the subjects that did BAIR tasks since 2016 excluding a couple of
+    subjects.
 
-    subjects = ('boskoop', 'elst', 'sittard')
+    Parameters
+    ----------
+    db : instance of Sql database
+        database currently open
+    healthy_visual : bool
+        whether to include the healthy participants who did visual tasks
+    subset : dict with {'subjects', 'sessions', 'runs'}
+        runs selected previously
+
+    Returns
+    -------
+    dict with {'subjects', 'sessions', 'runs'}
+        ids for subjects, sessions, runs which are part of the BAIR tasks
+    """
+
+    healthy_visual_subjects = [f'umcu{x + 1:04d}' for x in range(13)]
+    healthy_visual_ids = ', '.join(f'"{Subject(db, x).id}"' for x in healthy_visual_subjects)
+    subjects = ('boskoop', 'elst', 'sittard', 'bunnik', 'veendam')
     subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects)
 
-    tasks = [
-        "bair_prf",
-        "bair_hrfpattern",
-        "bair_spatialobject",
-        "bair_temporalpattern",
-        "bair_spatialpattern",
-        "vts_prf",
-        "vts_temporalpattern",
-        "finger_mapping",
-        "gestures",
-        "boldfinger",
-        "boldsat",
-        ]
+    tasks = [x for v in TASK_TYPES.values() for x in v]
+
     task_list = ', '.join(f'"{t}"' for t in tasks)
     subset = prepare_subset(
         db,
-        f'`task_name` IN ({task_list}) AND `start_time` > "2016-06-01" AND `subjects`.`id` NOT IN ({subj_ids})',
+        f'`task_name` IN ({task_list}) AND `start_time` > "2016-06-01" AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})',
         subset=subset)
 
     if healthy_visual:
-        subjects = [f'umcu{x + 1:04d}' for x in range(13)]
-        subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects)
-        subset = prepare_subset(db, f'`subjects`.`id` IN ({subj_ids})', subset=subset)
+        subset = prepare_subset(db, f'`subjects`.`id` IN ({healthy_visual_ids})', subset=subset)
 
     # add structural scans
     subj_ids = ', '.join(f'"{x}"' for x in subset['subjects'])
@@ -192,3 +199,6 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
         f'`task_name` IN ({task_list}) AND `subjects`.`id` IN ({subj_ids})',
         subset=subset)
 
+    print(f'Total number of runs: {len(subset["runs"])}')
+
+    return subset
