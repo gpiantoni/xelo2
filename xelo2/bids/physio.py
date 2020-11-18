@@ -44,8 +44,8 @@ def convert_physio(rec, dest_path, name):
         if 'time' in tsv.columns:
             tsv['time'] += rec.offset
 
-    if name['rec'] is None:
-        lg.warning(f'No file associated with physio recording')
+    if name['recording'] is None:
+        lg.warning('No file associated with physio recording')
         return
 
     physio_tsv = dest_path / f'{make_bids_name(name)}_physio.tsv.gz'

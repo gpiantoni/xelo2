@@ -60,7 +60,7 @@ def make_bids_name(bids_name, level=None):
     appendix = ''
     acceptable_levels = ['sub', 'ses', 'task', 'run', 'acq', 'dir', 'rec']
     if level == 'channels':
-        acceptable_levels = ['sub', 'ses', 'task', 'run']
+        acceptable_levels = ['sub', 'ses', 'task', 'acq', 'run']
         appendix = '_channels.tsv'
 
     elif level == 'electrodes':
@@ -72,7 +72,7 @@ def make_bids_name(bids_name, level=None):
         appendix = '_coordsystem.json'
 
     elif level == 'ieeg':
-        acceptable_levels = ['sub', 'ses', 'task', 'run']
+        acceptable_levels = ['sub', 'ses', 'task', 'acq', 'run']  # acq is not official https://neurostars.org/t/two-amplifiers-for-ieeg-recordings/17492
         appendix = '_ieeg.eeg'
 
     values = []
