@@ -81,7 +81,7 @@ def make_bids_name(bids_name, level=None):
     Parameters
     ----------
     level : str
-        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;
+        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;, &#39;physio&#39;
     &#34;&#34;&#34;
     appendix = &#39;&#39;
     acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;acq&#39;, &#39;dir&#39;, &#39;rec&#39;]
@@ -100,6 +100,10 @@ def make_bids_name(bids_name, level=None):
     elif level == &#39;ieeg&#39;:
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;acq&#39;, &#39;run&#39;]  # acq is not official https://neurostars.org/t/two-amplifiers-for-ieeg-recordings/17492
         appendix = &#39;_ieeg.eeg&#39;
+
+    elif level == &#39;physio&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;recording&#39;]
+        appendix = &#39;_physio.tsv.gz&#39;
 
     values = []
     for k, v in bids_name.items():
@@ -199,7 +203,7 @@ def make_taskdescription(run):
 <div class="desc"><h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>level</code></strong> :&ensp;<code>str</code></dt>
-<dd>'channels', 'electrodes', 'coordsystem', 'ieeg'</dd>
+<dd>'channels', 'electrodes', 'coordsystem', 'ieeg', 'physio'</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -210,7 +214,7 @@ def make_taskdescription(run):
     Parameters
     ----------
     level : str
-        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;
+        &#39;channels&#39;, &#39;electrodes&#39;, &#39;coordsystem&#39;, &#39;ieeg&#39;, &#39;physio&#39;
     &#34;&#34;&#34;
     appendix = &#39;&#39;
     acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;acq&#39;, &#39;dir&#39;, &#39;rec&#39;]
@@ -229,6 +233,10 @@ def make_taskdescription(run):
     elif level == &#39;ieeg&#39;:
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;acq&#39;, &#39;run&#39;]  # acq is not official https://neurostars.org/t/two-amplifiers-for-ieeg-recordings/17492
         appendix = &#39;_ieeg.eeg&#39;
+
+    elif level == &#39;physio&#39;:
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;recording&#39;]
+        appendix = &#39;_physio.tsv.gz&#39;
 
     values = []
     for k, v in bids_name.items():

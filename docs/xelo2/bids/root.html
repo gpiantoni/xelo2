@@ -206,6 +206,8 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     elif rec.modality == &#39;physio&#39;:
                         if data_name is None:
                             lg.warning(&#39;physio only works after another recording modality&#39;)
+                        elif acquisition == &#39;fmap&#39;:
+                            lg.info(&#39;physio was recorded but BIDS says that it should not be included in fmap&#39;)
                         else:
                             convert_physio(rec, mod_path, c(bids_name))
 
@@ -708,6 +710,8 @@ def remove_phase(bids_dir):
                     elif rec.modality == &#39;physio&#39;:
                         if data_name is None:
                             lg.warning(&#39;physio only works after another recording modality&#39;)
+                        elif acquisition == &#39;fmap&#39;:
+                            lg.info(&#39;physio was recorded but BIDS says that it should not be included in fmap&#39;)
                         else:
                             convert_physio(rec, mod_path, c(bids_name))
 

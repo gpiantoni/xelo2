@@ -48,7 +48,7 @@ def convert_physio(rec, dest_path, name):
         lg.warning('No file associated with physio recording')
         return
 
-    physio_tsv = dest_path / f'{make_bids_name(name)}_physio.tsv.gz'
+    physio_tsv = dest_path / f'{make_bids_name(name, "physio")}'
     _write_physio(tsv, physio_tsv)
 
     physio_json = replace_extension(physio_tsv, '.json')

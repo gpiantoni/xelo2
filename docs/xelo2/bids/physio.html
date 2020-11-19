@@ -74,7 +74,7 @@ def convert_physio(rec, dest_path, name):
         lg.warning(&#39;No file associated with physio recording&#39;)
         return
 
-    physio_tsv = dest_path / f&#39;{make_bids_name(name)}_physio.tsv.gz&#39;
+    physio_tsv = dest_path / f&#39;{make_bids_name(name, &#34;physio&#34;)}&#39;
     _write_physio(tsv, physio_tsv)
 
     physio_json = replace_extension(physio_tsv, &#39;.json&#39;)
@@ -156,7 +156,7 @@ with the recording (so you don't need to add StartTime.</p></div>
         lg.warning(&#39;No file associated with physio recording&#39;)
         return
 
-    physio_tsv = dest_path / f&#39;{make_bids_name(name)}_physio.tsv.gz&#39;
+    physio_tsv = dest_path / f&#39;{make_bids_name(name, &#34;physio&#34;)}&#39;
     _write_physio(tsv, physio_tsv)
 
     physio_json = replace_extension(physio_tsv, &#39;.json&#39;)

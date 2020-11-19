@@ -180,6 +180,8 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     elif rec.modality == 'physio':
                         if data_name is None:
                             lg.warning('physio only works after another recording modality')
+                        elif acquisition == 'fmap':
+                            lg.info('physio was recorded but BIDS says that it should not be included in fmap')
                         else:
                             convert_physio(rec, mod_path, c(bids_name))
 
