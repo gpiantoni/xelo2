@@ -94,7 +94,7 @@ def make_bids_name(bids_name, level=None):
         appendix = &#39;_electrodes.tsv&#39;
 
     elif level == &#39;coordsystem&#39;:
-        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;space&#39;]
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
         appendix = &#39;_coordsystem.json&#39;
 
     elif level == &#39;ieeg&#39;:
@@ -227,7 +227,7 @@ def make_taskdescription(run):
         appendix = &#39;_electrodes.tsv&#39;
 
     elif level == &#39;coordsystem&#39;:
-        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;space&#39;]
+        acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
         appendix = &#39;_coordsystem.json&#39;
 
     elif level == &#39;ieeg&#39;:

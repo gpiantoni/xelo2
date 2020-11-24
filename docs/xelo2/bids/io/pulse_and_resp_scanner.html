@@ -49,7 +49,7 @@ def parse_scanner_physio(physio_log):
     physio = physio.loc[:, (physio != 0).any(axis=0)]
 
     hdr = {
-        &#34;SamplingFrequency&#34;: 512,
+        &#34;SamplingFrequency&#34;: 500,
         &#34;StartTime&#34;: 0,
         &#34;Columns&#34;: list(physio.columns),
         }
@@ -83,7 +83,7 @@ def parse_scanner_physio(physio_log):
     physio = physio.loc[:, (physio != 0).any(axis=0)]
 
     hdr = {
-        &#34;SamplingFrequency&#34;: 512,
+        &#34;SamplingFrequency&#34;: 500,
         &#34;StartTime&#34;: 0,
         &#34;Columns&#34;: list(physio.columns),
         }
