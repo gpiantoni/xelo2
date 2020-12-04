@@ -21,7 +21,6 @@ def add_ieeg_to_sess(sess, ieeg_file):
     run.start_time = info['start_time']
     run.duration = info['duration']
     rec = run.add_recording('ieeg')
-    rec.duration = info['duration']
     rec.Manufacturer = info['manufacturer']
     filetype = parse_filetype(ieeg_file)
     file = rec.add_file(filetype, ieeg_file)
