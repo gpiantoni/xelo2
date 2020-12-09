@@ -521,6 +521,7 @@
     },
     "IntendedFor": {
       "foreign_key": "run_id",
+      "type": "INTEGER",
       "name": "IntendedFor",
       "doc": "this should point to the T1w used for this electrodes"
     }
