@@ -252,7 +252,12 @@
         "pRF_alessio",
         "top_up",
         "vts_prf",
-        "vts_temporalpattern"
+        "vts_temporalpattern",
+        "sixcatloctemporal",
+        "sixcatlocisidiff",
+        "flip_ballsticff",
+        "flip_integration",
+        "flip_relaxperturb"
       ]
     },
     "start_time": {

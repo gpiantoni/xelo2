@@ -1343,7 +1343,12 @@ def list_parameters(obj, parent=None):
 
         elif col_info['type'].startswith('TEXT'):
             if 'values' in col_info:
-                w = make_combobox(value, col_info['values'])
+                # TODO: this should look up allowed_values
+                values = col_info['values']
+                if len(values) > 20:
+                    values = sorted(values)
+                w = make_combobox(value, values)
+
                 w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
             else:
                 w = make_edit(value)
