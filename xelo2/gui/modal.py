@@ -135,7 +135,10 @@ def _prepare_values(run, info):
 
 def strftime(t):
     """This is the most accurate way to get milliseconds, without microseconds"""
-    return f'{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}'
+    if t is None:
+        return '(null)'
+    else:
+        return f'{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}'
 
 
 class CompareEvents(QDialog):

@@ -38,15 +38,21 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
-    _convert_chan_elec(rec, dest_path, name, intendedfor)
+    n_chan = len(d.header['chan_name'])
+
+    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
     return output_ieeg
 
 
-def _convert_chan_elec(rec, dest_path, name, intendedfor):
+def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):
     channels = rec.channels
     if channels is not None:
+        chan_data = channels.data
+
+        if n_chan != chan_data.shape[0]:
+            lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels')
         channels_tsv = dest_path / make_bids_name(name, 'channels')
-        save_tsv(channels_tsv, channels.data, ['name', 'type', 'units'])
+        save_tsv(channels_tsv, chan_data, ['name', 'type', 'units'])
         replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
