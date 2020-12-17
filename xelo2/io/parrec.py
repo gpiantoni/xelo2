@@ -47,8 +47,6 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         recording.modality = info['modality']
 
     recording.add_file('parrec', par_file)
-    if recording.PulseSequenceType:
-        recording.PulseSequenceType = hdr['tech']
 
     n_dyns = image['dynamic scan number'].max()
     if n_dyns == 1:

@@ -644,9 +644,25 @@
       "name": "Region of Interest",
       "type": "TEXT"
     },
-    "PulseSequenceType": {
-      "name": "Pulse Sequence Type",
-      "type": "TEXT"
+    "Sequence": {
+      "name": "Sequence",
+      "type": "TEXT",
+      "values": [
+        "3T T1w",
+        "3T FLAIR",
+        "3T DWI",
+        "3T PRESTO",
+        "3T Gradient-Echo Multiband",
+        "3T Spin-Echo Multiband",
+        "7T T1w",
+        "7T PD",
+        "7T MP2RAGE",
+        "7T Wouter 1.6s",
+        "7T Standard 2.1s",
+        "7T Gradient-Echo Head Coil",
+        "7T Gradient-Echo Surface Coil",
+        "7T Spin-Echo Surface Coil"
+      ]
     },
     "MultibandAccelerationFactor": {
       "name": "Multiband Acceleration Factor",
