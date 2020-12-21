@@ -1,5 +1,3 @@
-# TUTORIAL
-
 ## Open the connection to the MySQL server
 
 If the MySQL database is not stored in the local machine, you need to forward the local port of the remote database:
@@ -9,17 +7,18 @@ ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remove
 ```
 
 ## Connect to the database
+To connect to the database (in localhost), you need to specify the `DATABASE_NAME`, the MySQL `USERNAME` and the MySQL `PASSWORD`.
 
 ```python
 from xelo2.database.create import open_database
-db = open_database('QMYSQL', 'test2', 'username', 'password')
+db = open_database('QMYSQL', DATABASE_NAME, USERNAME, PASSWORD)
 ```
 
 ## Look up MRI files for one subject
 Here you can look up one of the files associated with the T1 of one subject. 
 Specify the subject code in the `SUBJECT_CODE` as a string.
 
-```
+```python
 from xelo2.bids.root import prepare_subset
 from xelo2.api import Subject, Run
 
