@@ -116,7 +116,7 @@ class Table():
             else:
                 out = out.value()
         else:
-            lg.warning(f'Could not get {key} from {table_name}')
+            lg.warning(f"Could not get {key} from {table_name} for id = '{self.id}'")
             out = None
 
         sip.enableautoconversion(QVariant, autoconversion)

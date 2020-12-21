@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import Qt
 
-from ..database import TABLES
+from ..database import lookup_allowed_values
 
 
 def show_summary(parent):
@@ -25,7 +25,7 @@ class Summary(QDialog):
         lay.addRow(
             '# Subjects',
             _info(parent.db, 'SELECT COUNT(id) FROM subjects'))
-        for session_name in TABLES['sessions']['name']['values']:
+        for session_name in lookup_allowed_values(parent.db, 'sessions', 'name'):
             lay.addRow(
                 f'# Subjects with {session_name} session',
                 _info(parent.db, f'SELECT COUNT(DISTINCT subject_id) FROM sessions WHERE name = "{session_name}"'))

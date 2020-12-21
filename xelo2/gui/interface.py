@@ -54,7 +54,8 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database.create import TABLES, open_database
+from ..database.create import open_database
+from ..database import lookup_allowed_values
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -935,9 +936,9 @@ class Interface(QMainWindow):
 
         for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
             self.exporting(
-                subj=Subject(id=subj_id),
-                sess=Session(id=sess_id),
-                run=Run(id=run_id),
+                subj=Subject(self.db, id=subj_id),
+                sess=Session(self.db, id=sess_id),
+                run=Run(self.db, id=run_id),
                 )
 
     def modified(self):
@@ -992,7 +993,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Session for {current_subject}',
                 'Session Name:',
-                TABLES['sessions']['name']['values'],
+                lookup_allowed_values(self.db, 'sessions', 'name'),
                 0, False)
 
         elif level == 'protocols':
@@ -1001,7 +1002,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Protocol for {current_subject}',
                 'Protocol Name:',
-                TABLES['protocols']['metc']['values'],
+                lookup_allowed_values(self.db, 'protocols', 'metc'),
                 0, False)
 
         elif level == 'runs':
@@ -1011,7 +1012,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Run for {current_session.name}',
                 'Task Name:',
-                TABLES['runs']['task_name']['values'],
+                lookup_allowed_values(self.db, 'runs', 'task_name'),
                 0, False)
 
         elif level == 'recordings':
@@ -1021,7 +1022,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Recording for {current_run.task_name}',
                 'Modality:',
-                TABLES['recordings']['modality']['values'],
+                lookup_allowed_values(self.db, 'recordings', 'modality'),
                 0, False)
 
         elif level in ('channels', 'electrodes'):
