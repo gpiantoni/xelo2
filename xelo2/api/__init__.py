@@ -8,3 +8,6 @@ from .frontend import (
     Channels,
     Electrodes,
     )
+from .backend import (
+    File,
+    )

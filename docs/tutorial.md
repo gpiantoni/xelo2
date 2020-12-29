@@ -3,7 +3,7 @@
 If the MySQL database is not stored in the local machine, you need to forward the local port of the remote database:
 
 ```bash
-ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remove
+ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remote
 ```
 
 ## Connect to the database
