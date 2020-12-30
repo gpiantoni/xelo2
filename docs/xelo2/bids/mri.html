@@ -164,7 +164,7 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
     for field in &#39;EchoTime&#39;, &#39;EffectiveEchoSpacing&#39;, &#39;FlipAngle&#39;:
         set_notnone(D, hdr, field)
 
-    for field in &#39;PulseSequenceType&#39;, &#39;MultibandAccelerationFactor&#39;:
+    for field in &#39;Sequence&#39;, &#39;MultibandAccelerationFactor&#39;:
         set_notnone(D, rec, field)
 
     if rec.modality in (&#39;bold&#39;, &#39;epi&#39;):

@@ -142,7 +142,7 @@ class Table():
             else:
                 out = out.value()
         else:
-            lg.warning(f&#39;Could not get {key} from {table_name}&#39;)
+            lg.warning(f&#34;Could not get {key} from {table_name} for id = &#39;{self.id}&#39;&#34;)
             out = None
 
         sip.enableautoconversion(QVariant, autoconversion)
@@ -757,7 +757,7 @@ use this class but only its subclasses.</p>
             else:
                 out = out.value()
         else:
-            lg.warning(f&#39;Could not get {key} from {table_name}&#39;)
+            lg.warning(f&#34;Could not get {key} from {table_name} for id = &#39;{self.id}&#39;&#34;)
             out = None
 
         sip.enableautoconversion(QVariant, autoconversion)

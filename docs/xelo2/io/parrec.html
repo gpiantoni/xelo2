@@ -73,8 +73,6 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         recording.modality = info[&#39;modality&#39;]
 
     recording.add_file(&#39;parrec&#39;, par_file)
-    if recording.PulseSequenceType:
-        recording.PulseSequenceType = hdr[&#39;tech&#39;]
 
     n_dyns = image[&#39;dynamic scan number&#39;].max()
     if n_dyns == 1:
@@ -263,8 +261,6 @@ def _get_MRI_info(hdr):
         recording.modality = info[&#39;modality&#39;]
 
     recording.add_file(&#39;parrec&#39;, par_file)
-    if recording.PulseSequenceType:
-        recording.PulseSequenceType = hdr[&#39;tech&#39;]
 
     n_dyns = image[&#39;dynamic scan number&#39;].max()
     if n_dyns == 1:

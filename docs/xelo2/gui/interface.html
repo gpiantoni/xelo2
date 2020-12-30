@@ -80,7 +80,8 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database.create import TABLES, open_database
+from ..database.create import open_database
+from ..database import lookup_allowed_values
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -961,9 +962,9 @@ class Interface(QMainWindow):
 
         for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
             self.exporting(
-                subj=Subject(id=subj_id),
-                sess=Session(id=sess_id),
-                run=Run(id=run_id),
+                subj=Subject(self.db, id=subj_id),
+                sess=Session(self.db, id=sess_id),
+                run=Run(self.db, id=run_id),
                 )
 
     def modified(self):
@@ -1018,7 +1019,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Session for {current_subject}&#39;,
                 &#39;Session Name:&#39;,
-                TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
                 0, False)
 
         elif level == &#39;protocols&#39;:
@@ -1027,7 +1028,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Protocol for {current_subject}&#39;,
                 &#39;Protocol Name:&#39;,
-                TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
                 0, False)
 
         elif level == &#39;runs&#39;:
@@ -1037,7 +1038,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Run for {current_session.name}&#39;,
                 &#39;Task Name:&#39;,
-                TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
                 0, False)
 
         elif level == &#39;recordings&#39;:
@@ -1047,7 +1048,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Recording for {current_run.task_name}&#39;,
                 &#39;Modality:&#39;,
-                TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
                 0, False)
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
@@ -1369,7 +1370,12 @@ def list_parameters(obj, parent=None):
 
         elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
             if &#39;values&#39; in col_info:
-                w = make_combobox(value, col_info[&#39;values&#39;])
+                # TODO: this should look up allowed_values
+                values = col_info[&#39;values&#39;]
+                if len(values) &gt; 20:
+                    values = sorted(values)
+                w = make_combobox(value, values)
+
                 w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
             else:
                 w = make_edit(value)
@@ -1588,7 +1594,12 @@ def _fake_names(X):
 
         elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
             if &#39;values&#39; in col_info:
-                w = make_combobox(value, col_info[&#39;values&#39;])
+                # TODO: this should look up allowed_values
+                values = col_info[&#39;values&#39;]
+                if len(values) &gt; 20:
+                    values = sorted(values)
+                w = make_combobox(value, values)
+
                 w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
             else:
                 w = make_edit(value)
@@ -2608,9 +2619,9 @@ def _fake_names(X):
 
         for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
             self.exporting(
-                subj=Subject(id=subj_id),
-                sess=Session(id=sess_id),
-                run=Run(id=run_id),
+                subj=Subject(self.db, id=subj_id),
+                sess=Session(self.db, id=sess_id),
+                run=Run(self.db, id=run_id),
                 )
 
     def modified(self):
@@ -2665,7 +2676,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Session for {current_subject}&#39;,
                 &#39;Session Name:&#39;,
-                TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
                 0, False)
 
         elif level == &#39;protocols&#39;:
@@ -2674,7 +2685,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Protocol for {current_subject}&#39;,
                 &#39;Protocol Name:&#39;,
-                TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
                 0, False)
 
         elif level == &#39;runs&#39;:
@@ -2684,7 +2695,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Run for {current_session.name}&#39;,
                 &#39;Task Name:&#39;,
-                TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
                 0, False)
 
         elif level == &#39;recordings&#39;:
@@ -2694,7 +2705,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Recording for {current_run.task_name}&#39;,
                 &#39;Modality:&#39;,
-                TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+                lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
                 0, False)
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
@@ -3028,9 +3039,9 @@ def _fake_names(X):
 
     for subj_id, sess_id, run_id in zip(self.search.subjects, self.search.sessions, self.search.runs):
         self.exporting(
-            subj=Subject(id=subj_id),
-            sess=Session(id=sess_id),
-            run=Run(id=run_id),
+            subj=Subject(self.db, id=subj_id),
+            sess=Session(self.db, id=sess_id),
+            run=Run(self.db, id=run_id),
             )</code></pre>
 </details>
 </dd>
@@ -3983,7 +3994,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Session for {current_subject}&#39;,
             &#39;Session Name:&#39;,
-            TABLES[&#39;sessions&#39;][&#39;name&#39;][&#39;values&#39;],
+            lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
             0, False)
 
     elif level == &#39;protocols&#39;:
@@ -3992,7 +4003,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Protocol for {current_subject}&#39;,
             &#39;Protocol Name:&#39;,
-            TABLES[&#39;protocols&#39;][&#39;metc&#39;][&#39;values&#39;],
+            lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
             0, False)
 
     elif level == &#39;runs&#39;:
@@ -4002,7 +4013,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Run for {current_session.name}&#39;,
             &#39;Task Name:&#39;,
-            TABLES[&#39;runs&#39;][&#39;task_name&#39;][&#39;values&#39;],
+            lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
             0, False)
 
     elif level == &#39;recordings&#39;:
@@ -4012,7 +4023,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Recording for {current_run.task_name}&#39;,
             &#39;Modality:&#39;,
-            TABLES[&#39;recordings&#39;][&#39;modality&#39;][&#39;values&#39;],
+            lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
             0, False)
 
     elif level in (&#39;channels&#39;, &#39;electrodes&#39;):

@@ -161,7 +161,10 @@ def _prepare_values(run, info):
 
 def strftime(t):
     &#34;&#34;&#34;This is the most accurate way to get milliseconds, without microseconds&#34;&#34;&#34;
-    return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;
+    if t is None:
+        return &#39;(null)&#39;
+    else:
+        return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;
 
 
 class CompareEvents(QDialog):
@@ -526,7 +529,10 @@ def parse_accessdatabase(parent):
 </summary>
 <pre><code class="python">def strftime(t):
     &#34;&#34;&#34;This is the most accurate way to get milliseconds, without microseconds&#34;&#34;&#34;
-    return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;</code></pre>
+    if t is None:
+        return &#39;(null)&#39;
+    else:
+        return f&#39;{t:%d/%m/%Y %H:%M:%S}.{t.microsecond / 1000:03.0f}&#39;</code></pre>
 </details>
 </dd>
 </dl>

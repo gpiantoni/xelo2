@@ -44,7 +44,7 @@ lg = getLogger(__name__)
 CONNECTION_NAME = &#39;xelo2_database&#39;
 
 
-def open_database(db_type, db_name, username=None, password=None):
+def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
     &#34;&#34;&#34;Open the default database using Qt framework
 
     Parameters
@@ -64,7 +64,7 @@ def open_database(db_type, db_name, username=None, password=None):
         default database
     &#34;&#34;&#34;
     assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
-    db = QSqlDatabase.addDatabase(db_type, CONNECTION_NAME)
+    db = QSqlDatabase.addDatabase(db_type, connectionName)
     assert db.isValid()
 
     if db_type == &#39;QSQLITE&#39;:
@@ -902,7 +902,7 @@ table</p>
 </details>
 </dd>
 <dt id="xelo2.database.create.open_database"><code class="name flex">
-<span>def <span class="ident">open_database</span></span>(<span>db_type, db_name, username=None, password=None)</span>
+<span>def <span class="ident">open_database</span></span>(<span>db_type, db_name, username=None, password=None, connectionName='xelo2_database')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Open the default database using Qt framework</p>
@@ -926,7 +926,7 @@ table</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def open_database(db_type, db_name, username=None, password=None):
+<pre><code class="python">def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
     &#34;&#34;&#34;Open the default database using Qt framework
 
     Parameters
@@ -946,7 +946,7 @@ table</p>
         default database
     &#34;&#34;&#34;
     assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
-    db = QSqlDatabase.addDatabase(db_type, CONNECTION_NAME)
+    db = QSqlDatabase.addDatabase(db_type, connectionName)
     assert db.isValid()
 
     if db_type == &#39;QSQLITE&#39;:
