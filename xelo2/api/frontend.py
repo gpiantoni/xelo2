@@ -4,7 +4,7 @@ from numpy import (
     array,
     )
 
-from ..database import TABLES
+from ..database import TABLES  # ok
 from .backend import Table_with_files, NumpyTable
 from .utils import (
     find_subject_id,

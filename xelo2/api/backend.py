@@ -14,7 +14,7 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QVariant
 import sip
 
-from ..database import TABLES
+from ..database import TABLES  # ok
 from .utils import (
     collect_columns,
     get_dtypes,
