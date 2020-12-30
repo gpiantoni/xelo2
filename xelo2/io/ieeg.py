@@ -4,7 +4,7 @@ from numpy import empty
 from .utils import localize_blackrock
 from .events import read_events_from_ieeg
 from ..api.utils import get_dtypes
-from ..database import TABLES
+from ..database import TABLES  # ok
 from ..api.filetype import parse_filetype
 
 

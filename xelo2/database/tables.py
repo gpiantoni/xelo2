@@ -56,7 +56,8 @@ def lookup_indexes(info_schema, db, table):
     Returns
     -------
     dict
-        key is the name of the column. The valu
+        key is the name of the column. 'PRIMARY' for primary indices and
+        for foreign keys, it's table_name (column_name)
     """
     if not info_schema.databaseName() == 'information_schema':
         raise ValueError('The first argument should be the `information_schema` database, not the database with the data')
@@ -79,5 +80,44 @@ def lookup_indexes(info_schema, db, table):
             values[k] = None
         else:
             values[k] = f'{t} ({c})'
+
+    return values
+
+
+def lookup_comments(info_schema, db, table):
+    """Look up which columns have comments
+
+    Parameters
+    ----------
+    info_schema : instance of QSqlDatabase
+        this should be the `information_schema` database
+    db : instance of QSqlDatabase
+        the database with the actual data
+    table : str
+        name of the table
+
+    Returns
+    -------
+    dict
+        key is the name of the column.
+    """
+    if not info_schema.databaseName() == 'information_schema':
+        raise ValueError('The first argument should be the `information_schema` database, not the database with the data')
+
+    query = QSqlQuery(info_schema)
+    query.prepare("""SELECT `column_name`, `column_comment` FROM `columns`
+        WHERE `table_schema` = :schema AND `table_name` = :table""")
+    query.bindValue(':schema', db.databaseName())
+    query.bindValue(':table', table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    values = {}
+    while query.next():
+        k = query.value('column_name')
+        c = query.value('column_comment')
+        if len(c) > 0:
+            values[k] = c
 
     return values

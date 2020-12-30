@@ -1,2 +1,1 @@
-from .create import TABLES
-from .tables import lookup_allowed_values
+from .open_db import TABLES, open_database

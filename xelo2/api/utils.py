@@ -1,7 +1,3 @@
-"""There might be ways to get rid of TABLES and rely only on the description
-of SQL but it's really hard. The risk however is that TABLES in python
-gets out of sync with the tables definition in SQL"""
-
 from logging import getLogger
 from datetime import datetime
 from PyQt5.QtSql import QSqlQuery
@@ -89,13 +85,15 @@ def find_subject_id(db, code):
 
 
 def get_dtypes(table):
+    """The columns can only be index, strings or double, but nothing else (no int, no dates)
+    """
     dtypes = []
     for k, v in table.items():
-        if v is None:
+        if not (v['index'] is False):   # index is False when it's not an index
             continue
-        elif v['type'] == 'TEXT':
+        elif v['type'] == 'TEXT' or v['type'] == 'QString':  # the second is the new format
             dtypes.append((k, 'U4096'))
-        elif v['type'] == 'FLOAT':
+        elif v['type'] == 'FLOAT' or v['type'] == 'double':  # the second is the new format
             dtypes.append((k, 'float'))
         else:
             assert False
