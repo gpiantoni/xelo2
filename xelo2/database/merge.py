@@ -1,7 +1,6 @@
 from PyQt5.QtSql import QSqlQuery
 
 from ..api.frontend import Subject
-from .tables import TABLES
 
 
 def merge_subjects(subj_code, subj_code_to_merge):

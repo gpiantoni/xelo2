@@ -1,27 +1,41 @@
 """Subtables should have a field called "when" and be called "parents_EXTRA"
 """
 from logging import getLogger
-from pathlib import Path
 
 from PyQt5.QtSql import (
     QSqlDatabase,
-    QSqlQuery,
     )
+
+from .tables import parse_subtables, LEVELS
 
 
 lg = getLogger(__name__)
-CONNECTION_NAME = 'xelo2_database'
 
 
-def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
+def access_database(db_name, username=None, password=None):
+
+    db = open_database(db_name, username=username, password=password, connectionName='xelo2_database')
+    info_schema = open_database('information_schema', username=username, password=password, connectionName='info')
+
+    subtables = []
+    for table in LEVELS:
+        subtables.extend(parse_subtables(info_schema, db, table))
+
+    return {
+        'db': db,
+        'info': info_schema,
+        'tables': tables,
+        'subtables': subtables,
+        }
+
+
+def open_database(db_name, username=None, password=None, connectionName='xelo2_database'):
     """Open the default database using Qt framework
 
     Parameters
     ----------
-    db_type : str
-        driver to use (QSQLITE or QMYSQL)
     db_name : str
-        path to database (QSQLITE) or database name (QMYSQL)
+        database name (QMYSQL)
     username : str
         user name to open database
     password : str
@@ -32,24 +46,16 @@ def open_database(db_type, db_name, username=None, password=None, connectionName
     QSqlDatabase
         default database
     """
-    assert db_type in ('QSQLITE', 'QMYSQL')
-    db = QSqlDatabase.addDatabase(db_type, connectionName)
+    db = QSqlDatabase.addDatabase('QMYSQL', connectionName)
     assert db.isValid()
 
-    if db_type == 'QSQLITE':
-        db_name = Path(db_name).expanduser().resolve()
-    else:
-        db.setHostName('127.0.0.1')
-        db.setUserName(username)
-        if password is not None:
-            db.setPassword(password)
+    db.setHostName('127.0.0.1')
+    db.setUserName(username)
+    if password is not None:
+        db.setPassword(password)
 
     db.setDatabaseName(str(db_name))
     db.open()
-
-    if db_type == 'QSQLITE':
-        assert QSqlQuery(db).exec('PRAGMA foreign_keys = ON;')
-        assert QSqlQuery(db).exec('PRAGMA encoding="UTF-8";')
 
     if not db.isOpen():
         raise ValueError('Could not open database')

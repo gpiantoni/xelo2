@@ -1,7 +1,5 @@
 from collections import defaultdict
 
-from .tables import TABLES
-
 
 def prepare_query_files(level):
 

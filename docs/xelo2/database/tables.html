@@ -24,16 +24,34 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from json import load
-from pathlib import Path
+<pre><code class="python">from re import search
 
 from PyQt5.QtSql import QSqlQuery
 
 
-SQL_TABLES = Path(__file__).parent / &#39;tables.json&#39;
+LEVELS = [
+    &#39;subjects&#39;,
+    &#39;protocols&#39;,
+    &#39;sessions&#39;,
+    &#39;runs&#39;,
+    &#39;recordings&#39;,
+    ]
 
-with SQL_TABLES.open() as f:
-    TABLES = load(f)
+METATABLES = [
+    &#39;allowed_values&#39;,
+    &#39;intended_for&#39;,
+    &#39;files&#39;,
+    &#39;subject_codes&#39;,
+    &#39;events&#39;,
+    &#39;experimenters&#39;,
+    &#39;runs_experimenters&#39;,
+    &#39;runs_protocols&#39;,
+    ]
+
+ELEC_CHAN = [
+    &#39;channel&#39;,
+    &#39;electrode&#39;,
+    ]
 
 
 def lookup_allowed_values(db, table, column):
@@ -146,7 +164,72 @@ def lookup_comments(info_schema, db, table):
         if len(c) &gt; 0:
             values[k] = c
 
-    return values</code></pre>
+    return values
+
+
+def parse_subtables(info_schema, db, table):
+    statements = lookup_statements(info_schema, db, table)
+
+    SUBTABLES = []
+    for statement in statements:
+
+        sub = parse_trigger_statements(table, statement)
+        if sub is not None:
+            SUBTABLES.append(sub)
+
+    return SUBTABLES
+
+
+def lookup_statements(info_schema, db, table):
+    if not info_schema.databaseName() == &#39;information_schema&#39;:
+        raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
+
+    query = QSqlQuery(info_schema)
+    query.prepare(&#34;&#34;&#34;SELECT `action_statement` FROM `triggers`
+        WHERE `event_object_schema` = :schema AND `event_object_table` = :table AND `event_manipulation` = &#39;INSERT&#39; AND `action_timing` = &#39;AFTER&#39;&#34;&#34;&#34;)
+    query.bindValue(&#39;:schema&#39;, db.databaseName())
+    query.bindValue(&#39;:table&#39;, table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    statements = []
+    while query.next():
+        statements.append(query.value(&#39;action_statement&#39;))
+
+    return statements
+
+
+def parse_trigger_statements(table, statement):
+
+    cond_str = search(r&#34;IF NEW.([a-z_]+) = &#39;(.+?)&#39;&#34;, statement)
+    if cond_str is None:
+        cond_str = search(r&#34;IF NEW.([a-z_]+) IN \((.+?)\)&#34;, statement)
+
+        if cond_str is None:
+            print(&#39;Could not parse trigger condition&#39;)
+            return
+
+        else:
+            parameter = cond_str.group(1)
+            values = [x.strip(&#34;&#39; &#34;) for x in cond_str.group(2).split(&#39;,&#39;)]
+    else:
+        parameter = cond_str.group(1)
+        values = [cond_str.group(2), ]
+
+    subtable_str = search(r&#34;INSERT INTO ([a-z_]+)&#34;, statement)
+    if cond_str is None:
+        print(&#39;Could not parse subtable&#39;)
+        return
+    else:
+        subtable = subtable_str.group(1)
+
+    return {
+        &#39;parent&#39;: table,
+        &#39;subtable&#39;: subtable,
+        &#39;parameter&#39;: parameter,
+        &#39;values&#39;: values,
+        }</code></pre>
 </details>
 </section>
 <section>
@@ -339,6 +422,98 @@ for foreign keys, it's table_name (column_name)</dd>
     return values</code></pre>
 </details>
 </dd>
+<dt id="xelo2.database.tables.lookup_statements"><code class="name flex">
+<span>def <span class="ident">lookup_statements</span></span>(<span>info_schema, db, table)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lookup_statements(info_schema, db, table):
+    if not info_schema.databaseName() == &#39;information_schema&#39;:
+        raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
+
+    query = QSqlQuery(info_schema)
+    query.prepare(&#34;&#34;&#34;SELECT `action_statement` FROM `triggers`
+        WHERE `event_object_schema` = :schema AND `event_object_table` = :table AND `event_manipulation` = &#39;INSERT&#39; AND `action_timing` = &#39;AFTER&#39;&#34;&#34;&#34;)
+    query.bindValue(&#39;:schema&#39;, db.databaseName())
+    query.bindValue(&#39;:table&#39;, table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    statements = []
+    while query.next():
+        statements.append(query.value(&#39;action_statement&#39;))
+
+    return statements</code></pre>
+</details>
+</dd>
+<dt id="xelo2.database.tables.parse_subtables"><code class="name flex">
+<span>def <span class="ident">parse_subtables</span></span>(<span>info_schema, db, table)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_subtables(info_schema, db, table):
+    statements = lookup_statements(info_schema, db, table)
+
+    SUBTABLES = []
+    for statement in statements:
+
+        sub = parse_trigger_statements(table, statement)
+        if sub is not None:
+            SUBTABLES.append(sub)
+
+    return SUBTABLES</code></pre>
+</details>
+</dd>
+<dt id="xelo2.database.tables.parse_trigger_statements"><code class="name flex">
+<span>def <span class="ident">parse_trigger_statements</span></span>(<span>table, statement)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_trigger_statements(table, statement):
+
+    cond_str = search(r&#34;IF NEW.([a-z_]+) = &#39;(.+?)&#39;&#34;, statement)
+    if cond_str is None:
+        cond_str = search(r&#34;IF NEW.([a-z_]+) IN \((.+?)\)&#34;, statement)
+
+        if cond_str is None:
+            print(&#39;Could not parse trigger condition&#39;)
+            return
+
+        else:
+            parameter = cond_str.group(1)
+            values = [x.strip(&#34;&#39; &#34;) for x in cond_str.group(2).split(&#39;,&#39;)]
+    else:
+        parameter = cond_str.group(1)
+        values = [cond_str.group(2), ]
+
+    subtable_str = search(r&#34;INSERT INTO ([a-z_]+)&#34;, statement)
+    if cond_str is None:
+        print(&#39;Could not parse subtable&#39;)
+        return
+    else:
+        subtable = subtable_str.group(1)
+
+    return {
+        &#39;parent&#39;: table,
+        &#39;subtable&#39;: subtable,
+        &#39;parameter&#39;: parameter,
+        &#39;values&#39;: values,
+        }</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -360,6 +535,9 @@ for foreign keys, it's table_name (column_name)</dd>
 <li><code><a title="xelo2.database.tables.lookup_allowed_values" href="#xelo2.database.tables.lookup_allowed_values">lookup_allowed_values</a></code></li>
 <li><code><a title="xelo2.database.tables.lookup_comments" href="#xelo2.database.tables.lookup_comments">lookup_comments</a></code></li>
 <li><code><a title="xelo2.database.tables.lookup_indexes" href="#xelo2.database.tables.lookup_indexes">lookup_indexes</a></code></li>
+<li><code><a title="xelo2.database.tables.lookup_statements" href="#xelo2.database.tables.lookup_statements">lookup_statements</a></code></li>
+<li><code><a title="xelo2.database.tables.parse_subtables" href="#xelo2.database.tables.parse_subtables">parse_subtables</a></code></li>
+<li><code><a title="xelo2.database.tables.parse_trigger_statements" href="#xelo2.database.tables.parse_trigger_statements">parse_trigger_statements</a></code></li>
 </ul>
 </li>
 </ul>

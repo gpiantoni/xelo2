@@ -1,13 +1,31 @@
-from json import load
-from pathlib import Path
+from re import search
 
 from PyQt5.QtSql import QSqlQuery
 
 
-SQL_TABLES = Path(__file__).parent / 'tables.json'
+LEVELS = [
+    'subjects',
+    'protocols',
+    'sessions',
+    'runs',
+    'recordings',
+    ]
 
-with SQL_TABLES.open() as f:
-    TABLES = load(f)
+METATABLES = [
+    'allowed_values',
+    'intended_for',
+    'files',
+    'subject_codes',
+    'events',
+    'experimenters',
+    'runs_experimenters',
+    'runs_protocols',
+    ]
+
+ELEC_CHAN = [
+    'channel',
+    'electrode',
+    ]
 
 
 def lookup_allowed_values(db, table, column):
@@ -121,3 +139,68 @@ def lookup_comments(info_schema, db, table):
             values[k] = c
 
     return values
+
+
+def parse_subtables(info_schema, db, table):
+    statements = lookup_statements(info_schema, db, table)
+
+    SUBTABLES = []
+    for statement in statements:
+
+        sub = parse_trigger_statements(table, statement)
+        if sub is not None:
+            SUBTABLES.append(sub)
+
+    return SUBTABLES
+
+
+def lookup_statements(info_schema, db, table):
+    if not info_schema.databaseName() == 'information_schema':
+        raise ValueError('The first argument should be the `information_schema` database, not the database with the data')
+
+    query = QSqlQuery(info_schema)
+    query.prepare("""SELECT `action_statement` FROM `triggers`
+        WHERE `event_object_schema` = :schema AND `event_object_table` = :table AND `event_manipulation` = 'INSERT' AND `action_timing` = 'AFTER'""")
+    query.bindValue(':schema', db.databaseName())
+    query.bindValue(':table', table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    statements = []
+    while query.next():
+        statements.append(query.value('action_statement'))
+
+    return statements
+
+
+def parse_trigger_statements(table, statement):
+
+    cond_str = search(r"IF NEW.([a-z_]+) = '(.+?)'", statement)
+    if cond_str is None:
+        cond_str = search(r"IF NEW.([a-z_]+) IN \((.+?)\)", statement)
+
+        if cond_str is None:
+            print('Could not parse trigger condition')
+            return
+
+        else:
+            parameter = cond_str.group(1)
+            values = [x.strip("' ") for x in cond_str.group(2).split(',')]
+    else:
+        parameter = cond_str.group(1)
+        values = [cond_str.group(2), ]
+
+    subtable_str = search(r"INSERT INTO ([a-z_]+)", statement)
+    if cond_str is None:
+        print('Could not parse subtable')
+        return
+    else:
+        subtable = subtable_str.group(1)
+
+    return {
+        'parent': table,
+        'subtable': subtable,
+        'parameter': parameter,
+        'values': values,
+        }

@@ -39,6 +39,17 @@ You need to change:
   - `runs_motor` is the name of the subtable
   - `run_id` which should have the syntax `(maintable)_id` (main table without trailing `s`)
 
+If a condition matches multiple values, then you can use this syntax
+
+```SQL
+BEGIN
+  IF NEW.task_name IN ('motor', 'sensory')
+  THEN
+    INSERT INTO runs_motor (run_id) VALUES (NEW.id) ;
+  END IF;
+END
+```
+
 ### Second trigger
 In the `maintable` (f.e. `runs`), you should specify an `UPDATE` / `AFTER` trigger (called it `replace_id_to_subtable_runs_motor`):
 
@@ -56,5 +67,5 @@ END
 Change the values as in the first trigger.
 The 3 conditions are:
    - check that the main condition related to the subtable has changed
-   - check that the main condition has the correct value
+   - check that the main condition has the correct value (you might need `IN` syntax instead of `=` when you have multiple values)
    - check whether the `id` already exists in the subtable. This happens when the task was `motor`, then it was changed to something else, then back to `motor`. The old info is still stored in the subtable even when the condition does not apply. This approach leaves some old data in the subtables (which is not shown and possibly not relevant) but it's useful when a user changes the condition by mistake, and then goes back. It would be disappointing to add the info in the subtable again.

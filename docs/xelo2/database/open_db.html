@@ -28,27 +28,41 @@
 <pre><code class="python">&#34;&#34;&#34;Subtables should have a field called &#34;when&#34; and be called &#34;parents_EXTRA&#34;
 &#34;&#34;&#34;
 from logging import getLogger
-from pathlib import Path
 
 from PyQt5.QtSql import (
     QSqlDatabase,
-    QSqlQuery,
     )
+
+from .tables import parse_subtables, LEVELS
 
 
 lg = getLogger(__name__)
-CONNECTION_NAME = &#39;xelo2_database&#39;
 
 
-def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
+def access_database(db_name, username=None, password=None):
+
+    db = open_database(db_name, username=username, password=password, connectionName=&#39;xelo2_database&#39;)
+    info_schema = open_database(&#39;information_schema&#39;, username=username, password=password, connectionName=&#39;info&#39;)
+
+    subtables = []
+    for table in LEVELS:
+        subtables.extend(parse_subtables(info_schema, db, table))
+
+    return {
+        &#39;db&#39;: db,
+        &#39;info&#39;: info_schema,
+        &#39;tables&#39;: tables,
+        &#39;subtables&#39;: subtables,
+        }
+
+
+def open_database(db_name, username=None, password=None, connectionName=&#39;xelo2_database&#39;):
     &#34;&#34;&#34;Open the default database using Qt framework
 
     Parameters
     ----------
-    db_type : str
-        driver to use (QSQLITE or QMYSQL)
     db_name : str
-        path to database (QSQLITE) or database name (QMYSQL)
+        database name (QMYSQL)
     username : str
         user name to open database
     password : str
@@ -59,24 +73,16 @@ def open_database(db_type, db_name, username=None, password=None, connectionName
     QSqlDatabase
         default database
     &#34;&#34;&#34;
-    assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
-    db = QSqlDatabase.addDatabase(db_type, connectionName)
+    db = QSqlDatabase.addDatabase(&#39;QMYSQL&#39;, connectionName)
     assert db.isValid()
 
-    if db_type == &#39;QSQLITE&#39;:
-        db_name = Path(db_name).expanduser().resolve()
-    else:
-        db.setHostName(&#39;127.0.0.1&#39;)
-        db.setUserName(username)
-        if password is not None:
-            db.setPassword(password)
+    db.setHostName(&#39;127.0.0.1&#39;)
+    db.setUserName(username)
+    if password is not None:
+        db.setPassword(password)
 
     db.setDatabaseName(str(db_name))
     db.open()
-
-    if db_type == &#39;QSQLITE&#39;:
-        assert QSqlQuery(db).exec(&#39;PRAGMA foreign_keys = ON;&#39;)
-        assert QSqlQuery(db).exec(&#39;PRAGMA encoding=&#34;UTF-8&#34;;&#39;)
 
     if not db.isOpen():
         raise ValueError(&#39;Could not open database&#39;)
@@ -96,6 +102,32 @@ def close_database(db):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="xelo2.database.open_db.access_database"><code class="name flex">
+<span>def <span class="ident">access_database</span></span>(<span>db_name, username=None, password=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def access_database(db_name, username=None, password=None):
+
+    db = open_database(db_name, username=username, password=password, connectionName=&#39;xelo2_database&#39;)
+    info_schema = open_database(&#39;information_schema&#39;, username=username, password=password, connectionName=&#39;info&#39;)
+
+    subtables = []
+    for table in LEVELS:
+        subtables.extend(parse_subtables(info_schema, db, table))
+
+    return {
+        &#39;db&#39;: db,
+        &#39;info&#39;: info_schema,
+        &#39;tables&#39;: tables,
+        &#39;subtables&#39;: subtables,
+        }</code></pre>
+</details>
+</dd>
 <dt id="xelo2.database.open_db.close_database"><code class="name flex">
 <span>def <span class="ident">close_database</span></span>(<span>db)</span>
 </code></dt>
@@ -111,16 +143,14 @@ def close_database(db):
 </details>
 </dd>
 <dt id="xelo2.database.open_db.open_database"><code class="name flex">
-<span>def <span class="ident">open_database</span></span>(<span>db_type, db_name, username=None, password=None, connectionName='xelo2_database')</span>
+<span>def <span class="ident">open_database</span></span>(<span>db_name, username=None, password=None, connectionName='xelo2_database')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Open the default database using Qt framework</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>db_type</code></strong> :&ensp;<code>str</code></dt>
-<dd>driver to use (QSQLITE or QMYSQL)</dd>
 <dt><strong><code>db_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>path to database (QSQLITE) or database name (QMYSQL)</dd>
+<dd>database name (QMYSQL)</dd>
 <dt><strong><code>username</code></strong> :&ensp;<code>str</code></dt>
 <dd>user name to open database</dd>
 <dt><strong><code>password</code></strong> :&ensp;<code>str</code></dt>
@@ -135,15 +165,13 @@ def close_database(db):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
+<pre><code class="python">def open_database(db_name, username=None, password=None, connectionName=&#39;xelo2_database&#39;):
     &#34;&#34;&#34;Open the default database using Qt framework
 
     Parameters
     ----------
-    db_type : str
-        driver to use (QSQLITE or QMYSQL)
     db_name : str
-        path to database (QSQLITE) or database name (QMYSQL)
+        database name (QMYSQL)
     username : str
         user name to open database
     password : str
@@ -154,24 +182,16 @@ def close_database(db):
     QSqlDatabase
         default database
     &#34;&#34;&#34;
-    assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
-    db = QSqlDatabase.addDatabase(db_type, connectionName)
+    db = QSqlDatabase.addDatabase(&#39;QMYSQL&#39;, connectionName)
     assert db.isValid()
 
-    if db_type == &#39;QSQLITE&#39;:
-        db_name = Path(db_name).expanduser().resolve()
-    else:
-        db.setHostName(&#39;127.0.0.1&#39;)
-        db.setUserName(username)
-        if password is not None:
-            db.setPassword(password)
+    db.setHostName(&#39;127.0.0.1&#39;)
+    db.setUserName(username)
+    if password is not None:
+        db.setPassword(password)
 
     db.setDatabaseName(str(db_name))
     db.open()
-
-    if db_type == &#39;QSQLITE&#39;:
-        assert QSqlQuery(db).exec(&#39;PRAGMA foreign_keys = ON;&#39;)
-        assert QSqlQuery(db).exec(&#39;PRAGMA encoding=&#34;UTF-8&#34;;&#39;)
 
     if not db.isOpen():
         raise ValueError(&#39;Could not open database&#39;)
@@ -197,6 +217,7 @@ def close_database(db):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="xelo2.database.open_db.access_database" href="#xelo2.database.open_db.access_database">access_database</a></code></li>
 <li><code><a title="xelo2.database.open_db.close_database" href="#xelo2.database.open_db.close_database">close_database</a></code></li>
 <li><code><a title="xelo2.database.open_db.open_database" href="#xelo2.database.open_db.open_database">open_database</a></code></li>
 </ul>
