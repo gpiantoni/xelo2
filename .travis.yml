@@ -35,7 +35,8 @@ install:
   - pip install -e .
 
 script:
-  - pytest --cov=xelo2 tests/ -vv
+  - pytest3 -h
+  - pytest tests/ -vv
 
 after_success:
   - codecov
