@@ -11,6 +11,7 @@ addons:
     - x11-utils
     - libxkbcommon-x11-0
     - python3-pyqt5.qtsql
+    - python3-pytestqt
 
 services: 
   - xvfb
@@ -28,9 +29,8 @@ cache:
 
 install: 
   - pip install -U pip
-  - pip install -U numpy
   - pip install nibabel pandas wonambi bidso
-  - pip install -U pytest pytest-cov pytest-qt codecov 
+  - pip install codecov 
   - pip install -e .
 
 script:
