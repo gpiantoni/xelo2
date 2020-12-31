@@ -54,8 +54,7 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database.create import open_database
-from ..database import lookup_allowed_values
+from ..database import open_database, lookup_allowed_values
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -63,7 +62,6 @@ from ..io.ieeg import add_ieeg_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ieeg
-from ..io.export_db import export_database
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import LEVELS, _protocol_name
@@ -903,16 +901,6 @@ class Interface(QMainWindow):
 
         url_file = QUrl.fromLocalFile(str(file_path))
         QDesktopServices.openUrl(url_file)
-
-    def export_tsv(self):
-        export_database(self.db, Path('/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql'))
-
-        """
-        tsv_path = QFileDialog.getExistingDirectory()
-        if tsv_path == '':
-            return
-        export_database(Path(tsv_path))
-        """
 
     def sql_search(self):
 

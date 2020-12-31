@@ -138,15 +138,7 @@ def get_columns(T):
 
     # put ids at the end because they are the least informative when sorting tsv
     cols.sort(key=lambda x: x.endswith(&#39;id&#39;))
-    return cols
-
-
-def sql_in(values):
-    if len(values) == 1:
-        return f&#34;= &#39;{values[0]}&#39;&#34;
-    else:
-        values_str = &#34;, &#34;.join(f&#34;&#39;{x}&#39;&#34; for x in values)
-        return &#39;IN (&#39; + values_str + &#39;)&#39;</code></pre>
+    return cols</code></pre>
 </details>
 </section>
 <section>
@@ -343,23 +335,6 @@ columns</p></div>
     return sql_cmd</code></pre>
 </details>
 </dd>
-<dt id="xelo2.database.queries.sql_in"><code class="name flex">
-<span>def <span class="ident">sql_in</span></span>(<span>values)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sql_in(values):
-    if len(values) == 1:
-        return f&#34;= &#39;{values[0]}&#39;&#34;
-    else:
-        values_str = &#34;, &#34;.join(f&#34;&#39;{x}&#39;&#34; for x in values)
-        return &#39;IN (&#39; + values_str + &#39;)&#39;</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -385,7 +360,6 @@ columns</p></div>
 <li><code><a title="xelo2.database.queries.prepare_query_files" href="#xelo2.database.queries.prepare_query_files">prepare_query_files</a></code></li>
 <li><code><a title="xelo2.database.queries.prepare_query_str" href="#xelo2.database.queries.prepare_query_str">prepare_query_str</a></code></li>
 <li><code><a title="xelo2.database.queries.prepare_query_with_column_names" href="#xelo2.database.queries.prepare_query_with_column_names">prepare_query_with_column_names</a></code></li>
-<li><code><a title="xelo2.database.queries.sql_in" href="#xelo2.database.queries.sql_in">sql_in</a></code></li>
 </ul>
 </li>
 </ul>

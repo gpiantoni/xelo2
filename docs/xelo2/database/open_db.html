@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>xelo2.io.ieeg API documentation</title>
-<meta name="description" content="" />
+<title>xelo2.database.open_db API documentation</title>
+<meta name="description" content="Subtables should have a field called &#34;when&#34; and be called &#34;parents_EXTRA&#34;" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -17,69 +17,76 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>xelo2.io.ieeg</code></h1>
+<h1 class="title">Module <code>xelo2.database.open_db</code></h1>
 </header>
 <section id="section-intro">
+<p>Subtables should have a field called "when" and be called "parents_EXTRA"</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from wonambi.ioeeg import BlackRock
-from numpy import empty
+<pre><code class="python">&#34;&#34;&#34;Subtables should have a field called &#34;when&#34; and be called &#34;parents_EXTRA&#34;
+&#34;&#34;&#34;
+from logging import getLogger
+from pathlib import Path
 
-from .utils import localize_blackrock
-from .events import read_events_from_ieeg
-from ..api.utils import get_dtypes
-from ..database import TABLES  # ok
-from ..api.filetype import parse_filetype
-
-
-# DTYPES = get_dtypes(TABLES[&#39;events&#39;])
+from PyQt5.QtSql import (
+    QSqlDatabase,
+    QSqlQuery,
+    )
 
 
-def add_ieeg_to_sess(sess, ieeg_file):
-    &#34;&#34;&#34;default task is REST, but TODO decode task from triggers&#34;&#34;&#34;
-
-    info = read_info_from_ieeg(ieeg_file)
-
-    # default task is REST
-    run = sess.add_run(&#39;rest&#39;)
-    run.start_time = info[&#39;start_time&#39;]
-    run.duration = info[&#39;duration&#39;]
-    rec = run.add_recording(&#39;ieeg&#39;)
-    rec.Manufacturer = info[&#39;manufacturer&#39;]
-    filetype = parse_filetype(ieeg_file)
-    file = rec.add_file(filetype, ieeg_file)
-
-    events = read_events_from_ieeg(run, rec, file)
-    if len(events) &gt; 0:
-        run.events = events
-
-    return run
+lg = getLogger(__name__)
+CONNECTION_NAME = &#39;xelo2_database&#39;
 
 
-def read_info_from_ieeg(path_to_file):
+def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
+    &#34;&#34;&#34;Open the default database using Qt framework
 
-    d = localize_blackrock(path_to_file)
-    mrk = d.read_markers()
+    Parameters
+    ----------
+    db_type : str
+        driver to use (QSQLITE or QMYSQL)
+    db_name : str
+        path to database (QSQLITE) or database name (QMYSQL)
+    username : str
+        user name to open database
+    password : str
+        password to open database
 
-    ev = empty(len(mrk), dtype=DTYPES)
-    ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
-    ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]
-    ev[&#39;value&#39;] = [x[&#39;name&#39;] for x in mrk]
+    Returns
+    -------
+    QSqlDatabase
+        default database
+    &#34;&#34;&#34;
+    assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
+    db = QSqlDatabase.addDatabase(db_type, connectionName)
+    assert db.isValid()
 
-    if d.IOClass == BlackRock:
-        manufacturer = &#39;BlackRock&#39;
+    if db_type == &#39;QSQLITE&#39;:
+        db_name = Path(db_name).expanduser().resolve()
     else:
-        manufacturer = &#39;Micromed&#39;
+        db.setHostName(&#39;127.0.0.1&#39;)
+        db.setUserName(username)
+        if password is not None:
+            db.setPassword(password)
 
-    info = {
-        &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: d.header[&#39;n_samples&#39;] / d.header[&#39;s_freq&#39;],
-        &#39;events&#39;: ev,
-        &#39;manufacturer&#39;: manufacturer,
-        }
-    return info</code></pre>
+    db.setDatabaseName(str(db_name))
+    db.open()
+
+    if db_type == &#39;QSQLITE&#39;:
+        assert QSqlQuery(db).exec(&#39;PRAGMA foreign_keys = ON;&#39;)
+        assert QSqlQuery(db).exec(&#39;PRAGMA encoding=&#34;UTF-8&#34;;&#39;)
+
+    if not db.isOpen():
+        raise ValueError(&#39;Could not open database&#39;)
+
+    return db
+
+
+def close_database(db):
+    db.close()
+    QSqlDatabase.removeDatabase(db.connectionName())</code></pre>
 </details>
 </section>
 <section>
@@ -89,38 +96,8 @@ def read_info_from_ieeg(path_to_file):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="xelo2.io.ieeg.add_ieeg_to_sess"><code class="name flex">
-<span>def <span class="ident">add_ieeg_to_sess</span></span>(<span>sess, ieeg_file)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>default task is REST, but TODO decode task from triggers</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_ieeg_to_sess(sess, ieeg_file):
-    &#34;&#34;&#34;default task is REST, but TODO decode task from triggers&#34;&#34;&#34;
-
-    info = read_info_from_ieeg(ieeg_file)
-
-    # default task is REST
-    run = sess.add_run(&#39;rest&#39;)
-    run.start_time = info[&#39;start_time&#39;]
-    run.duration = info[&#39;duration&#39;]
-    rec = run.add_recording(&#39;ieeg&#39;)
-    rec.Manufacturer = info[&#39;manufacturer&#39;]
-    filetype = parse_filetype(ieeg_file)
-    file = rec.add_file(filetype, ieeg_file)
-
-    events = read_events_from_ieeg(run, rec, file)
-    if len(events) &gt; 0:
-        run.events = events
-
-    return run</code></pre>
-</details>
-</dd>
-<dt id="xelo2.io.ieeg.read_info_from_ieeg"><code class="name flex">
-<span>def <span class="ident">read_info_from_ieeg</span></span>(<span>path_to_file)</span>
+<dt id="xelo2.database.open_db.close_database"><code class="name flex">
+<span>def <span class="ident">close_database</span></span>(<span>db)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -128,28 +105,78 @@ def read_info_from_ieeg(path_to_file):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_info_from_ieeg(path_to_file):
+<pre><code class="python">def close_database(db):
+    db.close()
+    QSqlDatabase.removeDatabase(db.connectionName())</code></pre>
+</details>
+</dd>
+<dt id="xelo2.database.open_db.open_database"><code class="name flex">
+<span>def <span class="ident">open_database</span></span>(<span>db_type, db_name, username=None, password=None, connectionName='xelo2_database')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Open the default database using Qt framework</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>db_type</code></strong> :&ensp;<code>str</code></dt>
+<dd>driver to use (QSQLITE or QMYSQL)</dd>
+<dt><strong><code>db_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to database (QSQLITE) or database name (QMYSQL)</dd>
+<dt><strong><code>username</code></strong> :&ensp;<code>str</code></dt>
+<dd>user name to open database</dd>
+<dt><strong><code>password</code></strong> :&ensp;<code>str</code></dt>
+<dd>password to open database</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>QSqlDatabase</code></dt>
+<dd>default database</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def open_database(db_type, db_name, username=None, password=None, connectionName=CONNECTION_NAME):
+    &#34;&#34;&#34;Open the default database using Qt framework
 
-    d = localize_blackrock(path_to_file)
-    mrk = d.read_markers()
+    Parameters
+    ----------
+    db_type : str
+        driver to use (QSQLITE or QMYSQL)
+    db_name : str
+        path to database (QSQLITE) or database name (QMYSQL)
+    username : str
+        user name to open database
+    password : str
+        password to open database
 
-    ev = empty(len(mrk), dtype=DTYPES)
-    ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
-    ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]
-    ev[&#39;value&#39;] = [x[&#39;name&#39;] for x in mrk]
+    Returns
+    -------
+    QSqlDatabase
+        default database
+    &#34;&#34;&#34;
+    assert db_type in (&#39;QSQLITE&#39;, &#39;QMYSQL&#39;)
+    db = QSqlDatabase.addDatabase(db_type, connectionName)
+    assert db.isValid()
 
-    if d.IOClass == BlackRock:
-        manufacturer = &#39;BlackRock&#39;
+    if db_type == &#39;QSQLITE&#39;:
+        db_name = Path(db_name).expanduser().resolve()
     else:
-        manufacturer = &#39;Micromed&#39;
+        db.setHostName(&#39;127.0.0.1&#39;)
+        db.setUserName(username)
+        if password is not None:
+            db.setPassword(password)
 
-    info = {
-        &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: d.header[&#39;n_samples&#39;] / d.header[&#39;s_freq&#39;],
-        &#39;events&#39;: ev,
-        &#39;manufacturer&#39;: manufacturer,
-        }
-    return info</code></pre>
+    db.setDatabaseName(str(db_name))
+    db.open()
+
+    if db_type == &#39;QSQLITE&#39;:
+        assert QSqlQuery(db).exec(&#39;PRAGMA foreign_keys = ON;&#39;)
+        assert QSqlQuery(db).exec(&#39;PRAGMA encoding=&#34;UTF-8&#34;;&#39;)
+
+    if not db.isOpen():
+        raise ValueError(&#39;Could not open database&#39;)
+
+    return db</code></pre>
 </details>
 </dd>
 </dl>
@@ -165,13 +192,13 @@ def read_info_from_ieeg(path_to_file):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="xelo2.io" href="index.html">xelo2.io</a></code></li>
+<li><code><a title="xelo2.database" href="index.html">xelo2.database</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="xelo2.io.ieeg.add_ieeg_to_sess" href="#xelo2.io.ieeg.add_ieeg_to_sess">add_ieeg_to_sess</a></code></li>
-<li><code><a title="xelo2.io.ieeg.read_info_from_ieeg" href="#xelo2.io.ieeg.read_info_from_ieeg">read_info_from_ieeg</a></code></li>
+<li><code><a title="xelo2.database.open_db.close_database" href="#xelo2.database.open_db.close_database">close_database</a></code></li>
+<li><code><a title="xelo2.database.open_db.open_database" href="#xelo2.database.open_db.open_database">open_database</a></code></li>
 </ul>
 </li>
 </ul>

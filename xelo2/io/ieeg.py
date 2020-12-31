@@ -8,7 +8,7 @@ from ..database import TABLES  # ok
 from ..api.filetype import parse_filetype
 
 
-DTYPES = get_dtypes(TABLES['events'])
+# DTYPES = get_dtypes(TABLES['events'])
 
 
 def add_ieeg_to_sess(sess, ieeg_file):

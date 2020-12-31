@@ -82,7 +82,8 @@ def lookup_indexes(info_schema, db, table):
     Returns
     -------
     dict
-        key is the name of the column. The valu
+        key is the name of the column. &#39;PRIMARY&#39; for primary indices and
+        for foreign keys, it&#39;s table_name (column_name)
     &#34;&#34;&#34;
     if not info_schema.databaseName() == &#39;information_schema&#39;:
         raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
@@ -105,6 +106,45 @@ def lookup_indexes(info_schema, db, table):
             values[k] = None
         else:
             values[k] = f&#39;{t} ({c})&#39;
+
+    return values
+
+
+def lookup_comments(info_schema, db, table):
+    &#34;&#34;&#34;Look up which columns have comments
+
+    Parameters
+    ----------
+    info_schema : instance of QSqlDatabase
+        this should be the `information_schema` database
+    db : instance of QSqlDatabase
+        the database with the actual data
+    table : str
+        name of the table
+
+    Returns
+    -------
+    dict
+        key is the name of the column.
+    &#34;&#34;&#34;
+    if not info_schema.databaseName() == &#39;information_schema&#39;:
+        raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
+
+    query = QSqlQuery(info_schema)
+    query.prepare(&#34;&#34;&#34;SELECT `column_name`, `column_comment` FROM `columns`
+        WHERE `table_schema` = :schema AND `table_name` = :table&#34;&#34;&#34;)
+    query.bindValue(&#39;:schema&#39;, db.databaseName())
+    query.bindValue(&#39;:table&#39;, table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    values = {}
+    while query.next():
+        k = query.value(&#39;column_name&#39;)
+        c = query.value(&#39;column_comment&#39;)
+        if len(c) &gt; 0:
+            values[k] = c
 
     return values</code></pre>
 </details>
@@ -170,6 +210,68 @@ def lookup_indexes(info_schema, db, table):
     return values</code></pre>
 </details>
 </dd>
+<dt id="xelo2.database.tables.lookup_comments"><code class="name flex">
+<span>def <span class="ident">lookup_comments</span></span>(<span>info_schema, db, table)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Look up which columns have comments</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>info_schema</code></strong> :&ensp;<code>instance</code> of <code>QSqlDatabase</code></dt>
+<dd>this should be the <code>information_schema</code> database</dd>
+<dt><strong><code>db</code></strong> :&ensp;<code>instance</code> of <code>QSqlDatabase</code></dt>
+<dd>the database with the actual data</dd>
+<dt><strong><code>table</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of the table</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>key is the name of the column.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lookup_comments(info_schema, db, table):
+    &#34;&#34;&#34;Look up which columns have comments
+
+    Parameters
+    ----------
+    info_schema : instance of QSqlDatabase
+        this should be the `information_schema` database
+    db : instance of QSqlDatabase
+        the database with the actual data
+    table : str
+        name of the table
+
+    Returns
+    -------
+    dict
+        key is the name of the column.
+    &#34;&#34;&#34;
+    if not info_schema.databaseName() == &#39;information_schema&#39;:
+        raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
+
+    query = QSqlQuery(info_schema)
+    query.prepare(&#34;&#34;&#34;SELECT `column_name`, `column_comment` FROM `columns`
+        WHERE `table_schema` = :schema AND `table_name` = :table&#34;&#34;&#34;)
+    query.bindValue(&#39;:schema&#39;, db.databaseName())
+    query.bindValue(&#39;:table&#39;, table)
+
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    values = {}
+    while query.next():
+        k = query.value(&#39;column_name&#39;)
+        c = query.value(&#39;column_comment&#39;)
+        if len(c) &gt; 0:
+            values[k] = c
+
+    return values</code></pre>
+</details>
+</dd>
 <dt id="xelo2.database.tables.lookup_indexes"><code class="name flex">
 <span>def <span class="ident">lookup_indexes</span></span>(<span>info_schema, db, table)</span>
 </code></dt>
@@ -187,7 +289,8 @@ def lookup_indexes(info_schema, db, table):
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>dict</code></dt>
-<dd>key is the name of the column. The valu</dd>
+<dd>key is the name of the column. 'PRIMARY' for primary indices and
+for foreign keys, it's table_name (column_name)</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -208,7 +311,8 @@ def lookup_indexes(info_schema, db, table):
     Returns
     -------
     dict
-        key is the name of the column. The valu
+        key is the name of the column. &#39;PRIMARY&#39; for primary indices and
+        for foreign keys, it&#39;s table_name (column_name)
     &#34;&#34;&#34;
     if not info_schema.databaseName() == &#39;information_schema&#39;:
         raise ValueError(&#39;The first argument should be the `information_schema` database, not the database with the data&#39;)
@@ -254,6 +358,7 @@ def lookup_indexes(info_schema, db, table):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="xelo2.database.tables.lookup_allowed_values" href="#xelo2.database.tables.lookup_allowed_values">lookup_allowed_values</a></code></li>
+<li><code><a title="xelo2.database.tables.lookup_comments" href="#xelo2.database.tables.lookup_comments">lookup_comments</a></code></li>
 <li><code><a title="xelo2.database.tables.lookup_indexes" href="#xelo2.database.tables.lookup_indexes">lookup_indexes</a></code></li>
 </ul>
 </li>

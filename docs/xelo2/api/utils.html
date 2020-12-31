@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
 <title>xelo2.api.utils API documentation</title>
-<meta name="description" content="There might be ways to get rid of TABLES and rely only on the description
-of SQL but it&#39;s really hard. The risk however is that TABLES in python
-gets …" />
+<meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -22,18 +20,11 @@ gets …" />
 <h1 class="title">Module <code>xelo2.api.utils</code></h1>
 </header>
 <section id="section-intro">
-<p>There might be ways to get rid of TABLES and rely only on the description
-of SQL but it's really hard. The risk however is that TABLES in python
-gets out of sync with the tables definition in SQL</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;There might be ways to get rid of TABLES and rely only on the description
-of SQL but it&#39;s really hard. The risk however is that TABLES in python
-gets out of sync with the tables definition in SQL&#34;&#34;&#34;
-
-from logging import getLogger
+<pre><code class="python">from logging import getLogger
 from datetime import datetime
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QVariant
@@ -120,13 +111,15 @@ def find_subject_id(db, code):
 
 
 def get_dtypes(table):
+    &#34;&#34;&#34;The columns can only be index, strings or double, but nothing else (no int, no dates)
+    &#34;&#34;&#34;
     dtypes = []
     for k, v in table.items():
-        if v is None:
+        if not (v[&#39;index&#39;] is False):   # index is False when it&#39;s not an index
             continue
-        elif v[&#39;type&#39;] == &#39;TEXT&#39;:
+        elif v[&#39;type&#39;] == &#39;TEXT&#39; or v[&#39;type&#39;] == &#39;QString&#39;:  # the second is the new format
             dtypes.append((k, &#39;U4096&#39;))
-        elif v[&#39;type&#39;] == &#39;FLOAT&#39;:
+        elif v[&#39;type&#39;] == &#39;FLOAT&#39; or v[&#39;type&#39;] == &#39;double&#39;:  # the second is the new format
             dtypes.append((k, &#39;float&#39;))
         else:
             assert False
@@ -380,19 +373,21 @@ one of the main objects</p>
 <span>def <span class="ident">get_dtypes</span></span>(<span>table)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The columns can only be index, strings or double, but nothing else (no int, no dates)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_dtypes(table):
+    &#34;&#34;&#34;The columns can only be index, strings or double, but nothing else (no int, no dates)
+    &#34;&#34;&#34;
     dtypes = []
     for k, v in table.items():
-        if v is None:
+        if not (v[&#39;index&#39;] is False):   # index is False when it&#39;s not an index
             continue
-        elif v[&#39;type&#39;] == &#39;TEXT&#39;:
+        elif v[&#39;type&#39;] == &#39;TEXT&#39; or v[&#39;type&#39;] == &#39;QString&#39;:  # the second is the new format
             dtypes.append((k, &#39;U4096&#39;))
-        elif v[&#39;type&#39;] == &#39;FLOAT&#39;:
+        elif v[&#39;type&#39;] == &#39;FLOAT&#39; or v[&#39;type&#39;] == &#39;double&#39;:  # the second is the new format
             dtypes.append((k, &#39;float&#39;))
         else:
             assert False

@@ -2,7 +2,7 @@ from pathlib import Path
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
 
-from ..io.export_db import prepare_query
+from ..database.queries import prepare_query
 
 lg = getLogger(__name__)
 

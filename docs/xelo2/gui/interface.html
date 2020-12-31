@@ -80,8 +80,7 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database.create import open_database
-from ..database import lookup_allowed_values
+from ..database import open_database, lookup_allowed_values
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -89,7 +88,6 @@ from ..io.ieeg import add_ieeg_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ieeg
-from ..io.export_db import export_database
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import LEVELS, _protocol_name
@@ -929,16 +927,6 @@ class Interface(QMainWindow):
 
         url_file = QUrl.fromLocalFile(str(file_path))
         QDesktopServices.openUrl(url_file)
-
-    def export_tsv(self):
-        export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
-
-        &#34;&#34;&#34;
-        tsv_path = QFileDialog.getExistingDirectory()
-        if tsv_path == &#39;&#39;:
-            return
-        export_database(Path(tsv_path))
-        &#34;&#34;&#34;
 
     def sql_search(self):
 
@@ -2587,16 +2575,6 @@ def _fake_names(X):
         url_file = QUrl.fromLocalFile(str(file_path))
         QDesktopServices.openUrl(url_file)
 
-    def export_tsv(self):
-        export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
-
-        &#34;&#34;&#34;
-        tsv_path = QFileDialog.getExistingDirectory()
-        if tsv_path == &#39;&#39;:
-            return
-        export_database(Path(tsv_path))
-        &#34;&#34;&#34;
-
     def sql_search(self):
 
         text, ok = QInputDialog.getText(
@@ -3291,26 +3269,6 @@ def _fake_names(X):
         subject.codes = [x.strip() for x in text.split(&#39;,&#39;)]
         self.list_subjects()
         self.modified()</code></pre>
-</details>
-</dd>
-<dt id="xelo2.gui.interface.Interface.export_tsv"><code class="name flex">
-<span>def <span class="ident">export_tsv</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def export_tsv(self):
-    export_database(self.db, Path(&#39;/home/giovanni/tools/xelo2bids/xelo2bids/data/metadata/sql&#39;))
-
-    &#34;&#34;&#34;
-    tsv_path = QFileDialog.getExistingDirectory()
-    if tsv_path == &#39;&#39;:
-        return
-    export_database(Path(tsv_path))
-    &#34;&#34;&#34;</code></pre>
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.exporting"><code class="name flex">
@@ -4591,7 +4549,6 @@ QListWidgetItem(QListWidgetItem)</p></div>
 <li><code><a title="xelo2.gui.interface.Interface.do_export" href="#xelo2.gui.interface.Interface.do_export">do_export</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_file" href="#xelo2.gui.interface.Interface.edit_file">edit_file</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_subject_codes" href="#xelo2.gui.interface.Interface.edit_subject_codes">edit_subject_codes</a></code></li>
-<li><code><a title="xelo2.gui.interface.Interface.export_tsv" href="#xelo2.gui.interface.Interface.export_tsv">export_tsv</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.exporting" href="#xelo2.gui.interface.Interface.exporting">exporting</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.io_channels" href="#xelo2.gui.interface.Interface.io_channels">io_channels</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.io_electrodes" href="#xelo2.gui.interface.Interface.io_electrodes">io_electrodes</a></code></li>
