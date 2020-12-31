@@ -10,8 +10,6 @@ addons:
     packages:
     - x11-utils
     - libxkbcommon-x11-0
-    - python3-pyqt5.qtsql
-    - python3-pytestqt
 
 services: 
   - xvfb
@@ -26,6 +24,9 @@ env:
 cache: 
  - directories:
    - $HOME/.cache/pip
+
+before_install:
+  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt
 
 install: 
   - pip install -U pip
