@@ -26,7 +26,7 @@ cache:
    - $HOME/.cache/pip
 
 before_install:
-  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt
+  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov
 
 install: 
   - pip install -U pip
