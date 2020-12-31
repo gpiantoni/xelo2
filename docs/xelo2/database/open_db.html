@@ -33,7 +33,7 @@ from PyQt5.QtSql import (
     QSqlDatabase,
     )
 
-from .tables import parse_subtables, LEVELS
+from .tables import parse_all_tables, parse_subtables, LEVELS, EXPECTED_TABLES
 
 
 lg = getLogger(__name__)
@@ -44,16 +44,25 @@ def access_database(db_name, username=None, password=None):
     db = open_database(db_name, username=username, password=password, connectionName=&#39;xelo2_database&#39;)
     info_schema = open_database(&#39;information_schema&#39;, username=username, password=password, connectionName=&#39;info&#39;)
 
+    all_tables = parse_all_tables(info_schema, db)
+
     subtables = []
     for table in LEVELS:
         subtables.extend(parse_subtables(info_schema, db, table))
 
-    return {
+    expected_tables = EXPECTED_TABLES + [x[&#39;subtable&#39;] for x in subtables]
+
+    remaining_tables = set(all_tables) - set(expected_tables)
+    if len(remaining_tables) &gt; 0:
+        lg.warning(&#39;These tables were not parsed by python API: &#39; + &#39;, &#39;.join(remaining_tables))
+
+    out = {
         &#39;db&#39;: db,
         &#39;info&#39;: info_schema,
-        &#39;tables&#39;: tables,
+        &#39;tables&#39;: all_tables,
         &#39;subtables&#39;: subtables,
         }
+    return out
 
 
 def open_database(db_name, username=None, password=None, connectionName=&#39;xelo2_database&#39;):
@@ -116,16 +125,25 @@ def close_database(db):
     db = open_database(db_name, username=username, password=password, connectionName=&#39;xelo2_database&#39;)
     info_schema = open_database(&#39;information_schema&#39;, username=username, password=password, connectionName=&#39;info&#39;)
 
+    all_tables = parse_all_tables(info_schema, db)
+
     subtables = []
     for table in LEVELS:
         subtables.extend(parse_subtables(info_schema, db, table))
 
-    return {
+    expected_tables = EXPECTED_TABLES + [x[&#39;subtable&#39;] for x in subtables]
+
+    remaining_tables = set(all_tables) - set(expected_tables)
+    if len(remaining_tables) &gt; 0:
+        lg.warning(&#39;These tables were not parsed by python API: &#39; + &#39;, &#39;.join(remaining_tables))
+
+    out = {
         &#39;db&#39;: db,
         &#39;info&#39;: info_schema,
-        &#39;tables&#39;: tables,
+        &#39;tables&#39;: all_tables,
         &#39;subtables&#39;: subtables,
-        }</code></pre>
+        }
+    return out</code></pre>
 </details>
 </dd>
 <dt id="xelo2.database.open_db.close_database"><code class="name flex">

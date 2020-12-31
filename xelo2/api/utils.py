@@ -8,7 +8,6 @@ from numpy import (
     dtype,
     )
 
-from ..database import TABLES
 
 lg = getLogger(__name__)
 
@@ -70,7 +69,7 @@ def collect_columns(t):
 
 
 def find_subject_id(db, code):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare('SELECT subject_id FROM subject_codes WHERE subject_codes.code = :code')
     query.bindValue(':code', code)
 
@@ -147,7 +146,7 @@ def out_datetime(driver, out):
 
 def list_channels_electrodes(db, session_id, name='channel'):
 
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare(f"""\
         SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
         JOIN recordings ON recordings_ieeg.recording_id = recordings.id
@@ -172,7 +171,7 @@ def list_channels_electrodes(db, session_id, name='channel'):
 
 
 def recording_get(db, group, recording_id):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare(f"SELECT {group}_group_id FROM recordings_ieeg WHERE recording_id = :recording_id")
     query.bindValue(':recording_id', recording_id)
     if not query.exec():
@@ -202,7 +201,7 @@ def recording_attach(db, group, recording_id, group_id=None):
         index of the channel_group or electrode_group. If None, it deletes
         the entry
     """
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare(f"UPDATE recordings_ieeg SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id")
     query.bindValue(':group_id', group_id)
     query.bindValue(':recording_id', recording_id)

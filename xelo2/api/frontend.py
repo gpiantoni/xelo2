@@ -4,7 +4,6 @@ from numpy import (
     array,
     )
 
-from ..database import TABLES  # ok
 from .backend import Table_with_files, NumpyTable
 from .utils import (
     find_subject_id,
@@ -40,12 +39,12 @@ def list_subjects(db, alphabetical=False, reverse=False):
     list of instances of Subject
         list of subjects in the database
     """
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.exec('SELECT id FROM subjects')
 
     list_of_subjects = []
     while query.next():
-        list_of_subjects.append(Subject(db, id=query.value('id')))
+        list_of_subjects.append(Subject(db['db'], id=query.value('id')))
 
     if alphabetical:
         _sort_subjects = sort_subjects_alphabetical
@@ -60,7 +59,7 @@ class Subject(Table_with_files):
 
     def __init__(self, db, code=None, id=None):
         if code is not None:
-            id = find_subject_id(db, code)
+            id = find_subject_id(db['db'], code)
             if id is None:
                 raise ValueError(f'There is no "{code}" in "subject_codes" table')
 
@@ -85,7 +84,7 @@ class Subject(Table_with_files):
                 raise ValueError(f'Subject "{code}" already exists')
 
         # add empty value to get new id
-        query = QSqlQuery(db)
+        query = QSqlQuery(db['db'])
         query.prepare("INSERT INTO subjects (`sex`) VALUES (NULL) ")
         if query.exec():
             id = query.lastInsertId()
@@ -93,7 +92,7 @@ class Subject(Table_with_files):
             raise ValueError(query.lastError().text())
 
         if code is not None:
-            query = QSqlQuery(db)
+            query = QSqlQuery(db['db'])
             query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:subject_id, :code)")
             query.bindValue(':subject_id', id)
             query.bindValue(':code', code)
@@ -105,7 +104,7 @@ class Subject(Table_with_files):
     @property
     def codes(self):
         """Get the codes associated with this subjects"""
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT code FROM subject_codes WHERE subject_codes.subject_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
@@ -123,13 +122,13 @@ class Subject(Table_with_files):
     @codes.setter
     def codes(self, codes):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare('DELETE FROM subject_codes WHERE subject_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
             lg.warning(query.lastError().text())
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO subject_codes (`subject_id`, `code`) VALUES (:id, :code)")
         query.bindValue(':id', self.id)
         for code in set(codes):
@@ -139,7 +138,7 @@ class Subject(Table_with_files):
 
     def add_session(self, name):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO sessions (`subject_id`, `name`) VALUES (:id, :name)")
         query.bindValue(':id', self.id)
         query.bindValue(':name', name)
@@ -153,7 +152,7 @@ class Subject(Table_with_files):
         return Session(self.db, session_id, subject=self)
 
     def list_sessions(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT sessions.id, name FROM sessions WHERE sessions.subject_id = :id")
         query.bindValue(':id', self.id)
         assert query.exec()
@@ -166,7 +165,7 @@ class Subject(Table_with_files):
 
     def add_protocol(self, METC):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO protocols (`subject_id`, `metc`) VALUES (:id, :metc)")
         query.bindValue(':id', self.id)
         query.bindValue(':metc', METC)
@@ -175,10 +174,10 @@ class Subject(Table_with_files):
             raise ValueError(query.lastError().text())
 
         protocol_id = query.lastInsertId()
-        return Protocol(self.db, protocol_id, subject=self)
+        return Protocol(self.db['db'], protocol_id, subject=self)
 
     def list_protocols(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT id FROM protocols WHERE subject_id = :id")
         query.bindValue(':id', self.id)
 
@@ -214,18 +213,18 @@ class Session(Table_with_files):
 
     @property
     def start_time(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT MIN(runs.start_time) FROM runs WHERE runs.session_id = :id")
         query.bindValue(':id', self.id)
         assert query.exec()
 
         if query.next():
-            return out_datetime(self.db.driverName(), query.value(0))
+            return out_datetime(self.db['db'].driverName(), query.value(0))
 
     def list_runs(self):
         """List runs which were acquired during session"""
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT runs.id FROM runs WHERE runs.session_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
@@ -249,7 +248,7 @@ class Session(Table_with_files):
 
     def add_run(self, task_name):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO runs (`session_id`, `task_name`) VALUES (:id, :task_name)")
         query.bindValue(':id', self.id)
         query.bindValue(':task_name', task_name)
@@ -273,7 +272,7 @@ class Run(Table_with_files):
 
     def list_recordings(self):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT recordings.id FROM recordings WHERE recordings.run_id = :id")
         query.bindValue(':id', self.id)
 
@@ -288,7 +287,7 @@ class Run(Table_with_files):
 
     def add_recording(self, modality):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO recordings (`run_id`, `modality`) VALUES (:id, :modality)")
         query.bindValue(':id', self.id)
         query.bindValue(':modality', modality)
@@ -305,7 +304,7 @@ class Run(Table_with_files):
         dtypes = get_dtypes(TABLES['events'])
 
         query_str = ', '.join(f"`{x}`" for x in dtypes.names)
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare(f"SELECT {query_str} FROM events WHERE run_id = :id")
         query.bindValue(':id', self.id)
 
@@ -323,7 +322,7 @@ class Run(Table_with_files):
     def events(self, values):
         """If values is None, it deletes all the events.
         """
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare('DELETE FROM events WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
@@ -336,7 +335,7 @@ class Run(Table_with_files):
 
         for row in values:
             values_str = ', '.join([f"'{x}'" for x in row])
-            query = QSqlQuery(self.db)
+            query = QSqlQuery(self.db['db'])
             sql_cmd = f"""\
                 INSERT INTO events (`run_id`, {query_str})
                 VALUES ('{self.id}', {values_str})
@@ -346,7 +345,7 @@ class Run(Table_with_files):
 
     @property
     def experimenters(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT name FROM experimenters JOIN runs_experimenters ON experimenters.id = runs_experimenters.experimenter_id WHERE run_id = :id")
         query.bindValue(':id', self.id)
         if not query.exec():
@@ -360,16 +359,16 @@ class Run(Table_with_files):
     @experimenters.setter
     def experimenters(self, experimenters):
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare('DELETE FROM runs_experimenters WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
             raise SyntaxError(query.lastError().text())
 
-        query_select = QSqlQuery(self.db)
+        query_select = QSqlQuery(self.db['db'])
         query_select.prepare("SELECT id FROM experimenters WHERE name = :experimenter")
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO runs_experimenters (`run_id`, `experimenter_id`) VALUES (:id, :exp_id)")
         query.bindValue(':id', self.id)
 
@@ -389,7 +388,7 @@ class Run(Table_with_files):
 
     @property
     def intendedfor(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT target FROM intended_for WHERE run_id = :id")
         query.bindValue(':id', self.id)
 
@@ -404,13 +403,13 @@ class Run(Table_with_files):
 
     @intendedfor.setter
     def intendedfor(self, runs):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare('DELETE FROM intended_for WHERE run_id = :id')
         query.bindValue(':id', self.id)
         if not query.exec():
             raise SyntaxError(query.lastError().text())
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO intended_for (`run_id`, `target`) VALUES (:id, :target_id)")
         query.bindValue(':id', self.id)
 
@@ -420,7 +419,7 @@ class Run(Table_with_files):
                 raise SyntaxError(query.lastError().text())
 
     def attach_protocol(self, protocol):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("INSERT INTO runs_protocols (`run_id`, `protocol_id`) VALUES (:id, :protocol_id)")
         query.bindValue(':id', self.id)
         query.bindValue(':protocol_id', protocol.id)
@@ -429,7 +428,7 @@ class Run(Table_with_files):
             raise ValueError(query.lastError().text())
 
     def detach_protocol(self, protocol):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("DELETE FROM runs_protocols WHERE run_id = :id AND protocol_id = :protocol_id")
         query.bindValue(':id', self.id)
         query.bindValue(':protocol_id', protocol.id)
@@ -438,7 +437,7 @@ class Run(Table_with_files):
             raise SyntaxError(query.lastError().text())
 
     def list_protocols(self):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare("SELECT protocol_id FROM runs_protocols WHERE run_id = :id")
         query.bindValue(':id', self.id)
 
@@ -497,7 +496,7 @@ class Channels(NumpyTable):
     @classmethod
     def add(cls, db):
         # add empty value to get new id
-        query = QSqlQuery(db)
+        query = QSqlQuery(db['db'])
         query.prepare("INSERT INTO channel_groups (`Reference`) VALUES (NULL) ")
         if query.exec():
             id = query.lastInsertId()
@@ -514,7 +513,7 @@ class Electrodes(NumpyTable):
     def add(cls, db):
         """Use ID if provided, otherwise create a new electrode_group with
         reasonable parameters"""
-        query = QSqlQuery(db)
+        query = QSqlQuery(db['db'])
         query.prepare("INSERT INTO electrode_groups (`CoordinateSystem`, `CoordinateUnits`) VALUES ('ACPC', 'mm')")
         if query.exec():
             id = query.lastInsertId()
@@ -525,7 +524,7 @@ class Electrodes(NumpyTable):
 
 
 def list_experimenters(db):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare("SELECT name FROM experimenters ORDER BY name")
 
     if not query.exec():
@@ -534,21 +533,5 @@ def list_experimenters(db):
     out = []
     while query.next():
         out.append(query.value('name'))
-
-    return out
-
-
-def list_allowed_values(db, table_name, column_name):
-    query = QSqlQuery(db)
-    query.prepare("SELECT allowed_value FROM allowed_values WHERE table_name = :table_name AND column_name = :column_name ORDER BY allowed_value")
-    query.bindValue(':table_name', table_name)
-    query.bindValue(':column_name', column_name)
-
-    if not query.exec():
-        raise SyntaxError(query.lastError().text())
-
-    out = []
-    while query.next():
-        out.append(query.value('allowed_value'))
 
     return out

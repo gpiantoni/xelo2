@@ -27,6 +27,7 @@
 <pre><code class="python">from re import search
 
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QMetaType
 
 
 LEVELS = [
@@ -52,6 +53,43 @@ ELEC_CHAN = [
     &#39;channel&#39;,
     &#39;electrode&#39;,
     ]
+
+EXPECTED_TABLES = (
+    METATABLES
+    + LEVELS
+    + [x + &#39;_files&#39; for x in LEVELS]
+    + [x + &#39;s&#39; for x in ELEC_CHAN]
+    + [x + &#39;_groups&#39; for x in ELEC_CHAN]
+    )
+
+def parse_all_tables(info_schema, db):
+    TABLES = {}
+    for table in sorted(db.tables()):
+
+        indices = lookup_indexes(info_schema, db, table)
+        comments = lookup_comments(info_schema, db, table)
+
+        driver = db.driver()
+        rec = driver.record(table)
+
+        table_d = {}
+        for i in range(rec.count()):
+            field = rec.field(i)
+            name = field.name()
+            d = {}
+            d[&#39;type&#39;] = QMetaType.typeName(field.type())
+            d[&#39;values&#39;] = lookup_allowed_values(db, table, name)
+            d[&#39;index&#39;] = indices.get(name, False)
+            doc = comments.get(name, None)
+            if doc is None:
+                d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
+            else:
+                d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+            table_d[name] = d
+
+        TABLES[table] = table_d
+
+    return TABLES
 
 
 def lookup_allowed_values(db, table, column):
@@ -451,6 +489,45 @@ for foreign keys, it's table_name (column_name)</dd>
     return statements</code></pre>
 </details>
 </dd>
+<dt id="xelo2.database.tables.parse_all_tables"><code class="name flex">
+<span>def <span class="ident">parse_all_tables</span></span>(<span>info_schema, db)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_all_tables(info_schema, db):
+    TABLES = {}
+    for table in sorted(db.tables()):
+
+        indices = lookup_indexes(info_schema, db, table)
+        comments = lookup_comments(info_schema, db, table)
+
+        driver = db.driver()
+        rec = driver.record(table)
+
+        table_d = {}
+        for i in range(rec.count()):
+            field = rec.field(i)
+            name = field.name()
+            d = {}
+            d[&#39;type&#39;] = QMetaType.typeName(field.type())
+            d[&#39;values&#39;] = lookup_allowed_values(db, table, name)
+            d[&#39;index&#39;] = indices.get(name, False)
+            doc = comments.get(name, None)
+            if doc is None:
+                d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
+            else:
+                d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+            table_d[name] = d
+
+        TABLES[table] = table_d
+
+    return TABLES</code></pre>
+</details>
+</dd>
 <dt id="xelo2.database.tables.parse_subtables"><code class="name flex">
 <span>def <span class="ident">parse_subtables</span></span>(<span>info_schema, db, table)</span>
 </code></dt>
@@ -536,6 +613,7 @@ for foreign keys, it's table_name (column_name)</dd>
 <li><code><a title="xelo2.database.tables.lookup_comments" href="#xelo2.database.tables.lookup_comments">lookup_comments</a></code></li>
 <li><code><a title="xelo2.database.tables.lookup_indexes" href="#xelo2.database.tables.lookup_indexes">lookup_indexes</a></code></li>
 <li><code><a title="xelo2.database.tables.lookup_statements" href="#xelo2.database.tables.lookup_statements">lookup_statements</a></code></li>
+<li><code><a title="xelo2.database.tables.parse_all_tables" href="#xelo2.database.tables.parse_all_tables">parse_all_tables</a></code></li>
 <li><code><a title="xelo2.database.tables.parse_subtables" href="#xelo2.database.tables.parse_subtables">parse_subtables</a></code></li>
 <li><code><a title="xelo2.database.tables.parse_trigger_statements" href="#xelo2.database.tables.parse_trigger_statements">parse_trigger_statements</a></code></li>
 </ul>

@@ -1,6 +1,7 @@
 from re import search
 
 from PyQt5.QtSql import QSqlQuery
+from PyQt5.QtCore import QMetaType
 
 
 LEVELS = [
@@ -26,6 +27,43 @@ ELEC_CHAN = [
     'channel',
     'electrode',
     ]
+
+EXPECTED_TABLES = (
+    METATABLES
+    + LEVELS
+    + [x + '_files' for x in LEVELS]
+    + [x + 's' for x in ELEC_CHAN]
+    + [x + '_groups' for x in ELEC_CHAN]
+    )
+
+def parse_all_tables(info_schema, db):
+    TABLES = {}
+    for table in sorted(db.tables()):
+
+        indices = lookup_indexes(info_schema, db, table)
+        comments = lookup_comments(info_schema, db, table)
+
+        driver = db.driver()
+        rec = driver.record(table)
+
+        table_d = {}
+        for i in range(rec.count()):
+            field = rec.field(i)
+            name = field.name()
+            d = {}
+            d['type'] = QMetaType.typeName(field.type())
+            d['values'] = lookup_allowed_values(db, table, name)
+            d['index'] = indices.get(name, False)
+            doc = comments.get(name, None)
+            if doc is None:
+                d['alias'] = d['doc'] = None
+            else:
+                d['alias'], d['doc'] = doc.split(': ')
+            table_d[name] = d
+
+        TABLES[table] = table_d
+
+    return TABLES
 
 
 def lookup_allowed_values(db, table, column):

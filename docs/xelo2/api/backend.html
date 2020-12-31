@@ -40,7 +40,6 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QVariant
 import sip
 
-from ..database import TABLES  # ok
 from .utils import (
     collect_columns,
     get_dtypes,
@@ -71,7 +70,7 @@ class Table():
         self.id = id
 
         # check if it exists at all
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#39;SELECT id FROM {self.t}s WHERE id = :id&#39;)
         query.bindValue(&#39;:id&#39;, id)
         if not query.exec():
@@ -99,7 +98,7 @@ class Table():
         &#34;&#34;&#34;Delete current item / this row from this table. It does not delete
         the python object.
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self.t}s WHERE id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -117,7 +116,7 @@ class Table():
         if table_name != (self.t + &#39;s&#39;):  # for subtables, use foreign key
             id_name = f&#39;{self.t}_id&#39;
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {key} FROM {table_name} WHERE {id_name} = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
 
@@ -134,10 +133,10 @@ class Table():
                 out = None
 
             elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;).startswith(&#39;DATETIME&#39;):
-                out = out_datetime(self.db.driverName(), out.value())
+                out = out_datetime(self.db[&#39;db&#39;].driverName(), out.value())
 
             elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;) == &#39;DATE&#39;:
-                out = out_date(self.db.driverName(), out.value())
+                out = out_date(self.db[&#39;db&#39;].driverName(), out.value())
 
             else:
                 out = out.value()
@@ -202,7 +201,7 @@ class Table():
         else:
             value = _null(value)
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
 
@@ -217,7 +216,7 @@ class Table_with_files(Table):
     def list_files(self):
         &#34;&#34;&#34;List all the files associated with this object
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -240,7 +239,7 @@ class Table_with_files(Table):
         &#34;&#34;&#34;
         path = Path(path).resolve()
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(&#34;SELECT id, format FROM files WHERE path = :path&#34;)
         query.bindValue(&#39;:path&#39;, str(path))
         if not query.exec():
@@ -254,7 +253,7 @@ class Table_with_files(Table):
                 raise ValueError(f&#39;Input format &#34;{format}&#34; does not match the format &#34;{format_in_table}&#34; in the table for {path}&#39;)
 
         else:
-            query = QSqlQuery(self.db)
+            query = QSqlQuery(self.db[&#39;db&#39;])
             query.prepare(&#34;INSERT INTO files (`format`, `path`) VALUES (:format, :path)&#34;)
             query.bindValue(&#39;:format&#39;, format)
             query.bindValue(&#39;:path&#39;, str(path))
@@ -263,7 +262,7 @@ class Table_with_files(Table):
 
             file_id = query.lastInsertId()
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`) VALUES (:id, :file_id)&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         query.bindValue(&#39;:file_id&#39;, file_id)
@@ -275,7 +274,7 @@ class Table_with_files(Table):
     def delete_file(self, file):
         &#34;&#34;&#34;There should be a trigger that deletes the file when there are no pointers anymore
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self.t}s_files WHERE {self.t}_id = :id AND file_id = :file_id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         query.bindValue(&#39;:file_id&#39;, file.id)
@@ -295,7 +294,7 @@ class NumpyTable(Table_with_files):
     def data(self):
         dtypes = get_dtypes(TABLES[self._tb_data])
         query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -321,7 +320,7 @@ class NumpyTable(Table_with_files):
     def data(self, values):
         &#34;&#34;&#34;If values is None, it deletes all the events.
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -332,7 +331,7 @@ class NumpyTable(Table_with_files):
 
         for row in values:
             column_str, values_str = _create_query(row)
-            query = QSqlQuery(self.db)  # column_str depends on values as well (no column when value is NaN)
+            query = QSqlQuery(self.db[&#39;db&#39;])  # column_str depends on values as well (no column when value is NaN)
             sql_cmd = f&#34;&#34;&#34;\
                 INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
                 VALUES (&#39;{self.id}&#39;, {values_str})
@@ -506,7 +505,7 @@ def path(self):
     def data(self):
         dtypes = get_dtypes(TABLES[self._tb_data])
         query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -532,7 +531,7 @@ def path(self):
     def data(self, values):
         &#34;&#34;&#34;If values is None, it deletes all the events.
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -543,7 +542,7 @@ def path(self):
 
         for row in values:
             column_str, values_str = _create_query(row)
-            query = QSqlQuery(self.db)  # column_str depends on values as well (no column when value is NaN)
+            query = QSqlQuery(self.db[&#39;db&#39;])  # column_str depends on values as well (no column when value is NaN)
             sql_cmd = f&#34;&#34;&#34;\
                 INSERT INTO {self._tb_data} (`{self.t}_id`, {column_str})
                 VALUES (&#39;{self.id}&#39;, {values_str})
@@ -586,7 +585,7 @@ def path(self):
 def data(self):
     dtypes = get_dtypes(TABLES[self._tb_data])
     query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
     query.bindValue(&#39;:id&#39;, self.id)
     if not query.exec():
@@ -686,7 +685,7 @@ use this class but only its subclasses.</p>
         self.id = id
 
         # check if it exists at all
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#39;SELECT id FROM {self.t}s WHERE id = :id&#39;)
         query.bindValue(&#39;:id&#39;, id)
         if not query.exec():
@@ -714,7 +713,7 @@ use this class but only its subclasses.</p>
         &#34;&#34;&#34;Delete current item / this row from this table. It does not delete
         the python object.
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self.t}s WHERE id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -732,7 +731,7 @@ use this class but only its subclasses.</p>
         if table_name != (self.t + &#39;s&#39;):  # for subtables, use foreign key
             id_name = f&#39;{self.t}_id&#39;
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {key} FROM {table_name} WHERE {id_name} = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
 
@@ -749,10 +748,10 @@ use this class but only its subclasses.</p>
                 out = None
 
             elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;).startswith(&#39;DATETIME&#39;):
-                out = out_datetime(self.db.driverName(), out.value())
+                out = out_datetime(self.db[&#39;db&#39;].driverName(), out.value())
 
             elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;) == &#39;DATE&#39;:
-                out = out_date(self.db.driverName(), out.value())
+                out = out_date(self.db[&#39;db&#39;].driverName(), out.value())
 
             else:
                 out = out.value()
@@ -817,7 +816,7 @@ use this class but only its subclasses.</p>
         else:
             value = _null(value)
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
 
@@ -860,7 +859,7 @@ the python object.</p></div>
     &#34;&#34;&#34;Delete current item / this row from this table. It does not delete
     the python object.
     &#34;&#34;&#34;
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;DELETE FROM {self.t}s WHERE id = :id&#34;)
     query.bindValue(&#39;:id&#39;, self.id)
     if not query.exec():
@@ -889,7 +888,7 @@ objects which might be associated with files.</p></div>
     def list_files(self):
         &#34;&#34;&#34;List all the files associated with this object
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = :id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         if not query.exec():
@@ -912,7 +911,7 @@ objects which might be associated with files.</p></div>
         &#34;&#34;&#34;
         path = Path(path).resolve()
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(&#34;SELECT id, format FROM files WHERE path = :path&#34;)
         query.bindValue(&#39;:path&#39;, str(path))
         if not query.exec():
@@ -926,7 +925,7 @@ objects which might be associated with files.</p></div>
                 raise ValueError(f&#39;Input format &#34;{format}&#34; does not match the format &#34;{format_in_table}&#34; in the table for {path}&#39;)
 
         else:
-            query = QSqlQuery(self.db)
+            query = QSqlQuery(self.db[&#39;db&#39;])
             query.prepare(&#34;INSERT INTO files (`format`, `path`) VALUES (:format, :path)&#34;)
             query.bindValue(&#39;:format&#39;, format)
             query.bindValue(&#39;:path&#39;, str(path))
@@ -935,7 +934,7 @@ objects which might be associated with files.</p></div>
 
             file_id = query.lastInsertId()
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`) VALUES (:id, :file_id)&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         query.bindValue(&#39;:file_id&#39;, file_id)
@@ -947,7 +946,7 @@ objects which might be associated with files.</p></div>
     def delete_file(self, file):
         &#34;&#34;&#34;There should be a trigger that deletes the file when there are no pointers anymore
         &#34;&#34;&#34;
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;DELETE FROM {self.t}s_files WHERE {self.t}_id = :id AND file_id = :file_id&#34;)
         query.bindValue(&#39;:id&#39;, self.id)
         query.bindValue(&#39;:file_id&#39;, file.id)
@@ -997,7 +996,7 @@ objects which might be associated with files.</p></div>
     &#34;&#34;&#34;
     path = Path(path).resolve()
 
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(&#34;SELECT id, format FROM files WHERE path = :path&#34;)
     query.bindValue(&#39;:path&#39;, str(path))
     if not query.exec():
@@ -1011,7 +1010,7 @@ objects which might be associated with files.</p></div>
             raise ValueError(f&#39;Input format &#34;{format}&#34; does not match the format &#34;{format_in_table}&#34; in the table for {path}&#39;)
 
     else:
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(&#34;INSERT INTO files (`format`, `path`) VALUES (:format, :path)&#34;)
         query.bindValue(&#39;:format&#39;, format)
         query.bindValue(&#39;:path&#39;, str(path))
@@ -1020,7 +1019,7 @@ objects which might be associated with files.</p></div>
 
         file_id = query.lastInsertId()
 
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;INSERT INTO {self.t}s_files (`{self.t}_id`, `file_id`) VALUES (:id, :file_id)&#34;)
     query.bindValue(&#39;:id&#39;, self.id)
     query.bindValue(&#39;:file_id&#39;, file_id)
@@ -1042,7 +1041,7 @@ objects which might be associated with files.</p></div>
 <pre><code class="python">def delete_file(self, file):
     &#34;&#34;&#34;There should be a trigger that deletes the file when there are no pointers anymore
     &#34;&#34;&#34;
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;DELETE FROM {self.t}s_files WHERE {self.t}_id = :id AND file_id = :file_id&#34;)
     query.bindValue(&#39;:id&#39;, self.id)
     query.bindValue(&#39;:file_id&#39;, file.id)
@@ -1062,7 +1061,7 @@ objects which might be associated with files.</p></div>
 <pre><code class="python">def list_files(self):
     &#34;&#34;&#34;List all the files associated with this object
     &#34;&#34;&#34;
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;SELECT file_id FROM {self.t}s_files WHERE {self.t}_id = :id&#34;)
     query.bindValue(&#39;:id&#39;, self.id)
     if not query.exec():

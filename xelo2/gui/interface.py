@@ -54,7 +54,7 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database import open_database, lookup_allowed_values
+from ..database import access_database
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec

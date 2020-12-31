@@ -4,11 +4,9 @@ from numpy import empty
 from .utils import localize_blackrock
 from .events import read_events_from_ieeg
 from ..api.utils import get_dtypes
-from ..database import TABLES  # ok
 from ..api.filetype import parse_filetype
 
 
-# DTYPES = get_dtypes(TABLES['events'])
 
 
 def add_ieeg_to_sess(sess, ieeg_file):
@@ -37,6 +35,7 @@ def read_info_from_ieeg(path_to_file):
     d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
 
+    DTYPES = get_dtypes(TABLES['events'])
     ev = empty(len(mrk), dtype=DTYPES)
     ev['onset'] = [x['start'] for x in mrk]
     ev['duration'] = [x['end'] - x['start'] for x in mrk]
