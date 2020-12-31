@@ -28,7 +28,7 @@ cache:
 
 before_install:
   - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy libqt5sql5-mysql
-  - tests/data/create_db.sh
+  - mysql -u root -e tests/data/create_db.sh
 
 install: 
   - sudo pip3 install nibabel pandas wonambi bidso
