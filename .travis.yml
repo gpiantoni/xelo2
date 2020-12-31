@@ -35,8 +35,7 @@ install:
   - pip install -e .
 
 script:
-  - pytest3 -h
-  - pytest tests/ -vv
+  - pytest-3 tests/ -vv
 
 after_success:
   - codecov
