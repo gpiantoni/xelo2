@@ -1,9 +1,9 @@
-dist: bionic
+dist: focal
 
 language: python
 
 python:
-  - "3.6"
+  - "3.8"
 
 virtualenv:
   system_site_packages: true
@@ -27,7 +27,7 @@ cache:
    - $HOME/.cache/pip
 
 before_install:
-  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy python3-pip python3-setuptools
+  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy python3-pip python3-setuptools libqt5sql5-mysql
   - mysql -u root -e "CREATE DATABASE test;"
 
 install: 
