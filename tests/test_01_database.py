@@ -5,5 +5,5 @@ from .paths import DB_ARGS
 
 def test_open(qtbot):
     db = open_database(**DB_ARGS)
-    n_tables = 1
+    n_tables = 2
     assert len(db.tables()) == n_tables

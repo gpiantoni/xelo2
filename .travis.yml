@@ -27,9 +27,10 @@ cache:
    - $HOME/.cache/pip
 
 before_install:
-  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy libqt5sql5-mysql
   - mysql -u root -e "CREATE DATABASE test;"
-  - mysql -u root test < tests/data/create_db.sql
+  - mysql -u root test < tests/data/example/sql/allowed_values.sql
+  - mysql -u root test < tests/data/example/sql/subjects.sql
+  - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy libqt5sql5-mysql
 
 install: 
   - sudo pip3 install nibabel pandas wonambi bidso
