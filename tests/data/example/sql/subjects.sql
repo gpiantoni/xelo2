@@ -1,9 +1,3 @@
-CREATE TABLE `allowed_values` (
-  `table_name` text NOT NULL,
-  `column_name` text NOT NULL,
-  `allowed_value` text NOT NULL
-);
-
 CREATE TABLE `subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date_of_birth` date DEFAULT NULL COMMENT 'Date of Birth: Date of birth of the participant',
