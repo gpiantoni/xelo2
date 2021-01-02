@@ -322,8 +322,6 @@ BEGIN
   END IF;
 END ;;
 
-
-
 CREATE TRIGGER add_id_to_subtable_recordings_mri
   AFTER INSERT ON recordings
   FOR EACH ROW
