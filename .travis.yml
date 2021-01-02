@@ -35,6 +35,7 @@ before_install:
   - mysql -u root test < tests/data/example/sql/runs.sql
   - mysql -u root test < tests/data/example/sql/channels.sql
   - mysql -u root test < tests/data/example/sql/electrodes.sql
+  - mysql -u root test < tests/data/example/sql/recordings.sql
   - sudo apt-get -y install python3-pyqt5.qtsql python3-pytestqt python3-pytest-cov python3-numpy libqt5sql5-mysql
 
 install: 

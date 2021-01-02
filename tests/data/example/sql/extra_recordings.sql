@@ -289,3 +289,67 @@ CREATE TABLE `recordings_epi` (
   CONSTRAINT `recordings_epi_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+
+CREATE TRIGGER `replace_id_to_subtable_recordings_mri` AFTER UPDATE ON `recordings` FOR EACH ROW
+BEGIN
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct') AND
+    NEW.id NOT IN (SELECT `recording_id` FROM `recordings_mri`)
+  THEN
+    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER `replace_id_to_subtable_recordings_epi` AFTER UPDATE ON `recordings` FOR EACH ROW
+BEGIN
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality IN ('bold', 'epi') AND
+    NEW.id NOT IN (SELECT recording_id FROM recordings_epi)
+  THEN
+    INSERT INTO recordings_epi (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER `replace_id_to_subtable_recordings_ieeg` AFTER UPDATE ON `recordings` FOR EACH ROW
+BEGIN
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality = 'ieeg' AND
+    NEW.id NOT IN (SELECT recording_id FROM recordings_ieeg)
+  THEN
+    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+
+
+CREATE TRIGGER add_id_to_subtable_recordings_mri
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+BEGIN
+  IF NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct')
+  THEN
+    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER add_id_to_subtable_recordings_epi
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+BEGIN
+  IF NEW.modality IN ('bold', 'epi')
+  THEN
+    INSERT INTO recordings_epi (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER add_id_to_subtable_recordings_ieeg
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+BEGIN
+  IF NEW.modality = 'ieeg'
+  THEN
+    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
