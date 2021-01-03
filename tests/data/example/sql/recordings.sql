@@ -5,7 +5,7 @@ CREATE TABLE `recordings` (
   `offset` float DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `run_id` (`run_id`),
-  CONSTRAINT `recordings_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `` (`id`) ON DELETE CASCADE
+  CONSTRAINT `recordings_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
 
 DELIMITER ;;
