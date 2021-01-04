@@ -264,7 +264,7 @@ class NumpyTable(Table_with_files):
 
     @property
     def data(self):
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db['tables'][self._tb_data])
         query_str = ", ".join(f"`{col}`" for col in dtypes.names)
         query = QSqlQuery(self.db['db'])
         query.prepare(f"SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id")
@@ -314,7 +314,7 @@ class NumpyTable(Table_with_files):
     def empty(self, n_rows):
         """convenience function to get an empty array with empty values if
         necessary"""
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db['tables'][self._tb_data])
 
         values = empty(n_rows, dtype=dtypes)
         for name in values.dtype.names:
