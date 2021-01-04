@@ -36,6 +36,7 @@ before_install:
   - mysql -u root test < tests/data/example/sql/channels.sql
   - mysql -u root test < tests/data/example/sql/electrodes.sql
   - mysql -u root test < tests/data/example/sql/recordings.sql
+  - mysql -u root test < tests/data/example/sql/files.sql
   - mysql -u root test < tests/data/example/sql/extra_sessions.sql
   - mysql -u root test < tests/data/example/sql/extra_runs.sql
   - mysql -u root test < tests/data/example/sql/extra_recordings.sql

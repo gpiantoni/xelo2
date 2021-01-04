@@ -2,7 +2,8 @@ from datetime import datetime, date
 from pytest import raises
 from numpy import empty
 
-from xelo2.api import Subject, list_subjects, Electrodes, Channels
+from xelo2.api import Subject, list_subjects, Electrodes, Channels, File
+from xelo2.api.filetype import parse_filetype
 from xelo2.database import access_database, close_database
 
 from .paths import TRC_PATH, DB_ARGS, T1_PATH
@@ -66,10 +67,9 @@ def test_api_session():
 
     close_database(db)
 
-"""
 
 def test_api_run():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -78,7 +78,7 @@ def test_api_run():
     run = sess.add_run('motor')
     run.start_time = fake_time
     assert str(run) == '<run (#1)>'
-    assert repr(run) == 'Run(id=1)'
+    assert repr(run) == 'Run(db, id=1)'
     assert run.session == sess
 
     assert run.start_time == fake_time
@@ -90,11 +90,11 @@ def test_api_run():
     with raises(ValueError):
         sess.add_run('xxx')
 
-    db.close()
+    close_database(db)
 
 
 def test_api_protocol():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     protocol_1 = subj.add_protocol('14-622')
@@ -129,11 +129,11 @@ def test_api_protocol():
     run = sess.add_run('mario')
     run.attach_protocol(protocol_2)
 
-    db.close()
+    close_database(db)
 
 
 def test_api_recording():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -141,7 +141,7 @@ def test_api_recording():
 
     recording = run.add_recording('ieeg')
     assert str(recording) == '<recording (#1)>'
-    assert repr(recording) == 'Recording(id=1)'
+    assert repr(recording) == 'Recording(db, id=1)'
     assert recording.run == run
 
     with raises(ValueError):
@@ -152,23 +152,22 @@ def test_api_recording():
     recording.delete()
     assert len(run.list_recordings()) == 0
 
-    db.close()
-
+    close_database(db)
 
 def test_api_experimenters():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
     run = sess.list_runs()[0]
-    run.experimenters = ['Mariska', 'Gio', 'xxx']
-    assert run.experimenters == ['Gio', 'Mariska']
+    run.experimenters = ['Ryder', 'Gio', 'xxx']
+    assert run.experimenters == ['Gio', 'Ryder']
 
-    db.close()
+    close_database(db)
 
 
 def test_api_events():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.list_sessions()[0]
@@ -189,11 +188,11 @@ def test_api_events():
     assert events['duration'][5] == 3
     assert events['trial_type'][5] == 'test'
 
-    db.close()
+    close_database(db)
 
 
 def test_api_files():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     with raises(ValueError):
         File(db, id=1)  # there should be no file
@@ -214,11 +213,11 @@ def test_api_files():
     with raises(ValueError):
         File(db, id=1)  # the file should have deleted by the trigger
 
-    db.close()
+    close_database(db)
 
 
 def test_api_sorting():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj_2 = Subject.add(db, 'skye')
     sess = subj_2.add_session('MRI')
@@ -237,11 +236,11 @@ def test_api_sorting():
     Subject.add(db, 'chase')
     assert len(list_subjects(db)) == 3
 
-    db.close()
+    close_database(db)
 
 
 def test_api_electrodes_channels():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     elec = Electrodes.add(db)
     assert elec.CoordinateUnits == 'mm'
@@ -272,11 +271,11 @@ def test_api_electrodes_channels():
     with raises(ValueError):
         chan.data = values
 
-    db.close()
+    close_database(db)
 
 
 def test_api_electrodes_channels_attach():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = Subject.add(db, 'everest')
     sess = subj.add_session('OR')
@@ -321,6 +320,4 @@ def test_api_electrodes_channels_attach():
     recording.attach_channels(chan)
     recording.attach_electrodes(elec)
 
-    db.close()
-
-"""
+    close_database(db)

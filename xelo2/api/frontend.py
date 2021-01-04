@@ -174,7 +174,7 @@ class Subject(Table_with_files):
             raise ValueError(query.lastError().text())
 
         protocol_id = query.lastInsertId()
-        return Protocol(self.db['db'], protocol_id, subject=self)
+        return Protocol(self.db, protocol_id, subject=self)
 
     def list_protocols(self):
         query = QSqlQuery(self.db['db'])
@@ -301,7 +301,7 @@ class Run(Table_with_files):
 
     @property
     def events(self):
-        dtypes = get_dtypes(TABLES['events'])
+        dtypes = get_dtypes(self.db['tables']['events'])
 
         query_str = ', '.join(f"`{x}`" for x in dtypes.names)
         query = QSqlQuery(self.db['db'])

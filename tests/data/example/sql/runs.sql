@@ -5,6 +5,8 @@ CREATE TABLE `experimenters` (
   UNIQUE KEY `name` (`name`)
 ) ;
 
+INSERT INTO `experimenters` (`name`) VALUES ('Gio'),('Ryder');
+
 CREATE TABLE `runs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session_id` int(11) DEFAULT NULL,

@@ -1,4 +1,4 @@
-"""Subtables should have a field called "when" and be called "parents_EXTRA"
+"""
 """
 from logging import getLogger
 
