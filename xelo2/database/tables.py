@@ -177,6 +177,8 @@ def lookup_comments(info_schema, db, table):
         k = query.value('column_name')
         c = query.value('column_comment')
         if len(c) > 0:
+            if isinstance(c, bytes):
+                c = c.decode()
             values[k] = c
 
     return values
