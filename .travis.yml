@@ -9,6 +9,7 @@ virtualenv:
   system_site_packages: true
 
 addons:
+  mariadb: '10.3'
   apt:
     packages:
     - x11-utils
