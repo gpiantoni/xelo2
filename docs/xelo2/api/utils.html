@@ -38,13 +38,15 @@ from numpy import (
 lg = getLogger(__name__)
 
 
-def get_attributes(obj):
+def get_attributes(tables, obj):
     &#34;&#34;&#34;For each main object (Subject, Session etc), it returns the name of the
     attribute, the information about that attribute (type, full name), and the
     actual value.
 
     Parameters
     ----------
+    tables : dict
+        information about all the tables
     obj  : instance of Subject, Session, Run, Protocol, Recording
         one of the main objects
 
@@ -59,21 +61,23 @@ def get_attributes(obj):
         actual value of the attribute for that object
     &#34;&#34;&#34;
     for column, table in obj.columns.items():
-        condition = TABLES[table].get(&#39;when&#39;, None)
+        condition = tables[table].get(&#39;when&#39;, None)
         if condition is not None:  # if subtable
             if getattr(obj, condition[&#39;parameter&#39;]) not in condition[&#39;value&#39;]:
                 continue  # does not match the WHEN condition
-        col_info = TABLES[table][column]
+        col_info = tables[table][column]
         value = getattr(obj, column)
         yield column, col_info, value
 
 
-def collect_columns(t):
+def collect_columns(db, t):
     &#34;&#34;&#34;For each attribute, this function looks up in which table the information
     is stored.
 
     Parameters
     ----------
+    db : dict
+        information about all the tables
     t : str
         name of the table (subject, session, run, etc)
 
@@ -83,18 +87,35 @@ def collect_columns(t):
         where the key is the attribute and the value is the table
     &#34;&#34;&#34;
     table = t + &#39;s&#39;
-    attr_tables = {}
-    for k, v in TABLES.items():
-        if k == table or v.get(&#39;when&#39;, {}).get(&#39;parent&#39;, &#39;&#39;) == table:
-            for k0, v0 in v.items():
-                if v0 is None or k0 == &#39;when&#39;:
-                    continue
-                attr_tables[k0] = k
+
+    # main table
+    attr_tables = {k: table for k in list(db[&#39;tables&#39;][table])}
+
+    # look up attributes in subtables
+    subtables = [tb[&#39;subtable&#39;] for tb in db[&#39;subtables&#39;] if tb[&#39;parent&#39;] == table]
+    for subt in subtables:
+        attr_tables.update(
+            {k: subt for k in list(db[&#39;tables&#39;][subt])}
+            )
 
     return attr_tables
 
 
 def find_subject_id(db, code):
+    &#34;&#34;&#34;Look up subject id based on the ID
+
+    Parameters
+    ----------
+    db : dict
+        information about the database
+    code : str
+        code of the subject
+
+    Returns
+    -------
+    int
+        index of the subject
+    &#34;&#34;&#34;
     query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(&#39;SELECT subject_id FROM subject_codes WHERE subject_codes.code = :code&#39;)
     query.bindValue(&#39;:code&#39;, code)
@@ -244,13 +265,15 @@ def recording_attach(db, group, recording_id, group_id=None):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.api.utils.collect_columns"><code class="name flex">
-<span>def <span class="ident">collect_columns</span></span>(<span>t)</span>
+<span>def <span class="ident">collect_columns</span></span>(<span>db, t)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>For each attribute, this function looks up in which table the information
 is stored.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
+<dt><strong><code>db</code></strong> :&ensp;<code>dict</code></dt>
+<dd>information about all the tables</dd>
 <dt><strong><code>t</code></strong> :&ensp;<code>str</code></dt>
 <dd>name of the table (subject, session, run, etc)</dd>
 </dl>
@@ -263,12 +286,14 @@ is stored.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def collect_columns(t):
+<pre><code class="python">def collect_columns(db, t):
     &#34;&#34;&#34;For each attribute, this function looks up in which table the information
     is stored.
 
     Parameters
     ----------
+    db : dict
+        information about all the tables
     t : str
         name of the table (subject, session, run, etc)
 
@@ -278,13 +303,16 @@ is stored.</p>
         where the key is the attribute and the value is the table
     &#34;&#34;&#34;
     table = t + &#39;s&#39;
-    attr_tables = {}
-    for k, v in TABLES.items():
-        if k == table or v.get(&#39;when&#39;, {}).get(&#39;parent&#39;, &#39;&#39;) == table:
-            for k0, v0 in v.items():
-                if v0 is None or k0 == &#39;when&#39;:
-                    continue
-                attr_tables[k0] = k
+
+    # main table
+    attr_tables = {k: table for k in list(db[&#39;tables&#39;][table])}
+
+    # look up attributes in subtables
+    subtables = [tb[&#39;subtable&#39;] for tb in db[&#39;subtables&#39;] if tb[&#39;parent&#39;] == table]
+    for subt in subtables:
+        attr_tables.update(
+            {k: subt for k in list(db[&#39;tables&#39;][subt])}
+            )
 
     return attr_tables</code></pre>
 </details>
@@ -293,12 +321,38 @@ is stored.</p>
 <span>def <span class="ident">find_subject_id</span></span>(<span>db, code)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Look up subject id based on the ID</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>db</code></strong> :&ensp;<code>dict</code></dt>
+<dd>information about the database</dd>
+<dt><strong><code>code</code></strong> :&ensp;<code>str</code></dt>
+<dd>code of the subject</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>index of the subject</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def find_subject_id(db, code):
+    &#34;&#34;&#34;Look up subject id based on the ID
+
+    Parameters
+    ----------
+    db : dict
+        information about the database
+    code : str
+        code of the subject
+
+    Returns
+    -------
+    int
+        index of the subject
+    &#34;&#34;&#34;
     query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(&#39;SELECT subject_id FROM subject_codes WHERE subject_codes.code = :code&#39;)
     query.bindValue(&#39;:code&#39;, code)
@@ -314,13 +368,17 @@ is stored.</p>
 </details>
 </dd>
 <dt id="xelo2.api.utils.get_attributes"><code class="name flex">
-<span>def <span class="ident">get_attributes</span></span>(<span>obj)</span>
+<span>def <span class="ident">get_attributes</span></span>(<span>tables, obj)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>For each main object (Subject, Session etc), it returns the name of the
 attribute, the information about that attribute (type, full name), and the
 actual value.</p>
 <h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>tables</code></strong> :&ensp;<code>dict</code></dt>
+<dd>information about all the tables</dd>
+</dl>
 <p>obj
 : instance of Subject, Session, Run, Protocol, Recording
 one of the main objects</p>
@@ -338,13 +396,15 @@ one of the main objects</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_attributes(obj):
+<pre><code class="python">def get_attributes(tables, obj):
     &#34;&#34;&#34;For each main object (Subject, Session etc), it returns the name of the
     attribute, the information about that attribute (type, full name), and the
     actual value.
 
     Parameters
     ----------
+    tables : dict
+        information about all the tables
     obj  : instance of Subject, Session, Run, Protocol, Recording
         one of the main objects
 
@@ -359,11 +419,11 @@ one of the main objects</p>
         actual value of the attribute for that object
     &#34;&#34;&#34;
     for column, table in obj.columns.items():
-        condition = TABLES[table].get(&#39;when&#39;, None)
+        condition = tables[table].get(&#39;when&#39;, None)
         if condition is not None:  # if subtable
             if getattr(obj, condition[&#39;parameter&#39;]) not in condition[&#39;value&#39;]:
                 continue  # does not match the WHEN condition
-        col_info = TABLES[table][column]
+        col_info = tables[table][column]
         value = getattr(obj, column)
         yield column, col_info, value</code></pre>
 </details>

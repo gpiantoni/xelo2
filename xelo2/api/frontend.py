@@ -44,7 +44,7 @@ def list_subjects(db, alphabetical=False, reverse=False):
 
     list_of_subjects = []
     while query.next():
-        list_of_subjects.append(Subject(db['db'], id=query.value('id')))
+        list_of_subjects.append(Subject(db, id=query.value('id')))
 
     if alphabetical:
         _sort_subjects = sort_subjects_alphabetical

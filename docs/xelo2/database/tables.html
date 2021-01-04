@@ -28,6 +28,7 @@
 
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QMetaType
+from PyQt5.Qt import QByteArray
 
 
 LEVELS = [
@@ -85,7 +86,7 @@ def parse_all_tables(info_schema, db):
                 d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
             else:
                 try:
-                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.decode().split(&#39;: &#39;)
+                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
                 except TypeError:
                     raise ValueError(doc)
             table_d[name] = d
@@ -203,8 +204,8 @@ def lookup_comments(info_schema, db, table):
         k = query.value(&#39;column_name&#39;)
         c = query.value(&#39;column_comment&#39;)
         if len(c) &gt; 0:
-            if isinstance(c, bytes):
-                c = c.decode()
+            if isinstance(c, QByteArray):
+                c = c.data().decode()
             values[k] = c
 
     return values
@@ -238,7 +239,10 @@ def lookup_statements(info_schema, db, table):
 
     statements = []
     while query.next():
-        statements.append(query.value(&#39;action_statement&#39;))
+        c = query.value(&#39;action_statement&#39;)
+        if isinstance(c, QByteArray):
+            c = c.data().decode()
+        statements.append(c)
 
     return statements
 
@@ -393,8 +397,8 @@ def parse_trigger_statements(table, statement):
         k = query.value(&#39;column_name&#39;)
         c = query.value(&#39;column_comment&#39;)
         if len(c) &gt; 0:
-            if isinstance(c, bytes):
-                c = c.decode()
+            if isinstance(c, QByteArray):
+                c = c.data().decode()
             values[k] = c
 
     return values</code></pre>
@@ -491,7 +495,10 @@ for foreign keys, it's table_name (column_name)</dd>
 
     statements = []
     while query.next():
-        statements.append(query.value(&#39;action_statement&#39;))
+        c = query.value(&#39;action_statement&#39;)
+        if isinstance(c, QByteArray):
+            c = c.data().decode()
+        statements.append(c)
 
     return statements</code></pre>
 </details>
@@ -528,7 +535,7 @@ for foreign keys, it's table_name (column_name)</dd>
                 d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
             else:
                 try:
-                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.decode().split(&#39;: &#39;)
+                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
                 except TypeError:
                     raise ValueError(doc)
             table_d[name] = d

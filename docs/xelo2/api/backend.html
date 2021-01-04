@@ -78,7 +78,7 @@ class Table():
         if not query.next():
             raise ValueError(f&#39;Could not find id = {id} in table {self.t}s&#39;)
 
-        self.columns = collect_columns(self.t)
+        self.columns = collect_columns(self.db, self.t)
 
     def __str__(self):
         return f&#39;&lt;{self.t} (#{self.id})&gt;&#39;
@@ -132,10 +132,10 @@ class Table():
             if out.isNull():
                 out = None
 
-            elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;).startswith(&#39;DATETIME&#39;):
+            elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDateTime&#39;:
                 out = out_datetime(self.db[&#39;db&#39;].driverName(), out.value())
 
-            elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;) == &#39;DATE&#39;:
+            elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDate&#39;:
                 out = out_date(self.db[&#39;db&#39;].driverName(), out.value())
 
             else:
@@ -192,11 +192,9 @@ class Table():
         if table_name != (self.t + &#39;s&#39;):  # for subtables, use foreign key
             id_name = f&#39;{self.t}_id&#39;
 
-        if &#39;foreign_key&#39; in TABLES[table_name][key]:  # foreign_key
-            value = _null(value)
-        elif TABLES[table_name][key][&#39;type&#39;] == &#39;DATE&#39;:
+        if self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDate&#39;:
             value = _date(value)
-        elif TABLES[table_name][key][&#39;type&#39;] == &#39;DATETIME&#39;:
+        elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDateTime&#39;:
             value = _datetime(value)
         else:
             value = _null(value)
@@ -693,7 +691,7 @@ use this class but only its subclasses.</p>
         if not query.next():
             raise ValueError(f&#39;Could not find id = {id} in table {self.t}s&#39;)
 
-        self.columns = collect_columns(self.t)
+        self.columns = collect_columns(self.db, self.t)
 
     def __str__(self):
         return f&#39;&lt;{self.t} (#{self.id})&gt;&#39;
@@ -747,10 +745,10 @@ use this class but only its subclasses.</p>
             if out.isNull():
                 out = None
 
-            elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;).startswith(&#39;DATETIME&#39;):
+            elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDateTime&#39;:
                 out = out_datetime(self.db[&#39;db&#39;].driverName(), out.value())
 
-            elif TABLES[table_name][key].get(&#39;type&#39;, &#39;&#39;) == &#39;DATE&#39;:
+            elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDate&#39;:
                 out = out_date(self.db[&#39;db&#39;].driverName(), out.value())
 
             else:
@@ -807,11 +805,9 @@ use this class but only its subclasses.</p>
         if table_name != (self.t + &#39;s&#39;):  # for subtables, use foreign key
             id_name = f&#39;{self.t}_id&#39;
 
-        if &#39;foreign_key&#39; in TABLES[table_name][key]:  # foreign_key
-            value = _null(value)
-        elif TABLES[table_name][key][&#39;type&#39;] == &#39;DATE&#39;:
+        if self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDate&#39;:
             value = _date(value)
-        elif TABLES[table_name][key][&#39;type&#39;] == &#39;DATETIME&#39;:
+        elif self.db[&#39;tables&#39;][table_name][key][&#39;type&#39;] == &#39;QDateTime&#39;:
             value = _datetime(value)
         else:
             value = _null(value)

@@ -44,13 +44,13 @@ def get_attributes(tables, obj):
         yield column, col_info, value
 
 
-def collect_columns(tables, t):
+def collect_columns(db, t):
     """For each attribute, this function looks up in which table the information
     is stored.
 
     Parameters
     ----------
-    tables : dict
+    db : dict
         information about all the tables
     t : str
         name of the table (subject, session, run, etc)
@@ -61,18 +61,35 @@ def collect_columns(tables, t):
         where the key is the attribute and the value is the table
     """
     table = t + 's'
-    attr_tables = {}
-    for k, v in tables.items():
-        if k == table or v.get('when', {}).get('parent', '') == table:
-            for k0, v0 in v.items():
-                if v0 is None or k0 == 'when':
-                    continue
-                attr_tables[k0] = k
+
+    # main table
+    attr_tables = {k: table for k in list(db['tables'][table])}
+
+    # look up attributes in subtables
+    subtables = [tb['subtable'] for tb in db['subtables'] if tb['parent'] == table]
+    for subt in subtables:
+        attr_tables.update(
+            {k: subt for k in list(db['tables'][subt])}
+            )
 
     return attr_tables
 
 
 def find_subject_id(db, code):
+    """Look up subject id based on the ID
+
+    Parameters
+    ----------
+    db : dict
+        information about the database
+    code : str
+        code of the subject
+
+    Returns
+    -------
+    int
+        index of the subject
+    """
     query = QSqlQuery(db['db'])
     query.prepare('SELECT subject_id FROM subject_codes WHERE subject_codes.code = :code')
     query.bindValue(':code', code)

@@ -70,7 +70,7 @@ def list_subjects(db, alphabetical=False, reverse=False):
 
     list_of_subjects = []
     while query.next():
-        list_of_subjects.append(Subject(db[&#39;db&#39;], id=query.value(&#39;id&#39;)))
+        list_of_subjects.append(Subject(db, id=query.value(&#39;id&#39;)))
 
     if alphabetical:
         _sort_subjects = sort_subjects_alphabetical
@@ -85,7 +85,7 @@ class Subject(Table_with_files):
 
     def __init__(self, db, code=None, id=None):
         if code is not None:
-            id = find_subject_id(db[&#39;db&#39;], code)
+            id = find_subject_id(db, code)
             if id is None:
                 raise ValueError(f&#39;There is no &#34;{code}&#34; in &#34;subject_codes&#34; table&#39;)
 
@@ -111,7 +111,7 @@ class Subject(Table_with_files):
 
         # add empty value to get new id
         query = QSqlQuery(db[&#39;db&#39;])
-        query.prepare(&#34;INSERT INTO subjects (`sex`) VALUES (NULL) &#34;)
+        query.prepare(&#34;INSERT INTO subjects () VALUES () &#34;)
         if query.exec():
             id = query.lastInsertId()
         else:
@@ -641,7 +641,7 @@ False -&gt; A to Z, True -&gt; Z to A</dd>
 
     list_of_subjects = []
     while query.next():
-        list_of_subjects.append(Subject(db[&#39;db&#39;], id=query.value(&#39;id&#39;)))
+        list_of_subjects.append(Subject(db, id=query.value(&#39;id&#39;)))
 
     if alphabetical:
         _sort_subjects = sort_subjects_alphabetical
@@ -1654,7 +1654,7 @@ objects which might be associated with files.</p></div>
 
     def __init__(self, db, code=None, id=None):
         if code is not None:
-            id = find_subject_id(db[&#39;db&#39;], code)
+            id = find_subject_id(db, code)
             if id is None:
                 raise ValueError(f&#39;There is no &#34;{code}&#34; in &#34;subject_codes&#34; table&#39;)
 
@@ -1680,7 +1680,7 @@ objects which might be associated with files.</p></div>
 
         # add empty value to get new id
         query = QSqlQuery(db[&#39;db&#39;])
-        query.prepare(&#34;INSERT INTO subjects (`sex`) VALUES (NULL) &#34;)
+        query.prepare(&#34;INSERT INTO subjects () VALUES () &#34;)
         if query.exec():
             id = query.lastInsertId()
         else:
@@ -1820,7 +1820,7 @@ def add(cls, db, code=None):
 
     # add empty value to get new id
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(&#34;INSERT INTO subjects (`sex`) VALUES (NULL) &#34;)
+    query.prepare(&#34;INSERT INTO subjects () VALUES () &#34;)
     if query.exec():
         id = query.lastInsertId()
     else:

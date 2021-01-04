@@ -100,8 +100,10 @@ def open_database(db_name, username=None, password=None, connectionName=&#39;xel
 
 
 def close_database(db):
-    db.close()
-    QSqlDatabase.removeDatabase(db.connectionName())</code></pre>
+    db[&#39;db&#39;].close()
+    QSqlDatabase.removeDatabase(db[&#39;db&#39;].connectionName())
+    db[&#39;info&#39;].close()
+    QSqlDatabase.removeDatabase(db[&#39;info&#39;].connectionName())</code></pre>
 </details>
 </section>
 <section>
@@ -156,8 +158,10 @@ def close_database(db):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def close_database(db):
-    db.close()
-    QSqlDatabase.removeDatabase(db.connectionName())</code></pre>
+    db[&#39;db&#39;].close()
+    QSqlDatabase.removeDatabase(db[&#39;db&#39;].connectionName())
+    db[&#39;info&#39;].close()
+    QSqlDatabase.removeDatabase(db[&#39;info&#39;].connectionName())</code></pre>
 </details>
 </dd>
 <dt id="xelo2.database.open_db.open_database"><code class="name flex">

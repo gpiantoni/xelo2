@@ -37,17 +37,16 @@ def test_api_subject():
 
     close_database(db)
 
-"""
 
 def test_api_session():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = list_subjects(db)[0]
     sess = subj.add_session('MRI')
 
     assert sess.id == 1
     assert str(sess) == '<session MRI (#1)>'
-    assert repr(sess) == 'Session(id=1)'
+    assert repr(sess) == 'Session(db, id=1)'
     assert sess.subject == subj
 
     # set attribute in subtable
@@ -65,8 +64,9 @@ def test_api_session():
     assert sess.date_of_implantation == fake_date
     assert sess.date_of_explantation is None
 
-    db.close()
+    close_database(db)
 
+"""
 
 def test_api_run():
     db = open_database(**DB_ARGS)
