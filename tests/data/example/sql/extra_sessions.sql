@@ -33,7 +33,8 @@ CREATE TRIGGER validate_MagneticFieldStrength_before_insert_to_sessions_mri
   BEFORE INSERT ON sessions_mri
   FOR EACH ROW
 BEGIN
-  IF NEW.MagneticFieldStrength NOT IN (
+  IF NEW.MagneticFieldStrength IS NOT NULL AND
+    BINARY NEW.MagneticFieldStrength NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'sessions_mri'
     AND column_name = 'MagneticFieldStrength')
@@ -46,7 +47,8 @@ CREATE TRIGGER validate_MagneticFieldStrength_before_update_to_sessions_mri
   BEFORE UPDATE ON sessions_mri
   FOR EACH ROW
 BEGIN
-  IF NEW.MagneticFieldStrength NOT IN (
+  IF NEW.MagneticFieldStrength IS NOT NULL AND
+    BINARY NEW.MagneticFieldStrength NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'sessions_mri'
     AND column_name = 'MagneticFieldStrength')
@@ -76,7 +78,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `replace_id_to_subtable_sessions_or` AFTER UPDATE ON `sessions` FOR EACH ROW
+CREATE TRIGGER `replace_id_to_subtable_sessions_or` 
+  AFTER UPDATE ON `sessions` 
+  FOR EACH ROW
 BEGIN
   IF NEW.name <> OLD.name AND
     NEW.name = 'OR' AND
@@ -108,7 +112,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `replace_id_to_subtable_sessions_iemu` AFTER UPDATE ON `sessions` FOR EACH ROW
+CREATE TRIGGER `replace_id_to_subtable_sessions_iemu` 
+  AFTER UPDATE ON `sessions` 
+  FOR EACH ROW
 BEGIN
   IF NEW.name <> OLD.name AND
     NEW.name = 'IEMU' AND

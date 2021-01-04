@@ -16,7 +16,8 @@ CREATE TRIGGER validate_modality_before_insert_to_recordings
   BEFORE INSERT ON recordings
   FOR EACH ROW
 BEGIN
-  IF NEW.modality NOT IN (
+  IF NEW.modality IS NOT NULL AND
+    BINARY NEW.modality NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings'
     AND column_name = 'modality')
@@ -29,7 +30,8 @@ CREATE TRIGGER validate_modality_before_update_to_recordings
   BEFORE UPDATE ON recordings
   FOR EACH ROW
 BEGIN
-  IF NEW.modality NOT IN (
+  IF NEW.modality IS NOT NULL AND
+    BINARY NEW.modality NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings'
     AND column_name = 'modality')

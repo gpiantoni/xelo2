@@ -18,7 +18,8 @@ CREATE TRIGGER validate_CoordinateSystem_before_insert_to_electrode_groups
   BEFORE INSERT ON electrode_groups
   FOR EACH ROW
 BEGIN
-  IF NEW.CoordinateSystem NOT IN (
+  IF NEW.CoordinateSystem IS NOT NULL AND
+    BINARY NEW.CoordinateSystem NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrode_groups'
     AND column_name = 'CoordinateSystem')
@@ -31,7 +32,8 @@ CREATE TRIGGER validate_CoordinateSystem_before_update_to_electrode_groups
   BEFORE UPDATE ON electrode_groups
   FOR EACH ROW
 BEGIN
-  IF NEW.CoordinateSystem NOT IN (
+  IF NEW.CoordinateSystem IS NOT NULL AND
+    BINARY NEW.CoordinateSystem NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrode_groups'
     AND column_name = 'CoordinateSystem')
@@ -44,7 +46,8 @@ CREATE TRIGGER validate_CoordinateUnits_before_insert_to_electrode_groups
   BEFORE INSERT ON electrode_groups
   FOR EACH ROW
 BEGIN
-  IF NEW.CoordinateUnits NOT IN (
+  IF NEW.CoordinateUnits IS NOT NULL AND 
+    BINARY NEW.CoordinateUnits NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrode_groups'
     AND column_name = 'CoordinateUnits')
@@ -57,7 +60,8 @@ CREATE TRIGGER validate_CoordinateUnits_before_update_to_electrode_groups
   BEFORE UPDATE ON electrode_groups
   FOR EACH ROW
 BEGIN
-  IF NEW.CoordinateUnits NOT IN (
+  IF NEW.CoordinateUnits IS NOT NULL AND 
+    BINARY NEW.CoordinateUnits NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrode_groups'
     AND column_name = 'CoordinateUnits')
@@ -94,7 +98,8 @@ CREATE TRIGGER validate_hemisphere_before_insert_to_electrodes
   BEFORE INSERT ON electrodes
   FOR EACH ROW
 BEGIN
-  IF NEW.hemisphere NOT IN (
+  IF NEW.hemisphere IS NOT NULL AND
+    BINARY NEW.hemisphere NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrodes'
     AND column_name = 'hemisphere')
@@ -107,7 +112,8 @@ CREATE TRIGGER validate_hemisphere_before_update_to_electrodes
   BEFORE UPDATE ON electrodes
   FOR EACH ROW
 BEGIN
-  IF NEW.hemisphere NOT IN (
+  IF NEW.hemisphere IS NOT NULL AND
+    BINARY NEW.hemisphere NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'electrodes'
     AND column_name = 'hemisphere')

@@ -16,7 +16,8 @@ CREATE TRIGGER validate_metc_before_insert_to_protocols
   BEFORE INSERT ON protocols
   FOR EACH ROW
 BEGIN
-  IF NEW.metc NOT IN (
+  IF NEW.metc IS NOT NULL AND
+    BINARY NEW.metc NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'protocols'
     AND column_name = 'metc')
@@ -29,7 +30,8 @@ CREATE TRIGGER validate_metc_before_update_to_protocols
   BEFORE UPDATE ON protocols
   FOR EACH ROW
 BEGIN
-  IF NEW.metc NOT IN (
+  IF NEW.metc IS NOT NULL AND
+    BINARY NEW.metc NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'protocols'
     AND column_name = 'metc')

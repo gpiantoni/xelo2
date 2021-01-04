@@ -16,7 +16,7 @@ CREATE TRIGGER validate_sex_before_insert_to_subjects
   FOR EACH ROW
 BEGIN
   IF NEW.sex IS NOT NULL AND
-    NEW.sex NOT IN (
+    BINARY NEW.sex NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'sex')
@@ -30,7 +30,7 @@ CREATE TRIGGER validate_sex_before_update_to_subjects
   FOR EACH ROW
 BEGIN
   IF NEW.sex IS NOT NULL AND
-    NEW.sex NOT IN (
+    BINARY NEW.sex NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'sex')
@@ -44,7 +44,7 @@ BEFORE INSERT ON subjects
   FOR EACH ROW
 BEGIN
   IF NEW.handedness IS NOT NULL AND
-    NEW.handedness NOT IN (
+    BINARY NEW.handedness NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'handedness')
@@ -58,7 +58,7 @@ CREATE TRIGGER validate_handedness_before_update_to_subjects
   FOR EACH ROW
 BEGIN
   IF NEW.handedness IS NOT NULL AND
-    NEW.handedness NOT IN (
+    BINARY NEW.handedness NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'handedness')
@@ -76,4 +76,3 @@ CREATE TABLE `subject_codes` (
   KEY `subject_id` (`subject_id`),
   CONSTRAINT `subject_codes_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE
 ) ;
-

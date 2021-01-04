@@ -31,7 +31,22 @@ CREATE TRIGGER validate_type_before_insert_to_channels
   BEFORE INSERT ON channels
   FOR EACH ROW
 BEGIN
-  IF NEW.type NOT IN (
+  IF NEW.type IS NOT NULL AND
+    BINARY NEW.type NOT IN (
+    SELECT allowed_value FROM allowed_values
+    WHERE table_name = 'channels'
+    AND column_name = 'type')
+  THEN
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column type is not allowed in table channels';
+  END IF;
+END ;;
+
+CREATE TRIGGER validate_type_before_update_to_channels
+  BEFORE UPDATE ON channels
+  FOR EACH ROW
+BEGIN
+  IF NEW.type IS NOT NULL AND
+    NEW.type NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'channels'
     AND column_name = 'type')
@@ -44,7 +59,8 @@ CREATE TRIGGER validate_units_before_update_to_channels
   BEFORE UPDATE ON channels
   FOR EACH ROW
 BEGIN
-  IF NEW.units NOT IN (
+  IF NEW.units IS NOT NULL AND
+    BINARY NEW.units NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'channels'
     AND column_name = 'units')
@@ -57,25 +73,13 @@ CREATE TRIGGER validate_units_before_insert_to_channels
   BEFORE INSERT ON channels
   FOR EACH ROW
 BEGIN
-  IF NEW.units NOT IN (
+  IF NEW.units IS NOT NULL AND
+    BINARY NEW.units NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'channels'
     AND column_name = 'units')
   THEN
     SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column units is not allowed in table channels';
-  END IF;
-END ;;
-
-CREATE TRIGGER validate_type_before_update_to_channels
-  BEFORE UPDATE ON channels
-  FOR EACH ROW
-BEGIN
-  IF NEW.type NOT IN (
-    SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'channels'
-    AND column_name = 'type')
-  THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column type is not allowed in table channels';
   END IF;
 END ;;
 

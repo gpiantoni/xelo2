@@ -16,11 +16,32 @@ INSERT INTO `allowed_values` VALUES ('recordings_ieeg','Manufacturer','BlackRock
 
 DELIMITER ;;
 
+CREATE TRIGGER add_id_to_subtable_recordings_ieeg
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+BEGIN
+  IF NEW.modality = 'ieeg'
+  THEN
+    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER `replace_id_to_subtable_recordings_ieeg` AFTER UPDATE ON `recordings` FOR EACH ROW
+BEGIN
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality = 'ieeg' AND
+    NEW.id NOT IN (SELECT recording_id FROM recordings_ieeg)
+  THEN
+    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
 CREATE TRIGGER validate_Manufacturer_before_insert_to_recordings_ieeg
   BEFORE INSERT ON recordings_ieeg
   FOR EACH ROW
 BEGIN
-  IF NEW.Manufacturer NOT IN (
+  IF NEW.Manufacturer IS NOT NULL AND
+    BINARY NEW.Manufacturer NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_ieeg'
     AND column_name = 'Manufacturer')
@@ -33,7 +54,8 @@ CREATE TRIGGER validate_Manufacturer_before_update_to_recordings_ieeg
   BEFORE UPDATE ON recordings_ieeg
   FOR EACH ROW
 BEGIN
-  IF NEW.Manufacturer NOT IN (
+  IF NEW.Manufacturer IS NOT NULL AND
+    BINARY NEW.Manufacturer NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_ieeg'
     AND column_name = 'Manufacturer')
@@ -63,9 +85,42 @@ INSERT INTO `allowed_values` VALUES ('recordings_mri','Sequence','3T FLAIR'),('r
 
 DELIMITER ;;
 
+CREATE TRIGGER add_id_to_subtable_recordings_mri
+  AFTER INSERT ON recordings
+  FOR EACH ROW
+BEGIN
+  IF NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct')
+  THEN
+    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
+CREATE TRIGGER `replace_id_to_subtable_recordings_mri` AFTER UPDATE ON `recordings` FOR EACH ROW
+BEGIN
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct') AND
+    NEW.id NOT IN (SELECT `recording_id` FROM `recordings_mri`)
+  THEN
+    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
+  END IF;
+END ;;
+
 CREATE TRIGGER `validate_PhaseEncodingDirection_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
 BEGIN
-  IF NEW.PhaseEncodingDirection NOT IN (
+  IF NEW.PhaseEncodingDirection IS NOT NULL AND
+    BINARY NEW.PhaseEncodingDirection NOT IN (
+    SELECT allowed_value FROM allowed_values
+    WHERE table_name = 'recordings_mri'
+    AND column_name = 'PhaseEncodingDirection')
+  THEN
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column PhaseEncodingDirection is not allowed in table recordings_mri';
+  END IF;
+END ;;
+
+CREATE TRIGGER `validate_PhaseEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+BEGIN
+  IF NEW.PhaseEncodingDirection IS NOT NULL AND
+    BINARY NEW.PhaseEncodingDirection NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_mri'
     AND column_name = 'PhaseEncodingDirection')
@@ -76,7 +131,20 @@ END ;;
 
 CREATE TRIGGER `validate_SliceEncodingDirection_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
 BEGIN
-  IF NEW.SliceEncodingDirection NOT IN (
+  IF NEW.SliceEncodingDirection IS NOT NULL AND
+    BINARY NEW.SliceEncodingDirection NOT IN (
+    SELECT allowed_value FROM allowed_values
+    WHERE table_name = 'recordings_mri'
+    AND column_name = 'SliceEncodingDirection')
+  THEN
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column SliceEncodingDirection is not allowed in table recordings_mri';
+  END IF;
+END ;;
+
+CREATE TRIGGER `validate_SliceEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+BEGIN
+  IF NEW.SliceEncodingDirection IS NOT NULL AND
+    BINARY NEW.SliceEncodingDirection NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_mri'
     AND column_name = 'SliceEncodingDirection')
@@ -87,7 +155,20 @@ END ;;
 
 CREATE TRIGGER `validate_Sequence_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
 BEGIN
-  IF NEW.Sequence NOT IN (
+  IF NEW.Sequence IS NOT NULL AND
+    BINARY NEW.Sequence NOT IN (
+    SELECT allowed_value FROM allowed_values
+    WHERE table_name = 'recordings_mri'
+    AND column_name = 'Sequence')
+  THEN
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Sequence is not allowed in table recordings_mri';
+  END IF;
+END ;;
+
+CREATE TRIGGER `validate_Sequence_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+BEGIN
+  IF NEW.Sequence IS NOT NULL AND
+    BINARY NEW.Sequence NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_mri'
     AND column_name = 'Sequence')
@@ -98,7 +179,8 @@ END ;;
 
 CREATE TRIGGER `validate_SliceOrder_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
 BEGIN
-  IF NEW.SliceOrder NOT IN (
+  IF NEW.SliceOrder IS NOT NULL AND
+    BINARY NEW.SliceOrder NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_mri'
     AND column_name = 'SliceOrder')
@@ -107,42 +189,10 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_SliceEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
-BEGIN
-  IF NEW.SliceEncodingDirection NOT IN (
-    SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'recordings_mri'
-    AND column_name = 'SliceEncodingDirection')
-  THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column SliceEncodingDirection is not allowed in table recordings_mri';
-  END IF;
-END ;;
-
-CREATE TRIGGER `validate_Sequence_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
-BEGIN
-  IF NEW.Sequence NOT IN (
-    SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'recordings_mri'
-    AND column_name = 'Sequence')
-  THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Sequence is not allowed in table recordings_mri';
-  END IF;
-END ;;
-
-CREATE TRIGGER `validate_PhaseEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
-BEGIN
-  IF NEW.PhaseEncodingDirection NOT IN (
-    SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'recordings_mri'
-    AND column_name = 'PhaseEncodingDirection')
-  THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column PhaseEncodingDirection is not allowed in table recordings_mri';
-  END IF;
-END ;;
-
 CREATE TRIGGER `validate_SliceOrder_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
 BEGIN
-  IF NEW.SliceOrder NOT IN (
+  IF NEW.SliceOrder IS NOT NULL AND
+    BINARY NEW.SliceOrder NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'recordings_mri'
     AND column_name = 'SliceOrder')
@@ -163,46 +213,6 @@ CREATE TABLE `recordings_epi` (
 
 DELIMITER ;;
 
-CREATE TRIGGER `replace_id_to_subtable_recordings_mri` AFTER UPDATE ON `recordings` FOR EACH ROW
-BEGIN
-  IF NEW.modality <> OLD.modality AND
-    NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct') AND
-    NEW.id NOT IN (SELECT `recording_id` FROM `recordings_mri`)
-  THEN
-    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
-  END IF;
-END ;;
-
-CREATE TRIGGER `replace_id_to_subtable_recordings_epi` AFTER UPDATE ON `recordings` FOR EACH ROW
-BEGIN
-  IF NEW.modality <> OLD.modality AND
-    NEW.modality IN ('bold', 'epi') AND
-    NEW.id NOT IN (SELECT recording_id FROM recordings_epi)
-  THEN
-    INSERT INTO recordings_epi (recording_id) VALUES (NEW.id) ;
-  END IF;
-END ;;
-
-CREATE TRIGGER `replace_id_to_subtable_recordings_ieeg` AFTER UPDATE ON `recordings` FOR EACH ROW
-BEGIN
-  IF NEW.modality <> OLD.modality AND
-    NEW.modality = 'ieeg' AND
-    NEW.id NOT IN (SELECT recording_id FROM recordings_ieeg)
-  THEN
-    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
-  END IF;
-END ;;
-
-CREATE TRIGGER add_id_to_subtable_recordings_mri
-  AFTER INSERT ON recordings
-  FOR EACH ROW
-BEGIN
-  IF NEW.modality IN ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi', 'dwi', 'ct')
-  THEN
-    INSERT INTO recordings_mri (recording_id) VALUES (NEW.id) ;
-  END IF;
-END ;;
-
 CREATE TRIGGER add_id_to_subtable_recordings_epi
   AFTER INSERT ON recordings
   FOR EACH ROW
@@ -213,13 +223,13 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER add_id_to_subtable_recordings_ieeg
-  AFTER INSERT ON recordings
-  FOR EACH ROW
+CREATE TRIGGER `replace_id_to_subtable_recordings_epi` AFTER UPDATE ON `recordings` FOR EACH ROW
 BEGIN
-  IF NEW.modality = 'ieeg'
+  IF NEW.modality <> OLD.modality AND
+    NEW.modality IN ('bold', 'epi') AND
+    NEW.id NOT IN (SELECT recording_id FROM recordings_epi)
   THEN
-    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+    INSERT INTO recordings_epi (recording_id) VALUES (NEW.id) ;
   END IF;
 END ;;
 

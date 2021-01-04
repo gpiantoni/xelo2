@@ -28,7 +28,8 @@ CREATE TRIGGER validate_task_name_before_insert_to_runs
   BEFORE INSERT ON runs
   FOR EACH ROW
 BEGIN
-  IF NEW.task_name NOT IN (
+  IF NEW.task_name IS NOT NULL AND
+    BINARY NEW.task_name NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'runs'
     AND column_name = 'task_name')
@@ -41,7 +42,8 @@ CREATE TRIGGER validate_task_name_before_update_to_runs
   BEFORE UPDATE ON runs
   FOR EACH ROW
 BEGIN
-  IF NEW.task_name NOT IN (
+  IF NEW.task_name IS NOT NULL AND
+    BINARY NEW.task_name NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'runs'
     AND column_name = 'task_name')

@@ -13,7 +13,8 @@ CREATE TRIGGER validate_format_before_insert_to_files
   BEFORE INSERT ON files
   FOR EACH ROW
 BEGIN
-  IF NEW.format NOT IN (
+  IF NEW.format IS NOT NULL AND
+    BINARY NEW.format NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'files'
     AND column_name = 'format')
@@ -26,7 +27,8 @@ CREATE TRIGGER validate_format_before_update_to_files
   BEFORE UPDATE ON files
   FOR EACH ROW
 BEGIN
-  IF NEW.format NOT IN (
+  IF NEW.format IS NOT NULL AND
+    BINARY NEW.format NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'files'
     AND column_name = 'format')
