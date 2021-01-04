@@ -13,7 +13,22 @@ CREATE TRIGGER validate_sex_before_insert_to_subjects
   BEFORE INSERT ON subjects
   FOR EACH ROW
 BEGIN
-  IF NEW.sex NOT IN (
+  IF NEW.sex IS NOT NULL AND
+    NEW.sex NOT IN (
+    SELECT allowed_value FROM allowed_values
+    WHERE table_name = 'subjects'
+    AND column_name = 'sex')
+  THEN
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column sex is not allowed in table subjects';
+  END IF;
+END ;;
+
+CREATE TRIGGER validate_sex_before_update_to_subjects
+  BEFORE UPDATE ON subjects
+  FOR EACH ROW
+BEGIN
+  IF NEW.sex IS NOT NULL AND
+    NEW.sex NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'sex')
@@ -26,7 +41,8 @@ CREATE TRIGGER validate_handedness_before_insert_to_subjects
 BEFORE INSERT ON subjects
   FOR EACH ROW
 BEGIN
-  IF NEW.handedness NOT IN (
+  IF NEW.handedness IS NOT NULL AND
+    NEW.handedness NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'handedness')
@@ -35,24 +51,12 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER validate_sex_before_update_to_subjects
-  BEFORE UPDATE ON subjects
-  FOR EACH ROW
-BEGIN
-  IF NEW.sex NOT IN (
-    SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'subjects'
-    AND column_name = 'sex')
-  THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column sex is not allowed in table subjects';
-  END IF;
-END ;;
-
 CREATE TRIGGER validate_handedness_before_update_to_subjects
   BEFORE UPDATE ON subjects
   FOR EACH ROW
 BEGIN
-  IF NEW.handedness NOT IN (
+  IF NEW.handedness IS NOT NULL AND
+    NEW.handedness NOT IN (
     SELECT allowed_value FROM allowed_values
     WHERE table_name = 'subjects'
     AND column_name = 'handedness')

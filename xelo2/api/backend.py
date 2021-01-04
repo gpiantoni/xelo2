@@ -52,7 +52,7 @@ class Table():
         if not query.next():
             raise ValueError(f'Could not find id = {id} in table {self.t}s')
 
-        self.columns = collect_columns(self.t)
+        self.columns = collect_columns(self.db['tables'], self.t)
 
     def __str__(self):
         return f'<{self.t} (#{self.id})>'

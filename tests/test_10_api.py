@@ -3,20 +3,18 @@ from pytest import raises
 from numpy import empty
 
 from xelo2.api import Subject, list_subjects, Electrodes, Channels
-from xelo2.api.backend import File
-from xelo2.api.filetype import parse_filetype
-from xelo2.database.create import open_database
+from xelo2.database import access_database, close_database
 
 from .paths import TRC_PATH, DB_ARGS, T1_PATH
 
 
 def test_api_subject():
-    db = open_database(**DB_ARGS)
+    db = access_database(**DB_ARGS)
 
     subj = Subject.add(db, 'rubble')
     assert subj.id == 1
     assert str(subj) == 'rubble'
-    assert repr(subj) == "Subject(id=1)"
+    assert repr(subj) == "Subject(db, id=1)"
 
     with raises(ValueError):
         Subject.add(db, 'rubble')
@@ -37,8 +35,9 @@ def test_api_subject():
     assert len(subj.codes) == 2
     assert str(subj) == 'rubble, zuma'
 
-    db.close()
+    close_database(db)
 
+"""
 
 def test_api_session():
     db = open_database(**DB_ARGS)
@@ -323,3 +322,5 @@ def test_api_electrodes_channels_attach():
     recording.attach_electrodes(elec)
 
     db.close()
+
+"""

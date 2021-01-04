@@ -59,7 +59,7 @@ class Subject(Table_with_files):
 
     def __init__(self, db, code=None, id=None):
         if code is not None:
-            id = find_subject_id(db['db'], code)
+            id = find_subject_id(db, code)
             if id is None:
                 raise ValueError(f'There is no "{code}" in "subject_codes" table')
 
@@ -85,7 +85,7 @@ class Subject(Table_with_files):
 
         # add empty value to get new id
         query = QSqlQuery(db['db'])
-        query.prepare("INSERT INTO subjects (`sex`) VALUES (NULL) ")
+        query.prepare("INSERT INTO subjects () VALUES () ")
         if query.exec():
             id = query.lastInsertId()
         else:

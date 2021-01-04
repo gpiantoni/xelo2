@@ -73,5 +73,7 @@ def open_database(db_name, username=None, password=None, connectionName='xelo2_d
 
 
 def close_database(db):
-    db.close()
-    QSqlDatabase.removeDatabase(db.connectionName())
+    db['db'].close()
+    QSqlDatabase.removeDatabase(db['db'].connectionName())
+    db['info'].close()
+    QSqlDatabase.removeDatabase(db['info'].connectionName())
