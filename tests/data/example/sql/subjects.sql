@@ -6,6 +6,8 @@ CREATE TABLE `subjects` (
   PRIMARY KEY (`id`)
 );
 
+INSERT INTO `allowed_values` VALUES ('subjects','sex','Female'), ('subjects','sex','Male');
+INSERT INTO `allowed_values` VALUES ('subjects','handedness','Left-handed'),('subjects','handedness','Right-handed'),('subjects','handedness','Ambidextrous');
 
 DELIMITER ;;
 

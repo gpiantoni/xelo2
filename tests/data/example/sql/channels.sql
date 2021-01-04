@@ -22,6 +22,9 @@ CREATE TABLE `channels` (
   CONSTRAINT `channels_ibfk_1` FOREIGN KEY (`channel_group_id`) REFERENCES `channel_groups` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('channels','type','EEG'),('channels','type','ECOG'),('channels','type','SEEG'),('channels','type','EOG'),('channels','type','ECG'),('channels','type','EMG'),('channels','type','TRIG'),('channels','type','MISC'),('channels','type','REF'),('channels','type','OTHER');
+INSERT INTO `allowed_values` VALUES ('channels','units','V'),('channels','units','mV'),('channels','units','μV'),('channels','units','µV'),('channels','units','bpm'),('channels','units','%');
+
 DELIMITER ;;
 
 CREATE TRIGGER validate_type_before_insert_to_channels

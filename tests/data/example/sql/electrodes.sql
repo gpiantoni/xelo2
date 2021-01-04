@@ -9,6 +9,9 @@ CREATE TABLE `electrode_groups` (
   CONSTRAINT `electrode_groups_ibfk_1` FOREIGN KEY (`IntendedFor`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('electrode_groups','CoordinateSystem','ACPC'),('electrode_groups','CoordinateSystem','Pixels');
+INSERT INTO `allowed_values` VALUES ('electrode_groups','CoordinateUnits','mm'),('electrode_groups','CoordinateUnits','m');
+
 DELIMITER ;;
 
 CREATE TRIGGER validate_CoordinateSystem_before_insert_to_electrode_groups
@@ -82,6 +85,8 @@ CREATE TABLE `electrodes` (
   KEY `electrode_group_id` (`electrode_group_id`),
   CONSTRAINT `electrodes_ibfk_1` FOREIGN KEY (`electrode_group_id`) REFERENCES `electrode_groups` (`id`) ON DELETE CASCADE
 ) ;
+
+INSERT INTO `allowed_values` VALUES ('electrodes','hemisphere','L'),('electrodes','hemisphere','R');
 
 DELIMITER ;;
 

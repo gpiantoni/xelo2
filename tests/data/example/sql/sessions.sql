@@ -7,6 +7,8 @@ CREATE TABLE `sessions` (
   CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('sessions','name','IEMU'),('sessions','name','OR'),('sessions','name','MRI'),('sessions','name','CT');
+
 DELIMITER ;;
 
 CREATE TRIGGER validate_name_before_insert_to_sessions

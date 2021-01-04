@@ -12,6 +12,8 @@ CREATE TABLE `recordings_ieeg` (
   CONSTRAINT `recordings_ieeg_ibfk_3` FOREIGN KEY (`electrode_group_id`) REFERENCES `electrode_groups` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('recordings_ieeg','Manufacturer','BlackRock'),('recordings_ieeg','Manufacturer','Micromed');
+
 DELIMITER ;;
 
 CREATE TRIGGER validate_Manufacturer_before_insert_to_recordings_ieeg
@@ -53,6 +55,11 @@ CREATE TABLE `recordings_mri` (
   UNIQUE KEY `recording_id` (`recording_id`),
   CONSTRAINT `recordings_mri_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE
 ) ;
+
+INSERT INTO `allowed_values` VALUES ('recordings_mri','PhaseEncodingDirection','LR'),('recordings_mri','PhaseEncodingDirection','RL'),('recordings_mri','PhaseEncodingDirection','AP'),('recordings_mri','PhaseEncodingDirection','PA'),('recordings_mri','PhaseEncodingDirection','SI'),('recordings_mri','PhaseEncodingDirection','IS');
+INSERT INTO `allowed_values` VALUES ('recordings_mri','SliceEncodingDirection','LR'),('recordings_mri','SliceEncodingDirection','RL'),('recordings_mri','SliceEncodingDirection','AP'),('recordings_mri','SliceEncodingDirection','PA'),('recordings_mri','SliceEncodingDirection','SI'),('recordings_mri','SliceEncodingDirection','IS');
+INSERT INTO `allowed_values` VALUES ('recordings_mri','SliceOrder','Sequential'),('recordings_mri','SliceOrder','Interleaved');
+INSERT INTO `allowed_values` VALUES ('recordings_mri','Sequence','3T FLAIR'),('recordings_mri','Sequence','3T T1w'),('recordings_mri','Sequence','3T Gradient-Echo Multiband'),('recordings_mri','Sequence','7T Gradient-Echo Head Coil'),('recordings_mri','Sequence','7T Wouter 1.6s'),('recordings_mri','Sequence','3T DWI'),('recordings_mri','Sequence','3T Spin-Echo Multiband'),('recordings_mri','Sequence','7T Gradient-Echo Surface Coil'),('recordings_mri','Sequence','7T Spin-Echo Surface Coil'),('recordings_mri','Sequence','3T PRESTO'),('recordings_mri','Sequence','7T Standard 2.1s'),('recordings_mri','Sequence','7T MP2RAGE');
 
 DELIMITER ;;
 

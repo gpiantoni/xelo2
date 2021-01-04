@@ -5,6 +5,8 @@ CREATE TABLE `sessions_mri` (
   CONSTRAINT `sessions_mri_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('sessions_mri','MagneticFieldStrength','1.5T'),('sessions_mri','MagneticFieldStrength','3T'),('sessions_mri','MagneticFieldStrength','7T');
+
 DELIMITER ;;
 
 CREATE TRIGGER add_id_to_subtable_sessions_mri

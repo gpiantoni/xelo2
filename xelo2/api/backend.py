@@ -166,11 +166,9 @@ class Table():
         if table_name != (self.t + 's'):  # for subtables, use foreign key
             id_name = f'{self.t}_id'
 
-        if 'foreign_key' in TABLES[table_name][key]:  # foreign_key
-            value = _null(value)
-        elif TABLES[table_name][key]['type'] == 'DATE':
+        if self.db['tables'][table_name][key]['type'] == 'QDate':
             value = _date(value)
-        elif TABLES[table_name][key]['type'] == 'DATETIME':
+        elif self.db['tables'][table_name][key]['type'] == 'QDateTime':
             value = _datetime(value)
         else:
             value = _null(value)

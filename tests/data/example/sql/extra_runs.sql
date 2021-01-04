@@ -5,7 +5,10 @@ CREATE TABLE `runs_speak` (
   CONSTRAINT `runs_speak_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
 
+INSERT INTO `allowed_values` VALUES ('runs_speak','overt_covert','overt'),('runs_speak','overt_covert','covert');
+
 DELIMITER ;;
+
 CREATE TRIGGER validate_overt_covert_before_insert_to_runs_speak
   BEFORE INSERT ON runs_speak
   FOR EACH ROW
@@ -42,6 +45,10 @@ CREATE TABLE `runs_sensorimotor` (
   UNIQUE KEY `run_id` (`run_id`),
   CONSTRAINT `runs_sensorimotor_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
+
+INSERT INTO `allowed_values` VALUES ('runs_sensorimotor','body_part','arm'),('runs_sensorimotor','body_part','elbow'),('runs_sensorimotor','body_part','foot'),('runs_sensorimotor','body_part','hand'),('runs_sensorimotor','body_part','indexfinger'),('runs_sensorimotor','body_part','leg'),('runs_sensorimotor','body_part','littlefinger'),('runs_sensorimotor','body_part','middlefinger'),('runs_sensorimotor','body_part','mouth'),('runs_sensorimotor','body_part','ringfinger'),('runs_sensorimotor','body_part','thumb'),('runs_sensorimotor','body_part','tongue');
+INSERT INTO `allowed_values` VALUES ('runs_sensorimotor','left_right','left'),('runs_sensorimotor','left_right','right'),('runs_sensorimotor','left_right','both');
+INSERT INTO `allowed_values` VALUES ('runs_sensorimotor','execution_imagery','execution'),('runs_sensorimotor','execution_imagery','imagery');
 
 DELIMITER ;;
 
