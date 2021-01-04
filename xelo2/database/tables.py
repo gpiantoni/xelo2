@@ -2,6 +2,7 @@ from re import search
 
 from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtCore import QMetaType
+from PyQt5.Qt import QByteArray
 
 
 LEVELS = [
@@ -59,7 +60,7 @@ def parse_all_tables(info_schema, db):
                 d['alias'] = d['doc'] = None
             else:
                 try:
-                    d['alias'], d['doc'] = doc.decode().split(': ')
+                    d['alias'], d['doc'] = doc.split(': ')
                 except TypeError:
                     raise ValueError(doc)
             table_d[name] = d
@@ -177,8 +178,8 @@ def lookup_comments(info_schema, db, table):
         k = query.value('column_name')
         c = query.value('column_comment')
         if len(c) > 0:
-            if isinstance(c, bytes):
-                c = c.decode()
+            if isinstance(c, QByteArray):
+                c = c.data().decode()
             values[k] = c
 
     return values

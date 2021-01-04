@@ -84,7 +84,10 @@ def parse_all_tables(info_schema, db):
             if doc is None:
                 d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
             else:
-                d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+                try:
+                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.decode().split(&#39;: &#39;)
+                except TypeError:
+                    raise ValueError(doc)
             table_d[name] = d
 
         TABLES[table] = table_d
@@ -200,6 +203,8 @@ def lookup_comments(info_schema, db, table):
         k = query.value(&#39;column_name&#39;)
         c = query.value(&#39;column_comment&#39;)
         if len(c) &gt; 0:
+            if isinstance(c, bytes):
+                c = c.decode()
             values[k] = c
 
     return values
@@ -388,6 +393,8 @@ def parse_trigger_statements(table, statement):
         k = query.value(&#39;column_name&#39;)
         c = query.value(&#39;column_comment&#39;)
         if len(c) &gt; 0:
+            if isinstance(c, bytes):
+                c = c.decode()
             values[k] = c
 
     return values</code></pre>
@@ -520,7 +527,10 @@ for foreign keys, it's table_name (column_name)</dd>
             if doc is None:
                 d[&#39;alias&#39;] = d[&#39;doc&#39;] = None
             else:
-                d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+                try:
+                    d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.decode().split(&#39;: &#39;)
+                except TypeError:
+                    raise ValueError(doc)
             table_d[name] = d
 
         TABLES[table] = table_d
