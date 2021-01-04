@@ -213,7 +213,10 @@ def lookup_statements(info_schema, db, table):
 
     statements = []
     while query.next():
-        statements.append(query.value('action_statement'))
+        c = query.value('action_statement')
+        if isinstance(c, QByteArray):
+            c = c.data().decode()
+        statements.append(c)
 
     return statements
 
