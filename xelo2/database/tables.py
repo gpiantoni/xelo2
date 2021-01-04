@@ -59,7 +59,7 @@ def parse_all_tables(info_schema, db):
                 d['alias'] = d['doc'] = None
             else:
                 try:
-                    d['alias'], d['doc'] = doc.split(': ')
+                    d['alias'], d['doc'] = doc.decode().split(': ')
                 except TypeError:
                     raise ValueError(doc)
             table_d[name] = d
