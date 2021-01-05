@@ -26,10 +26,6 @@ def create_menubar(main):
     action_revert.triggered.connect(main.sql_rollback)
     menu_db.addAction(action_revert)
 
-    action_export = QAction('Backup to tsv', main)
-    action_export.triggered.connect(main.export_tsv)
-    menu_db.addAction(action_export)
-
     action_close = QAction('Quit', main)
     action_close.triggered.connect(main.close)
     menu_db.addAction(action_close)

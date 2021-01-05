@@ -54,7 +54,7 @@ from PyQt5.QtSql import (
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
 from ..api.utils import get_attributes
-from ..database import access_database
+from ..database import access_database, lookup_allowed_values
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -88,7 +88,7 @@ class Interface(QMainWindow):
     test = False
     unsaved_changes = False
 
-    def __init__(self, db_type=None, db_name=None, username=None, password=None):
+    def __init__(self, db_name=None, username=None, password=None):
 
         super().__init__()
         create_menubar(self)
@@ -288,31 +288,31 @@ class Interface(QMainWindow):
         self.statusBar()
         self.show()
 
-        if db_type is None:
+        if db_name is None:
             DB_ARGS = parse_accessdatabase(self)
             if DB_ARGS is not None:
                 self.sql_access(**DB_ARGS)
 
         else:
-            self.sql_access(db_type, db_name, username, password)
+            self.sql_access(db_name, username, password)
 
-    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+    def sql_access(self, db_name=None, username=None, password=None):
         """This is where you access the database
         """
-        self.db = open_database(db_type, db_name, username, password)
-        self.db.transaction()
+        self.db = access_database(db_name, username, password)
+        self.db['db'].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db)
+        self.events_model = QSqlTableModel(self, self.db['db'])
         self.events_model.setTable('events')
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
-        self.channels_model = QSqlTableModel(self, self.db)
+        self.channels_model = QSqlTableModel(self, self.db['db'])
         self.channels_model.setTable('channels')
         self.channels_view.setModel(self.channels_model)
         self.channels_view.hideColumn(0)
 
-        self.electrodes_model = QSqlTableModel(self, self.db)
+        self.electrodes_model = QSqlTableModel(self, self.db['db'])
         self.electrodes_model.setTable('electrodes')
         self.electrodes_view.setModel(self.electrodes_model)
         self.electrodes_view.hideColumn(0)
@@ -320,17 +320,16 @@ class Interface(QMainWindow):
         self.list_subjects()
 
     def sql_commit(self):
-
-        self.db.commit()
+        self.db['db'].commit()
         self.setWindowTitle('')
         self.unsaved_changes = False
-        self.db.transaction()
+        self.db['db'].transaction()
 
     def sql_rollback(self):
-        self.db.rollback()
+        self.db['db'].rollback()
         self.unsaved_changes = False
         self.setWindowTitle('')
-        self.db.transaction()
+        self.db['db'].transaction()
         self.list_subjects()
 
     def list_subjects(self, code_to_select=None):
@@ -938,7 +937,7 @@ class Interface(QMainWindow):
         subset = {'subjects': [], 'sessions': [], 'runs': []}
         run_ids = '(' + ', '.join([str(x['run_id']) for x in self.exports]) + ')'
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db['db'])
         query.prepare(f"""\
             SELECT subjects.id, sessions.id, runs.id FROM runs
             JOIN sessions ON sessions.id = runs.session_id

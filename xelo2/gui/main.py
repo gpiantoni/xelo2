@@ -1,4 +1,3 @@
-from pathlib import Path
 from logging import getLogger, StreamHandler
 from argparse import ArgumentParser
 import sys
@@ -28,9 +27,6 @@ def main():
 
     parser = ArgumentParser(prog='open xelo2 database')
     parser.add_argument(
-        '--sqlite', default=None,
-        help='path to ')
-    parser.add_argument(
         '--mysql', default=None,
         help='MYSQL database')
     parser.add_argument(
@@ -41,11 +37,8 @@ def main():
         help='MYSQL password')
     args = parser.parse_args()
 
-    if args.sqlite is not None:
-        sqlite = Path(args.sqlite).resolve()
-        w = Interface('QSQLITE', sqlite)
-    elif args.mysql is not None:
-        w = Interface('QMYSQL', args.mysql, args.username, args.password)
+    if args.mysql is not None:
+        w = Interface(args.mysql, args.username, args.password)
     else:
         w = Interface()
 
