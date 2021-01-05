@@ -1,3 +1,5 @@
+# TUTORIAL
+
 ## Create MySQL database
 First create a database as root/admin (`mysql -u root -p`):
 
