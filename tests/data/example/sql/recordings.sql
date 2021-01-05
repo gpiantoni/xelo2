@@ -8,7 +8,7 @@ CREATE TABLE `recordings` (
   CONSTRAINT `recordings_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
 
-INSERT INTO `allowed_values` VALUES ('recordings','modality','ieeg'),('recordings','modality','bold'),('recordings','modality','T1w'),('recordings','modality','T2w'),('recordings','modality','T2star'),('recordings','modality','PD'),('recordings','modality','FLAIR'),('recordings','modality','angio'),('recordings','modality','epi'),('recordings','modality','dwi'),('recordings','modality','ct'),('recordings','modality','physio'),('recordings','modality','stim');
+INSERT INTO `allowed_values` VALUES ('recordings','modality','ieeg'),('recordings','modality','meg'),('recordings','modality','eeg'),('recordings','modality','bold'),('recordings','modality','T1w'),('recordings','modality','T2w'),('recordings','modality','T2star'),('recordings','modality','PD'),('recordings','modality','FLAIR'),('recordings','modality','angio'),('recordings','modality','epi'),('recordings','modality','dwi'),('recordings','modality','ct'),('recordings','modality','physio'),('recordings','modality','stim');
 
 DELIMITER ;;
 

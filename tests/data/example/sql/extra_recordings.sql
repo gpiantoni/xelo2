@@ -1,4 +1,4 @@
-CREATE TABLE `recordings_ieeg` (
+CREATE TABLE `recordings_ephys` (
   `recording_id` int(11) DEFAULT NULL,
   `channel_group_id` int(11) DEFAULT NULL,
   `electrode_group_id` int(11) DEFAULT NULL,
@@ -7,60 +7,60 @@ CREATE TABLE `recordings_ieeg` (
   UNIQUE KEY `recording_id` (`recording_id`),
   KEY `channel_group_id` (`channel_group_id`),
   KEY `electrode_group_id` (`electrode_group_id`),
-  CONSTRAINT `recordings_ieeg_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `recordings_ieeg_ibfk_2` FOREIGN KEY (`channel_group_id`) REFERENCES `channel_groups` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `recordings_ieeg_ibfk_3` FOREIGN KEY (`electrode_group_id`) REFERENCES `electrode_groups` (`id`) ON DELETE CASCADE
+  CONSTRAINT `recordings_ephys_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `recordings_ephys_ibfk_2` FOREIGN KEY (`channel_group_id`) REFERENCES `channel_groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `recordings_ephys_ibfk_3` FOREIGN KEY (`electrode_group_id`) REFERENCES `electrode_groups` (`id`) ON DELETE CASCADE
 ) ;
 
-INSERT INTO `allowed_values` VALUES ('recordings_ieeg','Manufacturer','BlackRock'),('recordings_ieeg','Manufacturer','Micromed');
+INSERT INTO `allowed_values` VALUES ('recordings_ephys','Manufacturer','BlackRock'),('recordings_ephys','Manufacturer','Micromed');
 
 DELIMITER ;;
 
-CREATE TRIGGER add_id_to_subtable_recordings_ieeg
+CREATE TRIGGER add_id_to_subtable_recordings_ephys
   AFTER INSERT ON recordings
   FOR EACH ROW
 BEGIN
-  IF NEW.modality = 'ieeg'
+  IF NEW.modality IN ('ieeg', 'eeg', 'meg')
   THEN
-    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+    INSERT INTO recordings_ephys (recording_id) VALUES (NEW.id) ;
   END IF;
 END ;;
 
-CREATE TRIGGER `replace_id_to_subtable_recordings_ieeg` AFTER UPDATE ON `recordings` FOR EACH ROW
+CREATE TRIGGER `replace_id_to_subtable_recordings_ephys` AFTER UPDATE ON `recordings` FOR EACH ROW
 BEGIN
   IF NEW.modality <> OLD.modality AND
-    NEW.modality = 'ieeg' AND
-    NEW.id NOT IN (SELECT recording_id FROM recordings_ieeg)
+    NEW.modality IN ('ieeg', 'eeg', 'meg') AND
+    NEW.id NOT IN (SELECT recording_id FROM recordings_ephys)
   THEN
-    INSERT INTO recordings_ieeg (recording_id) VALUES (NEW.id) ;
+    INSERT INTO recordings_ephys (recording_id) VALUES (NEW.id) ;
   END IF;
 END ;;
 
-CREATE TRIGGER validate_Manufacturer_before_insert_to_recordings_ieeg
-  BEFORE INSERT ON recordings_ieeg
+CREATE TRIGGER validate_Manufacturer_before_insert_to_recordings_ephys
+  BEFORE INSERT ON recordings_ephys
   FOR EACH ROW
 BEGIN
   IF NEW.Manufacturer IS NOT NULL AND
     BINARY NEW.Manufacturer NOT IN (
     SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'recordings_ieeg'
+    WHERE table_name = 'recordings_ephys'
     AND column_name = 'Manufacturer')
   THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Manufacturer is not allowed in table recordings_ieeg';
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Manufacturer is not allowed in table recordings_ephys';
   END IF;
 END ;;
 
-CREATE TRIGGER validate_Manufacturer_before_update_to_recordings_ieeg
-  BEFORE UPDATE ON recordings_ieeg
+CREATE TRIGGER validate_Manufacturer_before_update_to_recordings_ephys
+  BEFORE UPDATE ON recordings_ephys
   FOR EACH ROW
 BEGIN
   IF NEW.Manufacturer IS NOT NULL AND
     BINARY NEW.Manufacturer NOT IN (
     SELECT allowed_value FROM allowed_values
-    WHERE table_name = 'recordings_ieeg'
+    WHERE table_name = 'recordings_ephys'
     AND column_name = 'Manufacturer')
   THEN
-    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Manufacturer is not allowed in table recordings_ieeg';
+    SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column Manufacturer is not allowed in table recordings_ephys';
   END IF;
 END ;;
 
