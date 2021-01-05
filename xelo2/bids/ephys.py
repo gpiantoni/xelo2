@@ -4,13 +4,13 @@ from json import dump
 
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
-from ..io.ieeg import localize_blackrock
+from ..io.ephys import localize_blackrock
 
 
 lg = getLogger(__name__)
 
 
-def convert_ieeg(run, rec, dest_path, name, intendedfor):
+def convert_ephys(run, rec, dest_path, name, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.offset)
 
     end_time = start_time + timedelta(seconds=run.duration)
@@ -29,19 +29,19 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
         name['acq'] = 'acq-none'
     else:
         name['acq'] = f'acq-{rec.Manufacturer.lower()}'
-    output_ieeg = dest_path / f'{make_bids_name(name, "ieeg")}'
+    output_ephys = dest_path / f'{make_bids_name(name, "ephys")}'
     markers = convert_events_to_wonambi(run.events)
-    data.export(output_ieeg, 'brainvision', markers=markers, anonymize=True)
+    data.export(output_ephys, 'brainvision', markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
-    sidecar_file = output_ieeg.with_suffix('.json')
+    sidecar_file = output_ephys.with_suffix('.json')
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
     n_chan = len(d.header['chan_name'])
 
     _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
-    return output_ieeg
+    return output_ephys
 
 
 def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):

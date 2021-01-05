@@ -1,5 +1,4 @@
 from numpy import empty
-from wonambi import Dataset
 from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
 from logging import getLogger
@@ -8,7 +7,7 @@ from .utils import localize_blackrock
 lg = getLogger(__name__)
 
 
-def read_events_from_ieeg(run, rec, file):
+def read_events_from_ephys(run, rec, file):
     """Make sure that rec.onset is in the good direction"""
     try:
         d = localize_blackrock(file.path)

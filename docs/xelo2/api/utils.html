@@ -176,10 +176,10 @@ def list_channels_electrodes(db, session_id, name=&#39;channel&#39;):
 
     query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(f&#34;&#34;&#34;\
-        SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
-        JOIN recordings ON recordings_ieeg.recording_id = recordings.id
+        SELECT DISTINCT recordings_ephys.{name}_group_id FROM recordings_ephys
+        JOIN recordings ON recordings_ephys.recording_id = recordings.id
         JOIN runs ON runs.id = recordings.run_id
-        WHERE recordings.modality = &#39;ieeg&#39;
+        WHERE recordings.modality IN (&#39;ieeg&#39;, &#39;meg&#39;, &#39;eeg&#39;)
         AND runs.session_id = :session_id
         ORDER BY runs.start_time&#34;&#34;&#34;)
     query.bindValue(&#39;:session_id&#39;, session_id)
@@ -200,7 +200,7 @@ def list_channels_electrodes(db, session_id, name=&#39;channel&#39;):
 
 def recording_get(db, group, recording_id):
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(f&#34;SELECT {group}_group_id FROM recordings_ieeg WHERE recording_id = :recording_id&#34;)
+    query.prepare(f&#34;SELECT {group}_group_id FROM recordings_ephys WHERE recording_id = :recording_id&#34;)
     query.bindValue(&#39;:recording_id&#39;, recording_id)
     if not query.exec():
         lg.warning(query.lastError().text())
@@ -230,7 +230,7 @@ def recording_attach(db, group, recording_id, group_id=None):
         the entry
     &#34;&#34;&#34;
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(f&#34;UPDATE recordings_ieeg SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id&#34;)
+    query.prepare(f&#34;UPDATE recordings_ephys SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id&#34;)
     query.bindValue(&#39;:group_id&#39;, group_id)
     query.bindValue(&#39;:recording_id&#39;, recording_id)
 
@@ -401,10 +401,10 @@ is stored.</p>
 
     query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(f&#34;&#34;&#34;\
-        SELECT DISTINCT recordings_ieeg.{name}_group_id FROM recordings_ieeg
-        JOIN recordings ON recordings_ieeg.recording_id = recordings.id
+        SELECT DISTINCT recordings_ephys.{name}_group_id FROM recordings_ephys
+        JOIN recordings ON recordings_ephys.recording_id = recordings.id
         JOIN runs ON runs.id = recordings.run_id
-        WHERE recordings.modality = &#39;ieeg&#39;
+        WHERE recordings.modality IN (&#39;ieeg&#39;, &#39;meg&#39;, &#39;eeg&#39;)
         AND runs.session_id = :session_id
         ORDER BY runs.start_time&#34;&#34;&#34;)
     query.bindValue(&#39;:session_id&#39;, session_id)
@@ -502,7 +502,7 @@ the entry</dd>
         the entry
     &#34;&#34;&#34;
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(f&#34;UPDATE recordings_ieeg SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id&#34;)
+    query.prepare(f&#34;UPDATE recordings_ephys SET `{group}_group_id` = :group_id WHERE `recording_id` = :recording_id&#34;)
     query.bindValue(&#39;:group_id&#39;, group_id)
     query.bindValue(&#39;:recording_id&#39;, recording_id)
 
@@ -521,7 +521,7 @@ the entry</dd>
 </summary>
 <pre><code class="python">def recording_get(db, group, recording_id):
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(f&#34;SELECT {group}_group_id FROM recordings_ieeg WHERE recording_id = :recording_id&#34;)
+    query.prepare(f&#34;SELECT {group}_group_id FROM recordings_ephys WHERE recording_id = :recording_id&#34;)
     query.bindValue(&#39;:recording_id&#39;, recording_id)
     if not query.exec():
         lg.warning(query.lastError().text())

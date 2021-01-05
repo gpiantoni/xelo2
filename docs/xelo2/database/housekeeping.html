@@ -30,7 +30,7 @@ from numpy import isin
 
 from PyQt5.QtSql import QSqlQuery
 
-from ..io.ieeg import read_info_from_ieeg
+from ..io.ephys import read_info_from_ephys
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..api import Electrodes
@@ -128,7 +128,7 @@ def add_recording(run):
     recs = run.list_recordings()
     if len(recs) == 0:
         print(&#39;adding recording&#39;)
-        return run.add_recording(&#39;ieeg&#39;)
+        return run.add_recording(&#39;ephys&#39;)
     elif len(recs) == 1:
         print(&#39;getting recording&#39;)
         return recs[0]
@@ -136,25 +136,25 @@ def add_recording(run):
         raise ValueError(&#39;too many recordings&#39;)
 
 
-def add_ieeg_info(run, micromed_path):
-    ieeg = read_info_from_ieeg(Path(micromed_path))
-    print(ieeg[&#39;start_time&#39;])
-    print(ieeg[&#39;duration&#39;])
-    print(f&#34;# events: {ieeg[&#39;events&#39;].shape[0]}&#34;)
+def add_ephys_info(run, micromed_path):
+    ephys = read_info_from_ephys(Path(micromed_path))
+    print(ephys[&#39;start_time&#39;])
+    print(ephys[&#39;duration&#39;])
+    print(f&#34;# events: {ephys[&#39;events&#39;].shape[0]}&#34;)
     output = input(&#39;ok (y/n)?&#39;)
     if output == &#39;y&#39;:
-        run.start_time = ieeg[&#39;start_time&#39;]
-        run.duration = ieeg[&#39;duration&#39;]
-        run.events = ieeg[&#39;events&#39;]
+        run.start_time = ephys[&#39;start_time&#39;]
+        run.duration = ephys[&#39;duration&#39;]
+        run.events = ephys[&#39;events&#39;]
 
 
 def set_channels(sess, rec):
 
     if len(sess.list_channels()) == 0:
         chan = None
-        for ieeg_path in rec.list_files():
-            if ieeg_path.format == &#39;micromed&#39;:
-                chan = create_channels(ieeg_path.path)
+        for ephys_path in rec.list_files():
+            if ephys_path.format == &#39;micromed&#39;:
+                chan = create_channels(ephys_path.path)
                 break
         if chan is None:
             return
@@ -303,6 +303,27 @@ def create_electrodes(rec, mat_file, idx=None):
     lg.warning(&#39;Value correctly added. Changes will take place immediately for SQL, but GUI is not updated until you restart xelo2&#39;)</code></pre>
 </details>
 </dd>
+<dt id="xelo2.database.housekeeping.add_ephys_info"><code class="name flex">
+<span>def <span class="ident">add_ephys_info</span></span>(<span>run, micromed_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_ephys_info(run, micromed_path):
+    ephys = read_info_from_ephys(Path(micromed_path))
+    print(ephys[&#39;start_time&#39;])
+    print(ephys[&#39;duration&#39;])
+    print(f&#34;# events: {ephys[&#39;events&#39;].shape[0]}&#34;)
+    output = input(&#39;ok (y/n)?&#39;)
+    if output == &#39;y&#39;:
+        run.start_time = ephys[&#39;start_time&#39;]
+        run.duration = ephys[&#39;duration&#39;]
+        run.events = ephys[&#39;events&#39;]</code></pre>
+</details>
+</dd>
 <dt id="xelo2.database.housekeeping.add_events_type"><code class="name flex">
 <span>def <span class="ident">add_events_type</span></span>(<span>run)</span>
 </code></dt>
@@ -342,27 +363,6 @@ def create_electrodes(rec, mat_file, idx=None):
     run.events = events</code></pre>
 </details>
 </dd>
-<dt id="xelo2.database.housekeeping.add_ieeg_info"><code class="name flex">
-<span>def <span class="ident">add_ieeg_info</span></span>(<span>run, micromed_path)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_ieeg_info(run, micromed_path):
-    ieeg = read_info_from_ieeg(Path(micromed_path))
-    print(ieeg[&#39;start_time&#39;])
-    print(ieeg[&#39;duration&#39;])
-    print(f&#34;# events: {ieeg[&#39;events&#39;].shape[0]}&#34;)
-    output = input(&#39;ok (y/n)?&#39;)
-    if output == &#39;y&#39;:
-        run.start_time = ieeg[&#39;start_time&#39;]
-        run.duration = ieeg[&#39;duration&#39;]
-        run.events = ieeg[&#39;events&#39;]</code></pre>
-</details>
-</dd>
 <dt id="xelo2.database.housekeeping.add_recording"><code class="name flex">
 <span>def <span class="ident">add_recording</span></span>(<span>run)</span>
 </code></dt>
@@ -376,7 +376,7 @@ def create_electrodes(rec, mat_file, idx=None):
     recs = run.list_recordings()
     if len(recs) == 0:
         print(&#39;adding recording&#39;)
-        return run.add_recording(&#39;ieeg&#39;)
+        return run.add_recording(&#39;ephys&#39;)
     elif len(recs) == 1:
         print(&#39;getting recording&#39;)
         return recs[0]
@@ -533,9 +533,9 @@ def create_electrodes(rec, mat_file, idx=None):
 
     if len(sess.list_channels()) == 0:
         chan = None
-        for ieeg_path in rec.list_files():
-            if ieeg_path.format == &#39;micromed&#39;:
-                chan = create_channels(ieeg_path.path)
+        for ephys_path in rec.list_files():
+            if ephys_path.format == &#39;micromed&#39;:
+                chan = create_channels(ephys_path.path)
                 break
         if chan is None:
             return
@@ -571,8 +571,8 @@ def create_electrodes(rec, mat_file, idx=None):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
 <li><code><a title="xelo2.database.housekeeping.add_allowed_value" href="#xelo2.database.housekeeping.add_allowed_value">add_allowed_value</a></code></li>
+<li><code><a title="xelo2.database.housekeeping.add_ephys_info" href="#xelo2.database.housekeeping.add_ephys_info">add_ephys_info</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.add_events_type" href="#xelo2.database.housekeeping.add_events_type">add_events_type</a></code></li>
-<li><code><a title="xelo2.database.housekeeping.add_ieeg_info" href="#xelo2.database.housekeeping.add_ieeg_info">add_ieeg_info</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.add_recording" href="#xelo2.database.housekeeping.add_recording">add_recording</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.attach_electrodes" href="#xelo2.database.housekeeping.attach_electrodes">attach_electrodes</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.create_electrodes" href="#xelo2.database.housekeeping.create_electrodes">create_electrodes</a></code></li>

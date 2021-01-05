@@ -12,7 +12,7 @@ from PyQt5.QtSql import QSqlQuery
 
 from ..api import list_subjects, Run
 from .mri import convert_mri
-from .ieeg import convert_ieeg
+from .ephys import convert_ephys
 from .physio import convert_physio
 from .events import convert_events
 from .utils import rename_task, prepare_subset
@@ -175,7 +175,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                         if run.duration is None:
                             lg.warning(f'You need to specify duration for {subj.codes}/{run}')
                             continue
-                        data_name = convert_ieeg(run, rec, mod_path, c(bids_name), intendedfor)
+                        data_name = convert_ephys(run, rec, mod_path, c(bids_name), intendedfor)
 
                     elif rec.modality == 'physio':
                         if data_name is None:

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>xelo2.bids.ieeg API documentation</title>
+<title>xelo2.bids.ephys API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>xelo2.bids.ieeg</code></h1>
+<h1 class="title">Module <code>xelo2.bids.ephys</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -30,13 +30,13 @@ from json import dump
 
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
-from ..io.ieeg import localize_blackrock
+from ..io.ephys import localize_blackrock
 
 
 lg = getLogger(__name__)
 
 
-def convert_ieeg(run, rec, dest_path, name, intendedfor):
+def convert_ephys(run, rec, dest_path, name, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.offset)
 
     end_time = start_time + timedelta(seconds=run.duration)
@@ -55,19 +55,19 @@ def convert_ieeg(run, rec, dest_path, name, intendedfor):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ieeg = dest_path / f&#39;{make_bids_name(name, &#34;ieeg&#34;)}&#39;
+    output_ephys = dest_path / f&#39;{make_bids_name(name, &#34;ephys&#34;)}&#39;
     markers = convert_events_to_wonambi(run.events)
-    data.export(output_ieeg, &#39;brainvision&#39;, markers=markers, anonymize=True)
+    data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
-    sidecar_file = output_ieeg.with_suffix(&#39;.json&#39;)
+    sidecar_file = output_ephys.with_suffix(&#39;.json&#39;)
     with sidecar_file.open(&#39;w&#39;) as f:
         dump(sidecar, f, indent=2)
 
     n_chan = len(d.header[&#39;chan_name&#39;])
 
     _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
-    return output_ieeg
+    return output_ephys
 
 
 def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):
@@ -166,7 +166,50 @@ def convert_events_to_wonambi(events):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="xelo2.bids.ieeg.convert_events_to_wonambi"><code class="name flex">
+<dt id="xelo2.bids.ephys.convert_ephys"><code class="name flex">
+<span>def <span class="ident">convert_ephys</span></span>(<span>run, rec, dest_path, name, intendedfor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_ephys(run, rec, dest_path, name, intendedfor):
+    start_time = run.start_time + timedelta(seconds=rec.offset)
+
+    end_time = start_time + timedelta(seconds=run.duration)
+
+    file = find_one_file(rec, (&#39;blackrock&#39;, &#39;micromed&#39;, &#39;bci2000&#39;))
+    if file is None:
+        return
+
+    d = localize_blackrock(file.path)
+    data = d.read_data(begtime=start_time, endtime=end_time)
+
+    # get acq from manufacturer. It might be better to use channels.name but
+    # I am not sure
+    if rec.Manufacturer is None:
+        lg.warning(f&#39;Please specify Manufacturer for {run} / {rec}&#39;)
+        name[&#39;acq&#39;] = &#39;acq-none&#39;
+    else:
+        name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
+    output_ephys = dest_path / f&#39;{make_bids_name(name, &#34;ephys&#34;)}&#39;
+    markers = convert_events_to_wonambi(run.events)
+    data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
+
+    sidecar = _convert_sidecar(run, rec, d)
+    sidecar_file = output_ephys.with_suffix(&#39;.json&#39;)
+    with sidecar_file.open(&#39;w&#39;) as f:
+        dump(sidecar, f, indent=2)
+
+    n_chan = len(d.header[&#39;chan_name&#39;])
+
+    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
+    return output_ephys</code></pre>
+</details>
+</dd>
+<dt id="xelo2.bids.ephys.convert_events_to_wonambi"><code class="name flex">
 <span>def <span class="ident">convert_events_to_wonambi</span></span>(<span>events)</span>
 </code></dt>
 <dd>
@@ -189,50 +232,7 @@ in wonambi</p></div>
     return mrk</code></pre>
 </details>
 </dd>
-<dt id="xelo2.bids.ieeg.convert_ieeg"><code class="name flex">
-<span>def <span class="ident">convert_ieeg</span></span>(<span>run, rec, dest_path, name, intendedfor)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def convert_ieeg(run, rec, dest_path, name, intendedfor):
-    start_time = run.start_time + timedelta(seconds=rec.offset)
-
-    end_time = start_time + timedelta(seconds=run.duration)
-
-    file = find_one_file(rec, (&#39;blackrock&#39;, &#39;micromed&#39;, &#39;bci2000&#39;))
-    if file is None:
-        return
-
-    d = localize_blackrock(file.path)
-    data = d.read_data(begtime=start_time, endtime=end_time)
-
-    # get acq from manufacturer. It might be better to use channels.name but
-    # I am not sure
-    if rec.Manufacturer is None:
-        lg.warning(f&#39;Please specify Manufacturer for {run} / {rec}&#39;)
-        name[&#39;acq&#39;] = &#39;acq-none&#39;
-    else:
-        name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ieeg = dest_path / f&#39;{make_bids_name(name, &#34;ieeg&#34;)}&#39;
-    markers = convert_events_to_wonambi(run.events)
-    data.export(output_ieeg, &#39;brainvision&#39;, markers=markers, anonymize=True)
-
-    sidecar = _convert_sidecar(run, rec, d)
-    sidecar_file = output_ieeg.with_suffix(&#39;.json&#39;)
-    with sidecar_file.open(&#39;w&#39;) as f:
-        dump(sidecar, f, indent=2)
-
-    n_chan = len(d.header[&#39;chan_name&#39;])
-
-    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
-    return output_ieeg</code></pre>
-</details>
-</dd>
-<dt id="xelo2.bids.ieeg.replace_micro"><code class="name flex">
+<dt id="xelo2.bids.ephys.replace_micro"><code class="name flex">
 <span>def <span class="ident">replace_micro</span></span>(<span>channels_tsv)</span>
 </code></dt>
 <dd>
@@ -254,7 +254,7 @@ in wonambi</p></div>
         f.write(x)</code></pre>
 </details>
 </dd>
-<dt id="xelo2.bids.ieeg.save_coordsystem"><code class="name flex">
+<dt id="xelo2.bids.ephys.save_coordsystem"><code class="name flex">
 <span>def <span class="ident">save_coordsystem</span></span>(<span>electrodes_json, electrodes, intendedfor)</span>
 </code></dt>
 <dd>
@@ -302,10 +302,10 @@ in wonambi</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="xelo2.bids.ieeg.convert_events_to_wonambi" href="#xelo2.bids.ieeg.convert_events_to_wonambi">convert_events_to_wonambi</a></code></li>
-<li><code><a title="xelo2.bids.ieeg.convert_ieeg" href="#xelo2.bids.ieeg.convert_ieeg">convert_ieeg</a></code></li>
-<li><code><a title="xelo2.bids.ieeg.replace_micro" href="#xelo2.bids.ieeg.replace_micro">replace_micro</a></code></li>
-<li><code><a title="xelo2.bids.ieeg.save_coordsystem" href="#xelo2.bids.ieeg.save_coordsystem">save_coordsystem</a></code></li>
+<li><code><a title="xelo2.bids.ephys.convert_ephys" href="#xelo2.bids.ephys.convert_ephys">convert_ephys</a></code></li>
+<li><code><a title="xelo2.bids.ephys.convert_events_to_wonambi" href="#xelo2.bids.ephys.convert_events_to_wonambi">convert_events_to_wonambi</a></code></li>
+<li><code><a title="xelo2.bids.ephys.replace_micro" href="#xelo2.bids.ephys.replace_micro">replace_micro</a></code></li>
+<li><code><a title="xelo2.bids.ephys.save_coordsystem" href="#xelo2.bids.ephys.save_coordsystem">save_coordsystem</a></code></li>
 </ul>
 </li>
 </ul>

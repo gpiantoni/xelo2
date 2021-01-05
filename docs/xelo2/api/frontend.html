@@ -500,19 +500,19 @@ class Recording(Table_with_files):
         return Channels(self.db, id=channel_id)
 
     def attach_electrodes(self, electrodes):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=electrodes.id)
 
     def attach_channels(self, channels):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;channel&#39;, self.id, group_id=channels.id)
 
     def detach_electrodes(self):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=None)
 
     def detach_channels(self):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;channel&#39;, self.id, group_id=None)
 
 
@@ -887,19 +887,19 @@ objects which might be associated with files.</p></div>
         return Channels(self.db, id=channel_id)
 
     def attach_electrodes(self, electrodes):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=electrodes.id)
 
     def attach_channels(self, channels):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;channel&#39;, self.id, group_id=channels.id)
 
     def detach_electrodes(self):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=None)
 
     def detach_channels(self):
-        &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+        &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
         recording_attach(self.db, &#39;channel&#39;, self.id, group_id=None)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -957,13 +957,13 @@ def electrodes(self):
 <span>def <span class="ident">attach_channels</span></span>(<span>self, channels)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Only recording_ieeg</p></div>
+<div class="desc"><p>Only recording_ephys</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def attach_channels(self, channels):
-    &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+    &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
     recording_attach(self.db, &#39;channel&#39;, self.id, group_id=channels.id)</code></pre>
 </details>
 </dd>
@@ -971,13 +971,13 @@ def electrodes(self):
 <span>def <span class="ident">attach_electrodes</span></span>(<span>self, electrodes)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Only recording_ieeg</p></div>
+<div class="desc"><p>Only recording_ephys</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def attach_electrodes(self, electrodes):
-    &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+    &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
     recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=electrodes.id)</code></pre>
 </details>
 </dd>
@@ -985,13 +985,13 @@ def electrodes(self):
 <span>def <span class="ident">detach_channels</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Only recording_ieeg</p></div>
+<div class="desc"><p>Only recording_ephys</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def detach_channels(self):
-    &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+    &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
     recording_attach(self.db, &#39;channel&#39;, self.id, group_id=None)</code></pre>
 </details>
 </dd>
@@ -999,13 +999,13 @@ def electrodes(self):
 <span>def <span class="ident">detach_electrodes</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Only recording_ieeg</p></div>
+<div class="desc"><p>Only recording_ephys</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def detach_electrodes(self):
-    &#34;&#34;&#34;Only recording_ieeg&#34;&#34;&#34;
+    &#34;&#34;&#34;Only recording_ephys&#34;&#34;&#34;
     recording_attach(self.db, &#39;electrode&#39;, self.id, group_id=None)</code></pre>
 </details>
 </dd>

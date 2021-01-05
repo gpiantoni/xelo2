@@ -59,10 +59,10 @@ from ..database.tables import LEVELS
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
-from ..io.ieeg import add_ieeg_to_sess
+from ..io.ephys import add_ephys_to_sess
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
-from ..io.events import read_events_from_ieeg
+from ..io.events import read_events_from_ephys
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import _protocol_name
@@ -470,7 +470,7 @@ class Interface(QMainWindow):
 
         sess = self.current('sessions')
 
-        if recording.modality == 'ieeg':
+        if recording.modality == 'ephys':
             for chan in sess.list_channels():
                 item = QListWidgetItem(_name(chan.name))
                 item.setData(Qt.UserRole, chan)
@@ -520,7 +520,7 @@ class Interface(QMainWindow):
 
             elif k == 'recordings':
 
-                if obj.modality == 'ieeg':
+                if obj.modality == 'ephys':
                     parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current('sessions')
@@ -1009,11 +1009,11 @@ class Interface(QMainWindow):
 
         elif level in ('channels', 'electrodes'):
             current_recording = self.current('recordings')
-            if current_recording is None or current_recording.modality != 'ieeg':
+            if current_recording is None or current_recording.modality != 'ephys':
                 QMessageBox.warning(
                     self,
                     f'Cannot add {level}',
-                    'You should first select an "ieeg" recording')
+                    'You should first select an "ephys" recording')
                 return
 
             text, ok = QInputDialog.getText(
@@ -1151,18 +1151,18 @@ class Interface(QMainWindow):
         self.list_params()
         self.modified()
 
-    def io_ieeg(self):
+    def io_ephys(self):
         sess = self.current('sessions')
 
-        ieeg_file = QFileDialog.getOpenFileName(
+        ephys_file = QFileDialog.getOpenFileName(
             self,
             "Select File",
             None)[0]
 
-        if ieeg_file == '':
+        if ephys_file == '':
             return
 
-        add_ieeg_to_sess(sess, Path(ieeg_file))
+        add_ephys_to_sess(sess, Path(ephys_file))
 
         self.list_runs(sess)
         self.list_params()
@@ -1172,17 +1172,17 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ieeg':
+        if recording is None or recording.modality != 'ephys':
             return
 
-        ieeg_files = recording.list_files()
-        if len(ieeg_files) == 0:
+        ephys_files = recording.list_files()
+        if len(ephys_files) == 0:
             return
 
-        if not ieeg_files[0].path.exists():
+        if not ephys_files[0].path.exists():
             return
 
-        events = read_events_from_ieeg(run, recording, ieeg_files[0])
+        events = read_events_from_ephys(run, recording, ephys_files[0])
 
         if len(events) > 0:
             run.events = events
@@ -1196,17 +1196,17 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ieeg':
+        if recording is None or recording.modality != 'ephys':
             return
 
-        ieeg_files = recording.list_files()
-        if len(ieeg_files) == 0:
+        ephys_files = recording.list_files()
+        if len(ephys_files) == 0:
             return
 
-        if not ieeg_files[0].path.exists():
+        if not ephys_files[0].path.exists():
             return
 
-        compare_events = CompareEvents(self, run, ieeg_files[0].path)
+        compare_events = CompareEvents(self, run, ephys_files[0].path)
         result = compare_events.exec()
 
         if result == QDialog.Accepted:
@@ -1221,17 +1221,17 @@ class Interface(QMainWindow):
     def io_channels(self):
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ieeg':
+        if recording is None or recording.modality != 'ephys':
             return
 
-        ieeg_files = recording.list_files()
-        if len(ieeg_files) == 0:
+        ephys_files = recording.list_files()
+        if len(ephys_files) == 0:
             return
 
-        if not ieeg_files[0].path.exists():
+        if not ephys_files[0].path.exists():
             return
 
-        chan = create_channels(self.db, ieeg_files[0].path)
+        chan = create_channels(self.db, ephys_files[0].path)
         if chan is None:
             return
         chan.name = '(imported)'

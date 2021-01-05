@@ -97,20 +97,20 @@ def create_menubar(main):
     action_parrec.triggered.connect(main.io_parrec)
     menu_io.addAction(action_parrec)
     menu_io.addSeparator()
-    action_ieeg = QAction('iEEG file ...', main)
-    action_ieeg.triggered.connect(main.io_ieeg)
-    menu_io.addAction(action_ieeg)
-    action_events = QAction('info and events from IEEG recording ...', main)
+    action_ephys = QAction('iEEG/EEG/MEG file ...', main)
+    action_ephys.triggered.connect(main.io_ephys)
+    menu_io.addAction(action_ephys)
+    action_events = QAction('info and events from IEEG/EEG/MEG recording ...', main)
     action_events.triggered.connect(main.io_events)
     menu_io.addAction(action_events)
-    action_chan = QAction('channels from IEEG recording', main)
+    action_chan = QAction('channels from IEEG/EEG/MEG recording', main)
     action_chan.triggered.connect(main.io_channels)
     menu_io.addAction(action_chan)
     action_elec = QAction('electrodes from ALICE ...', main)
     action_elec.triggered.connect(main.io_electrodes)
     menu_io.addAction(action_elec)
     menu_io.addSeparator()
-    action_events = QAction('only events from IEEG recording (deprecated)', main)
+    action_events = QAction('only events from IEEG/EEG/MEG recording (deprecated)', main)
     action_events.triggered.connect(main.io_events_only)
     menu_io.addAction(action_events)
 
@@ -140,7 +140,7 @@ SEARCH_STATEMENT = """\
     LEFT JOIN sessions_mri ON sessions_mri.session_id = sessions.id
     LEFT JOIN runs ON runs.session_id = sessions.id
     LEFT JOIN recordings ON recordings.run_id = runs.id
-    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id = recordings.id
+    LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
     WHERE """
 
 

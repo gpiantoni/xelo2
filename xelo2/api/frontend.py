@@ -474,19 +474,19 @@ class Recording(Table_with_files):
         return Channels(self.db, id=channel_id)
 
     def attach_electrodes(self, electrodes):
-        """Only recording_ieeg"""
+        """Only recording_ephys"""
         recording_attach(self.db, 'electrode', self.id, group_id=electrodes.id)
 
     def attach_channels(self, channels):
-        """Only recording_ieeg"""
+        """Only recording_ephys"""
         recording_attach(self.db, 'channel', self.id, group_id=channels.id)
 
     def detach_electrodes(self):
-        """Only recording_ieeg"""
+        """Only recording_ephys"""
         recording_attach(self.db, 'electrode', self.id, group_id=None)
 
     def detach_channels(self):
-        """Only recording_ieeg"""
+        """Only recording_ephys"""
         recording_attach(self.db, 'channel', self.id, group_id=None)
 
 

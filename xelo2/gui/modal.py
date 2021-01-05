@@ -29,7 +29,7 @@ from .utils import _protocol_name
 from ..api.filetype import parse_filetype
 from ..api.frontend import list_experimenters
 from ..database.tables import LEVELS
-from ..io.ieeg import read_info_from_ieeg
+from ..io.ephys import read_info_from_ephys
 
 lg = getLogger(__name__)
 
@@ -143,10 +143,10 @@ def strftime(t):
 
 
 class CompareEvents(QDialog):
-    def __init__(self, parent, run, ieeg_file):
+    def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ieeg(ieeg_file)
+        self.info = read_info_from_ephys(ephys_file)
 
         layout = QGridLayout(self)
 

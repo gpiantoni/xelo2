@@ -55,7 +55,7 @@ from .utils import _protocol_name
 from ..api.filetype import parse_filetype
 from ..api.frontend import list_experimenters
 from ..database.tables import LEVELS
-from ..io.ieeg import read_info_from_ieeg
+from ..io.ephys import read_info_from_ephys
 
 lg = getLogger(__name__)
 
@@ -169,10 +169,10 @@ def strftime(t):
 
 
 class CompareEvents(QDialog):
-    def __init__(self, parent, run, ieeg_file):
+    def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ieeg(ieeg_file)
+        self.info = read_info_from_ephys(ephys_file)
 
         layout = QGridLayout(self)
 
@@ -668,7 +668,7 @@ def parse_accessdatabase(parent):
 </dd>
 <dt id="xelo2.gui.modal.CompareEvents"><code class="flex name class">
 <span>class <span class="ident">CompareEvents</span></span>
-<span>(</span><span>parent, run, ieeg_file)</span>
+<span>(</span><span>parent, run, ephys_file)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>QDialog(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></div>
@@ -677,10 +677,10 @@ def parse_accessdatabase(parent):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CompareEvents(QDialog):
-    def __init__(self, parent, run, ieeg_file):
+    def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ieeg(ieeg_file)
+        self.info = read_info_from_ephys(ephys_file)
 
         layout = QGridLayout(self)
 

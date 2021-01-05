@@ -4,7 +4,7 @@ from numpy import isin
 
 from PyQt5.QtSql import QSqlQuery
 
-from ..io.ieeg import read_info_from_ieeg
+from ..io.ephys import read_info_from_ephys
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..api import Electrodes
@@ -102,7 +102,7 @@ def add_recording(run):
     recs = run.list_recordings()
     if len(recs) == 0:
         print('adding recording')
-        return run.add_recording('ieeg')
+        return run.add_recording('ephys')
     elif len(recs) == 1:
         print('getting recording')
         return recs[0]
@@ -110,25 +110,25 @@ def add_recording(run):
         raise ValueError('too many recordings')
 
 
-def add_ieeg_info(run, micromed_path):
-    ieeg = read_info_from_ieeg(Path(micromed_path))
-    print(ieeg['start_time'])
-    print(ieeg['duration'])
-    print(f"# events: {ieeg['events'].shape[0]}")
+def add_ephys_info(run, micromed_path):
+    ephys = read_info_from_ephys(Path(micromed_path))
+    print(ephys['start_time'])
+    print(ephys['duration'])
+    print(f"# events: {ephys['events'].shape[0]}")
     output = input('ok (y/n)?')
     if output == 'y':
-        run.start_time = ieeg['start_time']
-        run.duration = ieeg['duration']
-        run.events = ieeg['events']
+        run.start_time = ephys['start_time']
+        run.duration = ephys['duration']
+        run.events = ephys['events']
 
 
 def set_channels(sess, rec):
 
     if len(sess.list_channels()) == 0:
         chan = None
-        for ieeg_path in rec.list_files():
-            if ieeg_path.format == 'micromed':
-                chan = create_channels(ieeg_path.path)
+        for ephys_path in rec.list_files():
+            if ephys_path.format == 'micromed':
+                chan = create_channels(ephys_path.path)
                 break
         if chan is None:
             return

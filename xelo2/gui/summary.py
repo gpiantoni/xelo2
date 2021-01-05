@@ -45,9 +45,9 @@ class Summary(QDialog):
                     SELECT COUNT(DISTINCT(sessions.id)) FROM sessions
                     LEFT JOIN runs ON runs.session_id = sessions.id
                     LEFT JOIN recordings ON recordings.run_id = runs.id
-                    LEFT JOIN recordings_ieeg ON recordings_ieeg.recording_id = recordings.id
+                    LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
                     WHERE sessions.name = 'IEMU'
-                    AND recordings_ieeg.{chan_elec}_group_id IS NOT NULL"""))
+                    AND recordings_ephys.{chan_elec}_group_id IS NOT NULL"""))
         lay.addRow(
             '# Runs',
             _info(parent.db, 'SELECT COUNT(id) FROM runs'))

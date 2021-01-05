@@ -6,13 +6,13 @@ from re import match
 ECOG_PATTERN = r'([A-Za-z ]+)\d+'
 
 
-def create_channels(db, ieeg_path):
-    if ieeg_path.suffix.lower() == '.trc':
-        return create_channels_trc(db, ieeg_path)
-    elif ieeg_path.suffix.lower() == '.nev' or ieeg_path.suffix.startswith('.ns'):
-        return create_channels_blackrock(db, ieeg_path)
+def create_channels(db, ephys_path):
+    if ephys_path.suffix.lower() == '.trc':
+        return create_channels_trc(db, ephys_path)
+    elif ephys_path.suffix.lower() == '.nev' or ephys_path.suffix.startswith('.ns'):
+        return create_channels_blackrock(db, ephys_path)
     else:
-        print(f'Cannot extract channel labels from {ieeg_path}')
+        print(f'Cannot extract channel labels from {ephys_path}')
 
 
 def create_channels_trc(db, trc_path):

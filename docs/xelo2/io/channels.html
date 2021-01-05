@@ -32,13 +32,13 @@ from re import match
 ECOG_PATTERN = r&#39;([A-Za-z ]+)\d+&#39;
 
 
-def create_channels(db, ieeg_path):
-    if ieeg_path.suffix.lower() == &#39;.trc&#39;:
-        return create_channels_trc(db, ieeg_path)
-    elif ieeg_path.suffix.lower() == &#39;.nev&#39; or ieeg_path.suffix.startswith(&#39;.ns&#39;):
-        return create_channels_blackrock(db, ieeg_path)
+def create_channels(db, ephys_path):
+    if ephys_path.suffix.lower() == &#39;.trc&#39;:
+        return create_channels_trc(db, ephys_path)
+    elif ephys_path.suffix.lower() == &#39;.nev&#39; or ephys_path.suffix.startswith(&#39;.ns&#39;):
+        return create_channels_blackrock(db, ephys_path)
     else:
-        print(f&#39;Cannot extract channel labels from {ieeg_path}&#39;)
+        print(f&#39;Cannot extract channel labels from {ephys_path}&#39;)
 
 
 def create_channels_trc(db, trc_path):
@@ -168,7 +168,7 @@ def _choose_group(label, groups):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.io.channels.create_channels"><code class="name flex">
-<span>def <span class="ident">create_channels</span></span>(<span>db, ieeg_path)</span>
+<span>def <span class="ident">create_channels</span></span>(<span>db, ephys_path)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -176,13 +176,13 @@ def _choose_group(label, groups):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_channels(db, ieeg_path):
-    if ieeg_path.suffix.lower() == &#39;.trc&#39;:
-        return create_channels_trc(db, ieeg_path)
-    elif ieeg_path.suffix.lower() == &#39;.nev&#39; or ieeg_path.suffix.startswith(&#39;.ns&#39;):
-        return create_channels_blackrock(db, ieeg_path)
+<pre><code class="python">def create_channels(db, ephys_path):
+    if ephys_path.suffix.lower() == &#39;.trc&#39;:
+        return create_channels_trc(db, ephys_path)
+    elif ephys_path.suffix.lower() == &#39;.nev&#39; or ephys_path.suffix.startswith(&#39;.ns&#39;):
+        return create_channels_blackrock(db, ephys_path)
     else:
-        print(f&#39;Cannot extract channel labels from {ieeg_path}&#39;)</code></pre>
+        print(f&#39;Cannot extract channel labels from {ephys_path}&#39;)</code></pre>
 </details>
 </dd>
 <dt id="xelo2.io.channels.create_channels_blackrock"><code class="name flex">

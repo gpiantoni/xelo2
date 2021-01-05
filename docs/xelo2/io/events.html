@@ -25,7 +25,6 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from numpy import empty
-from wonambi import Dataset
 from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
 from logging import getLogger
@@ -34,7 +33,7 @@ from .utils import localize_blackrock
 lg = getLogger(__name__)
 
 
-def read_events_from_ieeg(run, rec, file):
+def read_events_from_ephys(run, rec, file):
     &#34;&#34;&#34;Make sure that rec.onset is in the good direction&#34;&#34;&#34;
     try:
         d = localize_blackrock(file.path)
@@ -94,8 +93,8 @@ def find_eegfile_in_run(run):
     return None, None</code></pre>
 </details>
 </dd>
-<dt id="xelo2.io.events.read_events_from_ieeg"><code class="name flex">
-<span>def <span class="ident">read_events_from_ieeg</span></span>(<span>run, rec, file)</span>
+<dt id="xelo2.io.events.read_events_from_ephys"><code class="name flex">
+<span>def <span class="ident">read_events_from_ephys</span></span>(<span>run, rec, file)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Make sure that rec.onset is in the good direction</p></div>
@@ -103,7 +102,7 @@ def find_eegfile_in_run(run):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_events_from_ieeg(run, rec, file):
+<pre><code class="python">def read_events_from_ephys(run, rec, file):
     &#34;&#34;&#34;Make sure that rec.onset is in the good direction&#34;&#34;&#34;
     try:
         d = localize_blackrock(file.path)
@@ -150,7 +149,7 @@ def find_eegfile_in_run(run):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="xelo2.io.events.find_eegfile_in_run" href="#xelo2.io.events.find_eegfile_in_run">find_eegfile_in_run</a></code></li>
-<li><code><a title="xelo2.io.events.read_events_from_ieeg" href="#xelo2.io.events.read_events_from_ieeg">read_events_from_ieeg</a></code></li>
+<li><code><a title="xelo2.io.events.read_events_from_ephys" href="#xelo2.io.events.read_events_from_ephys">read_events_from_ephys</a></code></li>
 </ul>
 </li>
 </ul>

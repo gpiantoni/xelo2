@@ -2,33 +2,33 @@ from wonambi.ioeeg import BlackRock
 from numpy import empty
 
 from .utils import localize_blackrock
-from .events import read_events_from_ieeg
+from .events import read_events_from_ephys
 from ..api.utils import get_dtypes
 from ..api.filetype import parse_filetype
 
 
-def add_ieeg_to_sess(db, sess, ieeg_file):
+def add_ephys_to_sess(db, sess, ephys_file):
     """default task is NOTE, but TODO decode task from triggers"""
 
-    info = read_info_from_ieeg(db, ieeg_file)
+    info = read_info_from_ephys(db, ephys_file)
 
     # default task is NOTE
     run = sess.add_run('NOTE')
     run.start_time = info['start_time']
     run.duration = info['duration']
-    rec = run.add_recording('ieeg')
+    rec = run.add_recording('ephys')
     rec.Manufacturer = info['manufacturer']
-    filetype = parse_filetype(ieeg_file)
-    file = rec.add_file(filetype, ieeg_file)
+    filetype = parse_filetype(ephys_file)
+    file = rec.add_file(filetype, ephys_file)
 
-    events = read_events_from_ieeg(run, rec, file)
+    events = read_events_from_ephys(run, rec, file)
     if len(events) > 0:
         run.events = events
 
     return run
 
 
-def read_info_from_ieeg(db, path_to_file):
+def read_info_from_ephys(db, path_to_file):
 
     d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
