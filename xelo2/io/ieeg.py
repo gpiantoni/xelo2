@@ -7,15 +7,13 @@ from ..api.utils import get_dtypes
 from ..api.filetype import parse_filetype
 
 
+def add_ieeg_to_sess(db, sess, ieeg_file):
+    """default task is NOTE, but TODO decode task from triggers"""
 
+    info = read_info_from_ieeg(db, ieeg_file)
 
-def add_ieeg_to_sess(sess, ieeg_file):
-    """default task is REST, but TODO decode task from triggers"""
-
-    info = read_info_from_ieeg(ieeg_file)
-
-    # default task is REST
-    run = sess.add_run('rest')
+    # default task is NOTE
+    run = sess.add_run('NOTE')
     run.start_time = info['start_time']
     run.duration = info['duration']
     rec = run.add_recording('ieeg')
@@ -30,12 +28,12 @@ def add_ieeg_to_sess(sess, ieeg_file):
     return run
 
 
-def read_info_from_ieeg(path_to_file):
+def read_info_from_ieeg(db, path_to_file):
 
     d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
 
-    DTYPES = get_dtypes(TABLES['events'])
+    DTYPES = get_dtypes(db['tables']['events'])
     ev = empty(len(mrk), dtype=DTYPES)
     ev['onset'] = [x['start'] for x in mrk]
     ev['duration'] = [x['end'] - x['start'] for x in mrk]
