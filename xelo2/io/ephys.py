@@ -16,7 +16,7 @@ def add_ephys_to_sess(db, sess, ephys_file):
     run = sess.add_run('NOTE')
     run.start_time = info['start_time']
     run.duration = info['duration']
-    rec = run.add_recording('ephys')
+    rec = run.add_recording('ieeg')
     rec.Manufacturer = info['manufacturer']
     filetype = parse_filetype(ephys_file)
     file = rec.add_file(filetype, ephys_file)

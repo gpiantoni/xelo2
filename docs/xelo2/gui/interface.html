@@ -496,7 +496,7 @@ class Interface(QMainWindow):
 
         sess = self.current(&#39;sessions&#39;)
 
-        if recording.modality == &#39;ephys&#39;:
+        if recording.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             for chan in sess.list_channels():
                 item = QListWidgetItem(_name(chan.name))
                 item.setData(Qt.UserRole, chan)
@@ -546,7 +546,7 @@ class Interface(QMainWindow):
 
             elif k == &#39;recordings&#39;:
 
-                if obj.modality == &#39;ephys&#39;:
+                if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                     parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current(&#39;sessions&#39;)
@@ -2154,7 +2154,7 @@ def _fake_names(X):
 
         sess = self.current(&#39;sessions&#39;)
 
-        if recording.modality == &#39;ephys&#39;:
+        if recording.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             for chan in sess.list_channels():
                 item = QListWidgetItem(_name(chan.name))
                 item.setData(Qt.UserRole, chan)
@@ -2204,7 +2204,7 @@ def _fake_names(X):
 
             elif k == &#39;recordings&#39;:
 
-                if obj.modality == &#39;ephys&#39;:
+                if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                     parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current(&#39;sessions&#39;)
@@ -3572,7 +3572,7 @@ def _fake_names(X):
 
     sess = self.current(&#39;sessions&#39;)
 
-    if recording.modality == &#39;ephys&#39;:
+    if recording.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         for chan in sess.list_channels():
             item = QListWidgetItem(_name(chan.name))
             item.setData(Qt.UserRole, chan)
@@ -3707,7 +3707,7 @@ def _fake_names(X):
 
         elif k == &#39;recordings&#39;:
 
-            if obj.modality == &#39;ephys&#39;:
+            if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                 parameters.update(list_parameters(self.db, obj, self))
 
                 sess = self.current(&#39;sessions&#39;)

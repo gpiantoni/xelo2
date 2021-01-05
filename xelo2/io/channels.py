@@ -1,6 +1,6 @@
 from wonambi import Dataset
 from xelo2.api import Channels
-from numpy import nan
+from numpy import nan, array
 from re import match
 
 ECOG_PATTERN = r'([A-Za-z ]+)\d+'
@@ -30,7 +30,7 @@ def create_channels_trc(db, trc_path):
     channels['type'] = chan_types
     channels['units'] = [ch['units'].replace('dimentionless', '') for ch in trc_chans]
     channels['high_cutoff'] = [ch['HiPass_Limit'] / 1000 for ch in trc_chans]
-    low_cutoff = [ch['LowPass_Limit'] / 1000 for ch in trc_chans]
+    low_cutoff = array([ch['LowPass_Limit'] / 1000 for ch in trc_chans])
     low_cutoff[low_cutoff == 0] = nan
     channels['low_cutoff'] = low_cutoff
     channels['reference'] = [ch['ground'] for ch in trc_chans]  # it's called ground but I'm pretty sure it's the reference

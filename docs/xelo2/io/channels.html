@@ -26,7 +26,7 @@
 </summary>
 <pre><code class="python">from wonambi import Dataset
 from xelo2.api import Channels
-from numpy import nan
+from numpy import nan, array
 from re import match
 
 ECOG_PATTERN = r&#39;([A-Za-z ]+)\d+&#39;
@@ -56,7 +56,7 @@ def create_channels_trc(db, trc_path):
     channels[&#39;type&#39;] = chan_types
     channels[&#39;units&#39;] = [ch[&#39;units&#39;].replace(&#39;dimentionless&#39;, &#39;&#39;) for ch in trc_chans]
     channels[&#39;high_cutoff&#39;] = [ch[&#39;HiPass_Limit&#39;] / 1000 for ch in trc_chans]
-    low_cutoff = [ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff = array([ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans])
     low_cutoff[low_cutoff == 0] = nan
     channels[&#39;low_cutoff&#39;] = low_cutoff
     channels[&#39;reference&#39;] = [ch[&#39;ground&#39;] for ch in trc_chans]  # it&#39;s called ground but I&#39;m pretty sure it&#39;s the reference
@@ -242,7 +242,7 @@ def _choose_group(label, groups):
     channels[&#39;type&#39;] = chan_types
     channels[&#39;units&#39;] = [ch[&#39;units&#39;].replace(&#39;dimentionless&#39;, &#39;&#39;) for ch in trc_chans]
     channels[&#39;high_cutoff&#39;] = [ch[&#39;HiPass_Limit&#39;] / 1000 for ch in trc_chans]
-    low_cutoff = [ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans]
+    low_cutoff = array([ch[&#39;LowPass_Limit&#39;] / 1000 for ch in trc_chans])
     low_cutoff[low_cutoff == 0] = nan
     channels[&#39;low_cutoff&#39;] = low_cutoff
     channels[&#39;reference&#39;] = [ch[&#39;ground&#39;] for ch in trc_chans]  # it&#39;s called ground but I&#39;m pretty sure it&#39;s the reference

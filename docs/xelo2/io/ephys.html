@@ -42,7 +42,7 @@ def add_ephys_to_sess(db, sess, ephys_file):
     run = sess.add_run(&#39;NOTE&#39;)
     run.start_time = info[&#39;start_time&#39;]
     run.duration = info[&#39;duration&#39;]
-    rec = run.add_recording(&#39;ephys&#39;)
+    rec = run.add_recording(&#39;ieeg&#39;)
     rec.Manufacturer = info[&#39;manufacturer&#39;]
     filetype = parse_filetype(ephys_file)
     file = rec.add_file(filetype, ephys_file)
@@ -104,7 +104,7 @@ def read_info_from_ephys(db, path_to_file):
     run = sess.add_run(&#39;NOTE&#39;)
     run.start_time = info[&#39;start_time&#39;]
     run.duration = info[&#39;duration&#39;]
-    rec = run.add_recording(&#39;ephys&#39;)
+    rec = run.add_recording(&#39;ieeg&#39;)
     rec.Manufacturer = info[&#39;manufacturer&#39;]
     filetype = parse_filetype(ephys_file)
     file = rec.add_file(filetype, ephys_file)

@@ -470,7 +470,7 @@ class Interface(QMainWindow):
 
         sess = self.current('sessions')
 
-        if recording.modality == 'ephys':
+        if recording.modality in ('ieeg', 'eeg', 'meg'):
             for chan in sess.list_channels():
                 item = QListWidgetItem(_name(chan.name))
                 item.setData(Qt.UserRole, chan)
@@ -520,7 +520,7 @@ class Interface(QMainWindow):
 
             elif k == 'recordings':
 
-                if obj.modality == 'ephys':
+                if obj.modality in ('ieeg', 'eeg', 'meg'):
                     parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current('sessions')
