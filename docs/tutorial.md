@@ -1,3 +1,20 @@
+## Create MySQL database
+First create a database as root/admin (`mysql -u root -p`):
+
+```SQL
+CREATE DATABASE test;
+GRANT ALL PRIVILEGES ON test.* TO 'giovanni'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+then, as a user, use this code (in bash):
+
+```bash
+cd tests/data/example/sql/
+cat allowed_values.sql subjects.sql protocols.sql sessions.sql runs.sql channels.sql electrodes.sql recordings.sql files.sql extra_sessions.sql extra_runs.sql extra_recordings.sql > full.sql
+mysql -u giovanni -p test' < full.sql
+```
+
 ## Open the connection to the MySQL server
 
 If the MySQL database is not stored in the local machine, you need to forward the local port of the remote database:
