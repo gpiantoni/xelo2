@@ -4,7 +4,7 @@ from numpy import empty
 
 from xelo2.api import Subject, list_subjects, Electrodes, Channels, File
 from xelo2.api.filetype import parse_filetype
-from xelo2.database import access_database, close_database
+from xelo2.database import access_database, close_database, add_allowed_value
 
 from .paths import TRC_PATH, DB_ARGS, T1_PATH
 
@@ -64,6 +64,16 @@ def test_api_session():
     sess.date_of_implantation = fake_date
     assert sess.date_of_implantation == fake_date
     assert sess.date_of_explantation is None
+
+    # add new values
+    with raises(ValueError):
+        sess.name = 'xxx'
+    add_allowed_value(db, 'sessions', 'name', 'xxx')
+    sess.name = 'xxx'
+
+    # when switching back to IEMU, we keep the old information (so we don't delete the row from sessions_iemu)
+    sess.name = 'IEMU'
+    assert sess.date_of_implantation == fake_date
 
     close_database(db)
 

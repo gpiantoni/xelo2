@@ -1,4 +1,4 @@
-## GRIDLOC
+## XELO2
 
 [Installation](installation.md)
 

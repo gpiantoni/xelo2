@@ -1,10 +1,46 @@
+from logging import getLogger
 from pathlib import Path
 from numpy import isin
+
+from PyQt5.QtSql import QSqlQuery
 
 from ..io.ieeg import read_info_from_ieeg
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..api import Electrodes
+
+
+lg = getLogger(__name__)
+
+
+def add_allowed_value(db, table, column, value):
+    """Add allowed value for a table/column
+
+    Parameters
+    ----------
+    db : dict
+        information about database
+    table : str
+        one of the tables
+    column : str
+        one of the columns in the table
+    value : str
+        value to add
+    """
+    if table not in db['tables']:
+        raise ValueError(f'Table "{table}" not found in the list of tables')
+    if column not in db['tables'][table]:
+        raise ValueError(f'Column "{column}" not found in the list of columns of table "{table}"')
+
+    query = QSqlQuery(db['db'])
+    query.prepare("INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`) VALUES (:table, :column, :value)")
+    query.bindValue(':table', table)
+    query.bindValue(':column', column)
+    query.bindValue(':value', value)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    lg.warning('Value correctly added. Changes will take place immediately for SQL, but GUI is not updated until you restart xelo2')
 
 
 def recap(subj, sess, run, trial_type='speech'):
