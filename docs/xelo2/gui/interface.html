@@ -79,8 +79,9 @@ from PyQt5.QtSql import (
     )
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
-from ..api.utils import get_attributes
-from ..database import access_database
+from ..api.utils import collect_columns
+from ..database import access_database, lookup_allowed_values
+from ..database.tables import LEVELS
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -90,7 +91,7 @@ from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ieeg
 from ..io.tsv import load_tsv, save_tsv
 
-from .utils import LEVELS, _protocol_name
+from .utils import _protocol_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import (
     NewFile,
@@ -102,7 +103,7 @@ from .modal import (
     )
 
 
-EXTRA_LEVELS = (&#39;channels&#39;, &#39;electrodes&#39;)
+EXTRA_LEVELS = [&#39;channels&#39;, &#39;electrodes&#39;]
 
 settings = QSettings(&#34;xelo2&#34;, &#34;xelo2&#34;)
 lg = getLogger(__name__)
@@ -114,7 +115,7 @@ class Interface(QMainWindow):
     test = False
     unsaved_changes = False
 
-    def __init__(self, db_type=None, db_name=None, username=None, password=None):
+    def __init__(self, db_name=None, username=None, password=None):
 
         super().__init__()
         create_menubar(self)
@@ -314,31 +315,31 @@ class Interface(QMainWindow):
         self.statusBar()
         self.show()
 
-        if db_type is None:
+        if db_name is None:
             DB_ARGS = parse_accessdatabase(self)
             if DB_ARGS is not None:
                 self.sql_access(**DB_ARGS)
 
         else:
-            self.sql_access(db_type, db_name, username, password)
+            self.sql_access(db_name, username, password)
 
-    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+    def sql_access(self, db_name=None, username=None, password=None):
         &#34;&#34;&#34;This is where you access the database
         &#34;&#34;&#34;
-        self.db = open_database(db_type, db_name, username, password)
-        self.db.transaction()
+        self.db = access_database(db_name, username, password)
+        self.db[&#39;db&#39;].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db)
+        self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.events_model.setTable(&#39;events&#39;)
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
-        self.channels_model = QSqlTableModel(self, self.db)
+        self.channels_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.channels_model.setTable(&#39;channels&#39;)
         self.channels_view.setModel(self.channels_model)
         self.channels_view.hideColumn(0)
 
-        self.electrodes_model = QSqlTableModel(self, self.db)
+        self.electrodes_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.electrodes_model.setTable(&#39;electrodes&#39;)
         self.electrodes_view.setModel(self.electrodes_model)
         self.electrodes_view.hideColumn(0)
@@ -346,17 +347,16 @@ class Interface(QMainWindow):
         self.list_subjects()
 
     def sql_commit(self):
-
-        self.db.commit()
+        self.db[&#39;db&#39;].commit()
         self.setWindowTitle(&#39;&#39;)
         self.unsaved_changes = False
-        self.db.transaction()
+        self.db[&#39;db&#39;].transaction()
 
     def sql_rollback(self):
-        self.db.rollback()
+        self.db[&#39;db&#39;].rollback()
         self.unsaved_changes = False
         self.setWindowTitle(&#39;&#39;)
-        self.db.transaction()
+        self.db[&#39;db&#39;].transaction()
         self.list_subjects()
 
     def list_subjects(self, code_to_select=None):
@@ -533,7 +533,7 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(obj, self))
+            parameters.update(list_parameters(self.db, obj, self))
 
             if k == &#39;runs&#39;:
                 w = Popup_Experimenters(obj, self)
@@ -547,7 +547,7 @@ class Interface(QMainWindow):
             elif k == &#39;recordings&#39;:
 
                 if obj.modality == &#39;ieeg&#39;:
-                    parameters.update(list_parameters(obj, self))
+                    parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current(&#39;sessions&#39;)
 
@@ -574,12 +574,6 @@ class Interface(QMainWindow):
                         w.setCurrentText(_name(electrodes.name))
                     w.activated.connect(partial(self.combo_chanelec, widget=w))
                     parameters.update({&#39;Electrodes&#39;: w})
-
-                if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
-                    parameters.update(list_parameters(obj, self))
-
-                if obj.run.session.name == &#39;MRI&#39;:
-                    parameters.update(list_parameters(obj, self))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -964,7 +958,7 @@ class Interface(QMainWindow):
         subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
         run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;&#34;&#34;\
             SELECT subjects.id, sessions.id, runs.id FROM runs
             JOIN sessions ON sessions.id = runs.session_id
@@ -1332,33 +1326,42 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def list_parameters(obj, parent=None):
+def list_parameters(db, obj, parent=None):
+
+    columns = collect_columns(db, obj=obj)
 
     d = {}
-    for col_name, col_info, value in get_attributes(obj):
+    for col, t in columns.items():
+        col_info = db[&#39;tables&#39;][t][col]
 
-        if col_info is None or &#39;type&#39; not in col_info:
+        if col_info[&#39;alias&#39;] is not None:
+            col_name = col_info[&#39;alias&#39;]
+        else:
+            col_name = col
+
+        if not (col_info[&#39;index&#39;] is False):
             continue
 
-        elif col_info[&#39;type&#39;].startswith(&#39;DATETIME&#39;):
+        value = getattr(obj, col)
+
+        if col_info[&#39;type&#39;] == &#39;QDateTime&#39;:
             w = make_datetime(value)
             w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;DATE&#39;):
+        elif col_info[&#39;type&#39;] == &#39;QDate&#39;:
             w = make_date(value)
             w.dateChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;FLOAT&#39;):
+        elif col_info[&#39;type&#39;] == &#39;double&#39;:
             w = make_float(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;INTEGER&#39;):
+        elif col_info[&#39;type&#39;] == &#39;int&#39;:
             w = make_integer(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
-            if &#39;values&#39; in col_info:
-                # TODO: this should look up allowed_values
+        elif col_info[&#39;type&#39;] == &#39;QString&#39;:
+            if col_info[&#39;values&#39;]:
                 values = col_info[&#39;values&#39;]
                 if len(values) &gt; 20:
                     values = sorted(values)
@@ -1372,10 +1375,10 @@ def list_parameters(obj, parent=None):
         else:
             raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
 
-        if &#39;doc&#39; in col_info:
+        if col_info[&#39;doc&#39;] is not None:
             w.setToolTip(col_info[&#39;doc&#39;])
 
-        d[col_info[&#39;name&#39;]] = w
+        d[col_info[&#39;alias&#39;]] = w
 
     return d
 
@@ -1548,7 +1551,7 @@ def _fake_names(X):
 </details>
 </dd>
 <dt id="xelo2.gui.interface.list_parameters"><code class="name flex">
-<span>def <span class="ident">list_parameters</span></span>(<span>obj, parent=None)</span>
+<span>def <span class="ident">list_parameters</span></span>(<span>db, obj, parent=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1556,33 +1559,42 @@ def _fake_names(X):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def list_parameters(obj, parent=None):
+<pre><code class="python">def list_parameters(db, obj, parent=None):
+
+    columns = collect_columns(db, obj=obj)
 
     d = {}
-    for col_name, col_info, value in get_attributes(obj):
+    for col, t in columns.items():
+        col_info = db[&#39;tables&#39;][t][col]
 
-        if col_info is None or &#39;type&#39; not in col_info:
+        if col_info[&#39;alias&#39;] is not None:
+            col_name = col_info[&#39;alias&#39;]
+        else:
+            col_name = col
+
+        if not (col_info[&#39;index&#39;] is False):
             continue
 
-        elif col_info[&#39;type&#39;].startswith(&#39;DATETIME&#39;):
+        value = getattr(obj, col)
+
+        if col_info[&#39;type&#39;] == &#39;QDateTime&#39;:
             w = make_datetime(value)
             w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;DATE&#39;):
+        elif col_info[&#39;type&#39;] == &#39;QDate&#39;:
             w = make_date(value)
             w.dateChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;FLOAT&#39;):
+        elif col_info[&#39;type&#39;] == &#39;double&#39;:
             w = make_float(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;INTEGER&#39;):
+        elif col_info[&#39;type&#39;] == &#39;int&#39;:
             w = make_integer(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info[&#39;type&#39;].startswith(&#39;TEXT&#39;):
-            if &#39;values&#39; in col_info:
-                # TODO: this should look up allowed_values
+        elif col_info[&#39;type&#39;] == &#39;QString&#39;:
+            if col_info[&#39;values&#39;]:
                 values = col_info[&#39;values&#39;]
                 if len(values) &gt; 20:
                     values = sorted(values)
@@ -1596,10 +1608,10 @@ def _fake_names(X):
         else:
             raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
 
-        if &#39;doc&#39; in col_info:
+        if col_info[&#39;doc&#39;] is not None:
             w.setToolTip(col_info[&#39;doc&#39;])
 
-        d[col_info[&#39;name&#39;]] = w
+        d[col_info[&#39;alias&#39;]] = w
 
     return d</code></pre>
 </details>
@@ -1747,7 +1759,7 @@ def _fake_names(X):
 <dl>
 <dt id="xelo2.gui.interface.Interface"><code class="flex name class">
 <span>class <span class="ident">Interface</span></span>
-<span>(</span><span>db_type=None, db_name=None, username=None, password=None)</span>
+<span>(</span><span>db_name=None, username=None, password=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO: disable everything until you load database</p></div>
@@ -1761,7 +1773,7 @@ def _fake_names(X):
     test = False
     unsaved_changes = False
 
-    def __init__(self, db_type=None, db_name=None, username=None, password=None):
+    def __init__(self, db_name=None, username=None, password=None):
 
         super().__init__()
         create_menubar(self)
@@ -1961,31 +1973,31 @@ def _fake_names(X):
         self.statusBar()
         self.show()
 
-        if db_type is None:
+        if db_name is None:
             DB_ARGS = parse_accessdatabase(self)
             if DB_ARGS is not None:
                 self.sql_access(**DB_ARGS)
 
         else:
-            self.sql_access(db_type, db_name, username, password)
+            self.sql_access(db_name, username, password)
 
-    def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+    def sql_access(self, db_name=None, username=None, password=None):
         &#34;&#34;&#34;This is where you access the database
         &#34;&#34;&#34;
-        self.db = open_database(db_type, db_name, username, password)
-        self.db.transaction()
+        self.db = access_database(db_name, username, password)
+        self.db[&#39;db&#39;].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db)
+        self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.events_model.setTable(&#39;events&#39;)
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
-        self.channels_model = QSqlTableModel(self, self.db)
+        self.channels_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.channels_model.setTable(&#39;channels&#39;)
         self.channels_view.setModel(self.channels_model)
         self.channels_view.hideColumn(0)
 
-        self.electrodes_model = QSqlTableModel(self, self.db)
+        self.electrodes_model = QSqlTableModel(self, self.db[&#39;db&#39;])
         self.electrodes_model.setTable(&#39;electrodes&#39;)
         self.electrodes_view.setModel(self.electrodes_model)
         self.electrodes_view.hideColumn(0)
@@ -1993,17 +2005,16 @@ def _fake_names(X):
         self.list_subjects()
 
     def sql_commit(self):
-
-        self.db.commit()
+        self.db[&#39;db&#39;].commit()
         self.setWindowTitle(&#39;&#39;)
         self.unsaved_changes = False
-        self.db.transaction()
+        self.db[&#39;db&#39;].transaction()
 
     def sql_rollback(self):
-        self.db.rollback()
+        self.db[&#39;db&#39;].rollback()
         self.unsaved_changes = False
         self.setWindowTitle(&#39;&#39;)
-        self.db.transaction()
+        self.db[&#39;db&#39;].transaction()
         self.list_subjects()
 
     def list_subjects(self, code_to_select=None):
@@ -2180,7 +2191,7 @@ def _fake_names(X):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(obj, self))
+            parameters.update(list_parameters(self.db, obj, self))
 
             if k == &#39;runs&#39;:
                 w = Popup_Experimenters(obj, self)
@@ -2194,7 +2205,7 @@ def _fake_names(X):
             elif k == &#39;recordings&#39;:
 
                 if obj.modality == &#39;ieeg&#39;:
-                    parameters.update(list_parameters(obj, self))
+                    parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current(&#39;sessions&#39;)
 
@@ -2221,12 +2232,6 @@ def _fake_names(X):
                         w.setCurrentText(_name(electrodes.name))
                     w.activated.connect(partial(self.combo_chanelec, widget=w))
                     parameters.update({&#39;Electrodes&#39;: w})
-
-                if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
-                    parameters.update(list_parameters(obj, self))
-
-                if obj.run.session.name == &#39;MRI&#39;:
-                    parameters.update(list_parameters(obj, self))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -2611,7 +2616,7 @@ def _fake_names(X):
         subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
         run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
 
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;&#34;&#34;\
             SELECT subjects.id, sessions.id, runs.id FROM runs
             JOIN sessions ON sessions.id = runs.session_id
@@ -3191,7 +3196,7 @@ def _fake_names(X):
     subset = {&#39;subjects&#39;: [], &#39;sessions&#39;: [], &#39;runs&#39;: []}
     run_ids = &#39;(&#39; + &#39;, &#39;.join([str(x[&#39;run_id&#39;]) for x in self.exports]) + &#39;)&#39;
 
-    query = QSqlQuery(self.db)
+    query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;&#34;&#34;\
         SELECT subjects.id, sessions.id, runs.id FROM runs
         JOIN sessions ON sessions.id = runs.session_id
@@ -3689,7 +3694,7 @@ def _fake_names(X):
         obj = item.data(Qt.UserRole)
 
         parameters = {}
-        parameters.update(list_parameters(obj, self))
+        parameters.update(list_parameters(self.db, obj, self))
 
         if k == &#39;runs&#39;:
             w = Popup_Experimenters(obj, self)
@@ -3703,7 +3708,7 @@ def _fake_names(X):
         elif k == &#39;recordings&#39;:
 
             if obj.modality == &#39;ieeg&#39;:
-                parameters.update(list_parameters(obj, self))
+                parameters.update(list_parameters(self.db, obj, self))
 
                 sess = self.current(&#39;sessions&#39;)
 
@@ -3730,12 +3735,6 @@ def _fake_names(X):
                     w.setCurrentText(_name(electrodes.name))
                 w.activated.connect(partial(self.combo_chanelec, widget=w))
                 parameters.update({&#39;Electrodes&#39;: w})
-
-            if obj.modality in (&#39;bold&#39;, &#39;epi&#39;):
-                parameters.update(list_parameters(obj, self))
-
-            if obj.run.session.name == &#39;MRI&#39;:
-                parameters.update(list_parameters(obj, self))
 
         for p_k, p_v in parameters.items():
             all_params.append({
@@ -4277,7 +4276,7 @@ def show_channels_electrodes(self, current=None, previous=None):
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.sql_access"><code class="name flex">
-<span>def <span class="ident">sql_access</span></span>(<span>self, db_type=None, db_name=None, username=None, password=None)</span>
+<span>def <span class="ident">sql_access</span></span>(<span>self, db_name=None, username=None, password=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This is where you access the database</p></div>
@@ -4285,23 +4284,23 @@ def show_channels_electrodes(self, current=None, previous=None):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sql_access(self, db_type=None, db_name=None, username=None, password=None):
+<pre><code class="python">def sql_access(self, db_name=None, username=None, password=None):
     &#34;&#34;&#34;This is where you access the database
     &#34;&#34;&#34;
-    self.db = open_database(db_type, db_name, username, password)
-    self.db.transaction()
+    self.db = access_database(db_name, username, password)
+    self.db[&#39;db&#39;].transaction()
 
-    self.events_model = QSqlTableModel(self, self.db)
+    self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
     self.events_model.setTable(&#39;events&#39;)
     self.events_view.setModel(self.events_model)
     self.events_view.hideColumn(0)
 
-    self.channels_model = QSqlTableModel(self, self.db)
+    self.channels_model = QSqlTableModel(self, self.db[&#39;db&#39;])
     self.channels_model.setTable(&#39;channels&#39;)
     self.channels_view.setModel(self.channels_model)
     self.channels_view.hideColumn(0)
 
-    self.electrodes_model = QSqlTableModel(self, self.db)
+    self.electrodes_model = QSqlTableModel(self, self.db[&#39;db&#39;])
     self.electrodes_model.setTable(&#39;electrodes&#39;)
     self.electrodes_view.setModel(self.electrodes_model)
     self.electrodes_view.hideColumn(0)
@@ -4319,11 +4318,10 @@ def show_channels_electrodes(self, current=None, previous=None):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sql_commit(self):
-
-    self.db.commit()
+    self.db[&#39;db&#39;].commit()
     self.setWindowTitle(&#39;&#39;)
     self.unsaved_changes = False
-    self.db.transaction()</code></pre>
+    self.db[&#39;db&#39;].transaction()</code></pre>
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.sql_rollback"><code class="name flex">
@@ -4336,10 +4334,10 @@ def show_channels_electrodes(self, current=None, previous=None):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sql_rollback(self):
-    self.db.rollback()
+    self.db[&#39;db&#39;].rollback()
     self.unsaved_changes = False
     self.setWindowTitle(&#39;&#39;)
-    self.db.transaction()
+    self.db[&#39;db&#39;].transaction()
     self.list_subjects()</code></pre>
 </details>
 </dd>

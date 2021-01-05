@@ -33,15 +33,13 @@ from ..api.utils import get_dtypes
 from ..api.filetype import parse_filetype
 
 
+def add_ieeg_to_sess(db, sess, ieeg_file):
+    &#34;&#34;&#34;default task is NOTE, but TODO decode task from triggers&#34;&#34;&#34;
 
+    info = read_info_from_ieeg(db, ieeg_file)
 
-def add_ieeg_to_sess(sess, ieeg_file):
-    &#34;&#34;&#34;default task is REST, but TODO decode task from triggers&#34;&#34;&#34;
-
-    info = read_info_from_ieeg(ieeg_file)
-
-    # default task is REST
-    run = sess.add_run(&#39;rest&#39;)
+    # default task is NOTE
+    run = sess.add_run(&#39;NOTE&#39;)
     run.start_time = info[&#39;start_time&#39;]
     run.duration = info[&#39;duration&#39;]
     rec = run.add_recording(&#39;ieeg&#39;)
@@ -56,12 +54,12 @@ def add_ieeg_to_sess(sess, ieeg_file):
     return run
 
 
-def read_info_from_ieeg(path_to_file):
+def read_info_from_ieeg(db, path_to_file):
 
     d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
 
-    DTYPES = get_dtypes(TABLES[&#39;events&#39;])
+    DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
     ev = empty(len(mrk), dtype=DTYPES)
     ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
     ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]
@@ -89,21 +87,21 @@ def read_info_from_ieeg(path_to_file):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.io.ieeg.add_ieeg_to_sess"><code class="name flex">
-<span>def <span class="ident">add_ieeg_to_sess</span></span>(<span>sess, ieeg_file)</span>
+<span>def <span class="ident">add_ieeg_to_sess</span></span>(<span>db, sess, ieeg_file)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>default task is REST, but TODO decode task from triggers</p></div>
+<div class="desc"><p>default task is NOTE, but TODO decode task from triggers</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_ieeg_to_sess(sess, ieeg_file):
-    &#34;&#34;&#34;default task is REST, but TODO decode task from triggers&#34;&#34;&#34;
+<pre><code class="python">def add_ieeg_to_sess(db, sess, ieeg_file):
+    &#34;&#34;&#34;default task is NOTE, but TODO decode task from triggers&#34;&#34;&#34;
 
-    info = read_info_from_ieeg(ieeg_file)
+    info = read_info_from_ieeg(db, ieeg_file)
 
-    # default task is REST
-    run = sess.add_run(&#39;rest&#39;)
+    # default task is NOTE
+    run = sess.add_run(&#39;NOTE&#39;)
     run.start_time = info[&#39;start_time&#39;]
     run.duration = info[&#39;duration&#39;]
     rec = run.add_recording(&#39;ieeg&#39;)
@@ -119,7 +117,7 @@ def read_info_from_ieeg(path_to_file):
 </details>
 </dd>
 <dt id="xelo2.io.ieeg.read_info_from_ieeg"><code class="name flex">
-<span>def <span class="ident">read_info_from_ieeg</span></span>(<span>path_to_file)</span>
+<span>def <span class="ident">read_info_from_ieeg</span></span>(<span>db, path_to_file)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -127,12 +125,12 @@ def read_info_from_ieeg(path_to_file):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_info_from_ieeg(path_to_file):
+<pre><code class="python">def read_info_from_ieeg(db, path_to_file):
 
     d = localize_blackrock(path_to_file)
     mrk = d.read_markers()
 
-    DTYPES = get_dtypes(TABLES[&#39;events&#39;])
+    DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
     ev = empty(len(mrk), dtype=DTYPES)
     ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
     ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]

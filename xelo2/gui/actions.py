@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QUrl
 from PyQt5.QtSql import QSqlQuery
 
-from .utils import LEVELS
+from ..database.tables import LEVELS
 from .summary import show_summary
 
 

@@ -200,7 +200,7 @@ class Subject(Table_with_files):
             raise ValueError(query.lastError().text())
 
         protocol_id = query.lastInsertId()
-        return Protocol(self.db[&#39;db&#39;], protocol_id, subject=self)
+        return Protocol(self.db, protocol_id, subject=self)
 
     def list_protocols(self):
         query = QSqlQuery(self.db[&#39;db&#39;])
@@ -327,7 +327,7 @@ class Run(Table_with_files):
 
     @property
     def events(self):
-        dtypes = get_dtypes(TABLES[&#39;events&#39;])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][&#39;events&#39;])
 
         query_str = &#39;, &#39;.join(f&#34;`{x}`&#34; for x in dtypes.names)
         query = QSqlQuery(self.db[&#39;db&#39;])
@@ -1075,7 +1075,7 @@ objects which might be associated with files.</p></div>
 
     @property
     def events(self):
-        dtypes = get_dtypes(TABLES[&#39;events&#39;])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][&#39;events&#39;])
 
         query_str = &#39;, &#39;.join(f&#34;`{x}`&#34; for x in dtypes.names)
         query = QSqlQuery(self.db[&#39;db&#39;])
@@ -1251,7 +1251,7 @@ objects which might be associated with files.</p></div>
 </summary>
 <pre><code class="python">@property
 def events(self):
-    dtypes = get_dtypes(TABLES[&#39;events&#39;])
+    dtypes = get_dtypes(self.db[&#39;tables&#39;][&#39;events&#39;])
 
     query_str = &#39;, &#39;.join(f&#34;`{x}`&#34; for x in dtypes.names)
     query = QSqlQuery(self.db[&#39;db&#39;])
@@ -1769,7 +1769,7 @@ objects which might be associated with files.</p></div>
             raise ValueError(query.lastError().text())
 
         protocol_id = query.lastInsertId()
-        return Protocol(self.db[&#39;db&#39;], protocol_id, subject=self)
+        return Protocol(self.db, protocol_id, subject=self)
 
     def list_protocols(self):
         query = QSqlQuery(self.db[&#39;db&#39;])
@@ -1889,7 +1889,7 @@ def codes(self):
         raise ValueError(query.lastError().text())
 
     protocol_id = query.lastInsertId()
-    return Protocol(self.db[&#39;db&#39;], protocol_id, subject=self)</code></pre>
+    return Protocol(self.db, protocol_id, subject=self)</code></pre>
 </details>
 </dd>
 <dt id="xelo2.api.frontend.Subject.add_session"><code class="name flex">

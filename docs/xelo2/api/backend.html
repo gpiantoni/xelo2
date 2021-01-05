@@ -290,7 +290,7 @@ class NumpyTable(Table_with_files):
 
     @property
     def data(self):
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
         query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
         query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
@@ -340,7 +340,7 @@ class NumpyTable(Table_with_files):
     def empty(self, n_rows):
         &#34;&#34;&#34;convenience function to get an empty array with empty values if
         necessary&#34;&#34;&#34;
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
 
         values = empty(n_rows, dtype=dtypes)
         for name in values.dtype.names:
@@ -501,7 +501,7 @@ def path(self):
 
     @property
     def data(self):
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
         query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
         query = QSqlQuery(self.db[&#39;db&#39;])
         query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
@@ -551,7 +551,7 @@ def path(self):
     def empty(self, n_rows):
         &#34;&#34;&#34;convenience function to get an empty array with empty values if
         necessary&#34;&#34;&#34;
-        dtypes = get_dtypes(TABLES[self._tb_data])
+        dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
 
         values = empty(n_rows, dtype=dtypes)
         for name in values.dtype.names:
@@ -581,7 +581,7 @@ def path(self):
 </summary>
 <pre><code class="python">@property
 def data(self):
-    dtypes = get_dtypes(TABLES[self._tb_data])
+    dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
     query_str = &#34;, &#34;.join(f&#34;`{col}`&#34; for col in dtypes.names)
     query = QSqlQuery(self.db[&#39;db&#39;])
     query.prepare(f&#34;SELECT {query_str} FROM {self._tb_data} WHERE {self.t}_id = :id&#34;)
@@ -622,7 +622,7 @@ necessary</p></div>
 <pre><code class="python">def empty(self, n_rows):
     &#34;&#34;&#34;convenience function to get an empty array with empty values if
     necessary&#34;&#34;&#34;
-    dtypes = get_dtypes(TABLES[self._tb_data])
+    dtypes = get_dtypes(self.db[&#39;tables&#39;][self._tb_data])
 
     values = empty(n_rows, dtype=dtypes)
     for name in values.dtype.names:

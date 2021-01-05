@@ -24,13 +24,49 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from pathlib import Path
+<pre><code class="python">from logging import getLogger
+from pathlib import Path
 from numpy import isin
+
+from PyQt5.QtSql import QSqlQuery
 
 from ..io.ieeg import read_info_from_ieeg
 from ..io.channels import create_channels
 from ..io.electrodes import import_electrodes
 from ..api import Electrodes
+
+
+lg = getLogger(__name__)
+
+
+def add_allowed_value(db, table, column, value):
+    &#34;&#34;&#34;Add allowed value for a table/column
+
+    Parameters
+    ----------
+    db : dict
+        information about database
+    table : str
+        one of the tables
+    column : str
+        one of the columns in the table
+    value : str
+        value to add
+    &#34;&#34;&#34;
+    if table not in db[&#39;tables&#39;]:
+        raise ValueError(f&#39;Table &#34;{table}&#34; not found in the list of tables&#39;)
+    if column not in db[&#39;tables&#39;][table]:
+        raise ValueError(f&#39;Column &#34;{column}&#34; not found in the list of columns of table &#34;{table}&#34;&#39;)
+
+    query = QSqlQuery(db[&#39;db&#39;])
+    query.prepare(&#34;INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`) VALUES (:table, :column, :value)&#34;)
+    query.bindValue(&#39;:table&#39;, table)
+    query.bindValue(&#39;:column&#39;, column)
+    query.bindValue(&#39;:value&#39;, value)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    lg.warning(&#39;Value correctly added. Changes will take place immediately for SQL, but GUI is not updated until you restart xelo2&#39;)
 
 
 def recap(subj, sess, run, trial_type=&#39;speech&#39;):
@@ -217,6 +253,56 @@ def create_electrodes(rec, mat_file, idx=None):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="xelo2.database.housekeeping.add_allowed_value"><code class="name flex">
+<span>def <span class="ident">add_allowed_value</span></span>(<span>db, table, column, value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add allowed value for a table/column</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>db</code></strong> :&ensp;<code>dict</code></dt>
+<dd>information about database</dd>
+<dt><strong><code>table</code></strong> :&ensp;<code>str</code></dt>
+<dd>one of the tables</dd>
+<dt><strong><code>column</code></strong> :&ensp;<code>str</code></dt>
+<dd>one of the columns in the table</dd>
+<dt><strong><code>value</code></strong> :&ensp;<code>str</code></dt>
+<dd>value to add</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_allowed_value(db, table, column, value):
+    &#34;&#34;&#34;Add allowed value for a table/column
+
+    Parameters
+    ----------
+    db : dict
+        information about database
+    table : str
+        one of the tables
+    column : str
+        one of the columns in the table
+    value : str
+        value to add
+    &#34;&#34;&#34;
+    if table not in db[&#39;tables&#39;]:
+        raise ValueError(f&#39;Table &#34;{table}&#34; not found in the list of tables&#39;)
+    if column not in db[&#39;tables&#39;][table]:
+        raise ValueError(f&#39;Column &#34;{column}&#34; not found in the list of columns of table &#34;{table}&#34;&#39;)
+
+    query = QSqlQuery(db[&#39;db&#39;])
+    query.prepare(&#34;INSERT INTO `allowed_values` (`table_name`, `column_name`, `allowed_value`) VALUES (:table, :column, :value)&#34;)
+    query.bindValue(&#39;:table&#39;, table)
+    query.bindValue(&#39;:column&#39;, column)
+    query.bindValue(&#39;:value&#39;, value)
+    if not query.exec():
+        raise SyntaxError(query.lastError().text())
+
+    lg.warning(&#39;Value correctly added. Changes will take place immediately for SQL, but GUI is not updated until you restart xelo2&#39;)</code></pre>
+</details>
+</dd>
 <dt id="xelo2.database.housekeeping.add_events_type"><code class="name flex">
 <span>def <span class="ident">add_events_type</span></span>(<span>run)</span>
 </code></dt>
@@ -484,6 +570,7 @@ def create_electrodes(rec, mat_file, idx=None):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
+<li><code><a title="xelo2.database.housekeeping.add_allowed_value" href="#xelo2.database.housekeeping.add_allowed_value">add_allowed_value</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.add_events_type" href="#xelo2.database.housekeeping.add_events_type">add_events_type</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.add_ieeg_info" href="#xelo2.database.housekeeping.add_ieeg_info">add_ieeg_info</a></code></li>
 <li><code><a title="xelo2.database.housekeeping.add_recording" href="#xelo2.database.housekeeping.add_recording">add_recording</a></code></li>

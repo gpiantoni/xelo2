@@ -38,39 +38,7 @@ from numpy import (
 lg = getLogger(__name__)
 
 
-def get_attributes(tables, obj):
-    &#34;&#34;&#34;For each main object (Subject, Session etc), it returns the name of the
-    attribute, the information about that attribute (type, full name), and the
-    actual value.
-
-    Parameters
-    ----------
-    tables : dict
-        information about all the tables
-    obj  : instance of Subject, Session, Run, Protocol, Recording
-        one of the main objects
-
-    Yields
-    ------
-    str
-        name of the attribute
-    dict
-        information about the dictionary, such as &#34;name&#34; (full name, with spaces),
-        &#34;type&#34; (SQL type), &#34;values&#34; (optional, acceptable values)
-    value
-        actual value of the attribute for that object
-    &#34;&#34;&#34;
-    for column, table in obj.columns.items():
-        condition = tables[table].get(&#39;when&#39;, None)
-        if condition is not None:  # if subtable
-            if getattr(obj, condition[&#39;parameter&#39;]) not in condition[&#39;value&#39;]:
-                continue  # does not match the WHEN condition
-        col_info = tables[table][column]
-        value = getattr(obj, column)
-        yield column, col_info, value
-
-
-def collect_columns(db, t):
+def collect_columns(db, t=None, obj=None):
     &#34;&#34;&#34;For each attribute, this function looks up in which table the information
     is stored.
 
@@ -80,19 +48,32 @@ def collect_columns(db, t):
         information about all the tables
     t : str
         name of the table (subject, session, run, etc)
+    obj : instance of Subject, Session, Protocol, Run, Recording
+        actual object (subject, session, run, etc)
 
     Returns
     -------
     dict
         where the key is the attribute and the value is the table
     &#34;&#34;&#34;
-    table = t + &#39;s&#39;
+    if obj is not None:
+        table = obj.t + &#39;s&#39;
+    elif t is not None:
+        table = t + &#39;s&#39;
+    else:
+        raise ValueError(&#39;You need to specify either t (level name) or obj (actual object)&#39;)
 
     # main table
     attr_tables = {k: table for k in list(db[&#39;tables&#39;][table])}
 
     # look up attributes in subtables
-    subtables = [tb[&#39;subtable&#39;] for tb in db[&#39;subtables&#39;] if tb[&#39;parent&#39;] == table]
+    subtables = []
+    for subt in db[&#39;subtables&#39;]:
+        if subt[&#39;parent&#39;] != table:
+            continue
+        if obj is None or getattr(obj, subt[&#39;parameter&#39;]) in subt[&#39;values&#39;]:
+            subtables.append(subt[&#39;subtable&#39;])
+
     for subt in subtables:
         attr_tables.update(
             {k: subt for k in list(db[&#39;tables&#39;][subt])}
@@ -137,9 +118,9 @@ def get_dtypes(table):
     for k, v in table.items():
         if not (v[&#39;index&#39;] is False):   # index is False when it&#39;s not an index
             continue
-        elif v[&#39;type&#39;] == &#39;TEXT&#39; or v[&#39;type&#39;] == &#39;QString&#39;:  # the second is the new format
+        elif v[&#39;type&#39;] == &#39;QString&#39;:
             dtypes.append((k, &#39;U4096&#39;))
-        elif v[&#39;type&#39;] == &#39;FLOAT&#39; or v[&#39;type&#39;] == &#39;double&#39;:  # the second is the new format
+        elif v[&#39;type&#39;] == &#39;double&#39;:
             dtypes.append((k, &#39;float&#39;))
         else:
             assert False
@@ -265,7 +246,7 @@ def recording_attach(db, group, recording_id, group_id=None):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.api.utils.collect_columns"><code class="name flex">
-<span>def <span class="ident">collect_columns</span></span>(<span>db, t)</span>
+<span>def <span class="ident">collect_columns</span></span>(<span>db, t=None, obj=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>For each attribute, this function looks up in which table the information
@@ -276,6 +257,8 @@ is stored.</p>
 <dd>information about all the tables</dd>
 <dt><strong><code>t</code></strong> :&ensp;<code>str</code></dt>
 <dd>name of the table (subject, session, run, etc)</dd>
+<dt><strong><code>obj</code></strong> :&ensp;<code>instance</code> of <code>Subject, Session, Protocol, Run, Recording</code></dt>
+<dd>actual object (subject, session, run, etc)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -286,7 +269,7 @@ is stored.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def collect_columns(db, t):
+<pre><code class="python">def collect_columns(db, t=None, obj=None):
     &#34;&#34;&#34;For each attribute, this function looks up in which table the information
     is stored.
 
@@ -296,19 +279,32 @@ is stored.</p>
         information about all the tables
     t : str
         name of the table (subject, session, run, etc)
+    obj : instance of Subject, Session, Protocol, Run, Recording
+        actual object (subject, session, run, etc)
 
     Returns
     -------
     dict
         where the key is the attribute and the value is the table
     &#34;&#34;&#34;
-    table = t + &#39;s&#39;
+    if obj is not None:
+        table = obj.t + &#39;s&#39;
+    elif t is not None:
+        table = t + &#39;s&#39;
+    else:
+        raise ValueError(&#39;You need to specify either t (level name) or obj (actual object)&#39;)
 
     # main table
     attr_tables = {k: table for k in list(db[&#39;tables&#39;][table])}
 
     # look up attributes in subtables
-    subtables = [tb[&#39;subtable&#39;] for tb in db[&#39;subtables&#39;] if tb[&#39;parent&#39;] == table]
+    subtables = []
+    for subt in db[&#39;subtables&#39;]:
+        if subt[&#39;parent&#39;] != table:
+            continue
+        if obj is None or getattr(obj, subt[&#39;parameter&#39;]) in subt[&#39;values&#39;]:
+            subtables.append(subt[&#39;subtable&#39;])
+
     for subt in subtables:
         attr_tables.update(
             {k: subt for k in list(db[&#39;tables&#39;][subt])}
@@ -367,67 +363,6 @@ is stored.</p>
         lg.warning(query.lastError().text())</code></pre>
 </details>
 </dd>
-<dt id="xelo2.api.utils.get_attributes"><code class="name flex">
-<span>def <span class="ident">get_attributes</span></span>(<span>tables, obj)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>For each main object (Subject, Session etc), it returns the name of the
-attribute, the information about that attribute (type, full name), and the
-actual value.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>tables</code></strong> :&ensp;<code>dict</code></dt>
-<dd>information about all the tables</dd>
-</dl>
-<p>obj
-: instance of Subject, Session, Run, Protocol, Recording
-one of the main objects</p>
-<h2 id="yields">Yields</h2>
-<dl>
-<dt><code>str</code></dt>
-<dd>name of the attribute</dd>
-<dt><code>dict</code></dt>
-<dd>information about the dictionary, such as "name" (full name, with spaces),
-"type" (SQL type), "values" (optional, acceptable values)</dd>
-<dt><code>value</code></dt>
-<dd>actual value of the attribute for that object</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_attributes(tables, obj):
-    &#34;&#34;&#34;For each main object (Subject, Session etc), it returns the name of the
-    attribute, the information about that attribute (type, full name), and the
-    actual value.
-
-    Parameters
-    ----------
-    tables : dict
-        information about all the tables
-    obj  : instance of Subject, Session, Run, Protocol, Recording
-        one of the main objects
-
-    Yields
-    ------
-    str
-        name of the attribute
-    dict
-        information about the dictionary, such as &#34;name&#34; (full name, with spaces),
-        &#34;type&#34; (SQL type), &#34;values&#34; (optional, acceptable values)
-    value
-        actual value of the attribute for that object
-    &#34;&#34;&#34;
-    for column, table in obj.columns.items():
-        condition = tables[table].get(&#39;when&#39;, None)
-        if condition is not None:  # if subtable
-            if getattr(obj, condition[&#39;parameter&#39;]) not in condition[&#39;value&#39;]:
-                continue  # does not match the WHEN condition
-        col_info = tables[table][column]
-        value = getattr(obj, column)
-        yield column, col_info, value</code></pre>
-</details>
-</dd>
 <dt id="xelo2.api.utils.get_dtypes"><code class="name flex">
 <span>def <span class="ident">get_dtypes</span></span>(<span>table)</span>
 </code></dt>
@@ -444,9 +379,9 @@ one of the main objects</p>
     for k, v in table.items():
         if not (v[&#39;index&#39;] is False):   # index is False when it&#39;s not an index
             continue
-        elif v[&#39;type&#39;] == &#39;TEXT&#39; or v[&#39;type&#39;] == &#39;QString&#39;:  # the second is the new format
+        elif v[&#39;type&#39;] == &#39;QString&#39;:
             dtypes.append((k, &#39;U4096&#39;))
-        elif v[&#39;type&#39;] == &#39;FLOAT&#39; or v[&#39;type&#39;] == &#39;double&#39;:  # the second is the new format
+        elif v[&#39;type&#39;] == &#39;double&#39;:
             dtypes.append((k, &#39;float&#39;))
         else:
             assert False
@@ -667,7 +602,6 @@ the entry</dd>
 <ul class="">
 <li><code><a title="xelo2.api.utils.collect_columns" href="#xelo2.api.utils.collect_columns">collect_columns</a></code></li>
 <li><code><a title="xelo2.api.utils.find_subject_id" href="#xelo2.api.utils.find_subject_id">find_subject_id</a></code></li>
-<li><code><a title="xelo2.api.utils.get_attributes" href="#xelo2.api.utils.get_attributes">get_attributes</a></code></li>
 <li><code><a title="xelo2.api.utils.get_dtypes" href="#xelo2.api.utils.get_dtypes">get_dtypes</a></code></li>
 <li><code><a title="xelo2.api.utils.list_channels_electrodes" href="#xelo2.api.utils.list_channels_electrodes">list_channels_electrodes</a></code></li>
 <li><code><a title="xelo2.api.utils.out_date" href="#xelo2.api.utils.out_date">out_date</a></code></li>

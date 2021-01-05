@@ -77,7 +77,7 @@ from .modal import (
     )
 
 
-EXTRA_LEVELS = ('channels', 'electrodes')
+EXTRA_LEVELS = ['channels', 'electrodes']
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
@@ -507,7 +507,7 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(obj, self))
+            parameters.update(list_parameters(self.db, obj, self))
 
             if k == 'runs':
                 w = Popup_Experimenters(obj, self)
@@ -521,7 +521,7 @@ class Interface(QMainWindow):
             elif k == 'recordings':
 
                 if obj.modality == 'ieeg':
-                    parameters.update(list_parameters(obj, self))
+                    parameters.update(list_parameters(self.db, obj, self))
 
                     sess = self.current('sessions')
 
@@ -548,12 +548,6 @@ class Interface(QMainWindow):
                         w.setCurrentText(_name(electrodes.name))
                     w.activated.connect(partial(self.combo_chanelec, widget=w))
                     parameters.update({'Electrodes': w})
-
-                if obj.modality in ('bold', 'epi'):
-                    parameters.update(list_parameters(obj, self))
-
-                if obj.run.session.name == 'MRI':
-                    parameters.update(list_parameters(obj, self))
 
             for p_k, p_v in parameters.items():
                 all_params.append({
@@ -1355,10 +1349,10 @@ def list_parameters(db, obj, parent=None):
         else:
             raise ValueError(f'unknown type "{col_info["type"]}"')
 
-        if col_info['col'] is not None:
+        if col_info['doc'] is not None:
             w.setToolTip(col_info['doc'])
 
-        d[col_info['name']] = w
+        d[col_info['alias']] = w
 
     return d
 

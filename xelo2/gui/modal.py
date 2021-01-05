@@ -25,9 +25,10 @@ from PyQt5.QtCore import Qt
 from functools import partial
 from numpy import issubdtype, floating, integer
 
-from .utils import LEVELS, _protocol_name
+from .utils import _protocol_name
 from ..api.filetype import parse_filetype
 from ..api.frontend import list_experimenters
+from ..database.tables import LEVELS
 from ..io.ieeg import read_info_from_ieeg
 
 lg = getLogger(__name__)

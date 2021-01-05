@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QUrl
 from PyQt5.QtSql import QSqlQuery
 
-from .utils import LEVELS
+from ..database.tables import LEVELS
 from .summary import show_summary
 
 
@@ -51,10 +51,6 @@ def create_menubar(main):
     action_revert = QAction(&#39;Rollback&#39;, main)
     action_revert.triggered.connect(main.sql_rollback)
     menu_db.addAction(action_revert)
-
-    action_export = QAction(&#39;Backup to tsv&#39;, main)
-    action_export.triggered.connect(main.export_tsv)
-    menu_db.addAction(action_export)
 
     action_close = QAction(&#39;Quit&#39;, main)
     action_close.triggered.connect(main.close)
@@ -259,10 +255,6 @@ class FilesWidget(QTableWidget):
     action_revert = QAction(&#39;Rollback&#39;, main)
     action_revert.triggered.connect(main.sql_rollback)
     menu_db.addAction(action_revert)
-
-    action_export = QAction(&#39;Backup to tsv&#39;, main)
-    action_export.triggered.connect(main.export_tsv)
-    menu_db.addAction(action_export)
 
     action_close = QAction(&#39;Quit&#39;, main)
     action_close.triggered.connect(main.close)

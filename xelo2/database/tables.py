@@ -37,6 +37,7 @@ EXPECTED_TABLES = (
     + [x + '_groups' for x in ELEC_CHAN]
     )
 
+
 def parse_all_tables(info_schema, db):
     TABLES = {}
     for table in sorted(db.tables()):
@@ -57,12 +58,10 @@ def parse_all_tables(info_schema, db):
             d['index'] = indices.get(name, False)
             doc = comments.get(name, None)
             if doc is None:
-                d['alias'] = d['doc'] = None
+                d['alias'] = name
+                d['doc'] = None
             else:
-                try:
-                    d['alias'], d['doc'] = doc.split(': ')
-                except TypeError:
-                    raise ValueError(doc)
+                d['alias'], d['doc'] = doc.split(': ')
             table_d[name] = d
 
         TABLES[table] = table_d

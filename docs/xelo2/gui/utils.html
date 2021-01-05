@@ -24,16 +24,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">LEVELS = (
-    &#39;subjects&#39;,
-    &#39;sessions&#39;,
-    &#39;protocols&#39;,
-    &#39;runs&#39;,
-    &#39;recordings&#39;,
-    )
-
-
-def _protocol_name(protocol):
+<pre><code class="python">def _protocol_name(protocol):
     if protocol.metc == &#39;Request from clinic&#39;:
         return &#39;Request from clinic&#39;
     elif protocol.date_of_signature is None:

@@ -24,8 +24,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from pathlib import Path
-from logging import getLogger, StreamHandler
+<pre><code class="python">from logging import getLogger, StreamHandler
 from argparse import ArgumentParser
 import sys
 
@@ -54,9 +53,6 @@ def main():
 
     parser = ArgumentParser(prog=&#39;open xelo2 database&#39;)
     parser.add_argument(
-        &#39;--sqlite&#39;, default=None,
-        help=&#39;path to &#39;)
-    parser.add_argument(
         &#39;--mysql&#39;, default=None,
         help=&#39;MYSQL database&#39;)
     parser.add_argument(
@@ -67,11 +63,8 @@ def main():
         help=&#39;MYSQL password&#39;)
     args = parser.parse_args()
 
-    if args.sqlite is not None:
-        sqlite = Path(args.sqlite).resolve()
-        w = Interface(&#39;QSQLITE&#39;, sqlite)
-    elif args.mysql is not None:
-        w = Interface(&#39;QMYSQL&#39;, args.mysql, args.username, args.password)
+    if args.mysql is not None:
+        w = Interface(args.mysql, args.username, args.password)
     else:
         w = Interface()
 
@@ -118,9 +111,6 @@ if __name__ == &#39;__main__&#39;:
 
     parser = ArgumentParser(prog=&#39;open xelo2 database&#39;)
     parser.add_argument(
-        &#39;--sqlite&#39;, default=None,
-        help=&#39;path to &#39;)
-    parser.add_argument(
         &#39;--mysql&#39;, default=None,
         help=&#39;MYSQL database&#39;)
     parser.add_argument(
@@ -131,11 +121,8 @@ if __name__ == &#39;__main__&#39;:
         help=&#39;MYSQL password&#39;)
     args = parser.parse_args()
 
-    if args.sqlite is not None:
-        sqlite = Path(args.sqlite).resolve()
-        w = Interface(&#39;QSQLITE&#39;, sqlite)
-    elif args.mysql is not None:
-        w = Interface(&#39;QMYSQL&#39;, args.mysql, args.username, args.password)
+    if args.mysql is not None:
+        w = Interface(args.mysql, args.username, args.password)
     else:
         w = Interface()
 
