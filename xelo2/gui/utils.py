@@ -1,12 +1,3 @@
-LEVELS = (
-    'subjects',
-    'sessions',
-    'protocols',
-    'runs',
-    'recordings',
-    )
-
-
 def _protocol_name(protocol):
     if protocol.metc == 'Request from clinic':
         return 'Request from clinic'

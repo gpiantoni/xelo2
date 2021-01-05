@@ -7,8 +7,8 @@ from PyQt5.Qt import QByteArray
 
 LEVELS = [
     'subjects',
-    'protocols',
     'sessions',
+    'protocols',
     'runs',
     'recordings',
     ]

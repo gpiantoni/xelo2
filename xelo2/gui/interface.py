@@ -53,8 +53,9 @@ from PyQt5.QtSql import (
     )
 
 from ..api import list_subjects, Subject, Session, Run, Channels, Electrodes
-from ..api.utils import get_attributes
+from ..api.utils import collect_columns
 from ..database import access_database, lookup_allowed_values
+from ..database.tables import LEVELS
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
 from ..io.parrec import add_parrec
@@ -64,7 +65,7 @@ from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ieeg
 from ..io.tsv import load_tsv, save_tsv
 
-from .utils import LEVELS, _protocol_name
+from .utils import _protocol_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import (
     NewFile,
@@ -1305,33 +1306,42 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def list_parameters(obj, parent=None):
+def list_parameters(db, obj, parent=None):
+
+    columns = collect_columns(db, obj=obj)
 
     d = {}
-    for col_name, col_info, value in get_attributes(obj):
+    for col, t in columns.items():
+        col_info = db['tables'][t][col]
 
-        if col_info is None or 'type' not in col_info:
+        if col_info['alias'] is not None:
+            col_name = col_info['alias']
+        else:
+            col_name = col
+
+        if not (col_info['index'] is False):
             continue
 
-        elif col_info['type'].startswith('DATETIME'):
+        value = getattr(obj, col)
+
+        if col_info['type'] == 'QDateTime':
             w = make_datetime(value)
             w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info['type'].startswith('DATE'):
+        elif col_info['type'] == 'QDate':
             w = make_date(value)
             w.dateChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info['type'].startswith('FLOAT'):
+        elif col_info['type'] == 'double':
             w = make_float(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info['type'].startswith('INTEGER'):
+        elif col_info['type'] == 'int':
             w = make_integer(value)
             w.valueChanged.connect(partial(parent.changed, obj, col_name))
 
-        elif col_info['type'].startswith('TEXT'):
-            if 'values' in col_info:
-                # TODO: this should look up allowed_values
+        elif col_info['type'] == 'QString':
+            if col_info['values']:
                 values = col_info['values']
                 if len(values) > 20:
                     values = sorted(values)
@@ -1345,7 +1355,7 @@ def list_parameters(obj, parent=None):
         else:
             raise ValueError(f'unknown type "{col_info["type"]}"')
 
-        if 'doc' in col_info:
+        if col_info['col'] is not None:
             w.setToolTip(col_info['doc'])
 
         d[col_info['name']] = w

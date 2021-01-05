@@ -12,39 +12,7 @@ from numpy import (
 lg = getLogger(__name__)
 
 
-def get_attributes(tables, obj):
-    """For each main object (Subject, Session etc), it returns the name of the
-    attribute, the information about that attribute (type, full name), and the
-    actual value.
-
-    Parameters
-    ----------
-    tables : dict
-        information about all the tables
-    obj  : instance of Subject, Session, Run, Protocol, Recording
-        one of the main objects
-
-    Yields
-    ------
-    str
-        name of the attribute
-    dict
-        information about the dictionary, such as "name" (full name, with spaces),
-        "type" (SQL type), "values" (optional, acceptable values)
-    value
-        actual value of the attribute for that object
-    """
-    for column, table in obj.columns.items():
-        condition = tables[table].get('when', None)
-        if condition is not None:  # if subtable
-            if getattr(obj, condition['parameter']) not in condition['value']:
-                continue  # does not match the WHEN condition
-        col_info = tables[table][column]
-        value = getattr(obj, column)
-        yield column, col_info, value
-
-
-def collect_columns(db, t):
+def collect_columns(db, t=None, obj=None):
     """For each attribute, this function looks up in which table the information
     is stored.
 
@@ -54,19 +22,32 @@ def collect_columns(db, t):
         information about all the tables
     t : str
         name of the table (subject, session, run, etc)
+    obj : instance of Subject, Session, Protocol, Run, Recording
+        actual object (subject, session, run, etc)
 
     Returns
     -------
     dict
         where the key is the attribute and the value is the table
     """
-    table = t + 's'
+    if obj is not None:
+        table = obj.t + 's'
+    elif t is not None:
+        table = t + 's'
+    else:
+        raise ValueError('You need to specify either t (level name) or obj (actual object)')
 
     # main table
     attr_tables = {k: table for k in list(db['tables'][table])}
 
     # look up attributes in subtables
-    subtables = [tb['subtable'] for tb in db['subtables'] if tb['parent'] == table]
+    subtables = []
+    for subt in db['subtables']:
+        if subt['parent'] != table:
+            continue
+        if obj is None or getattr(obj, subt['parameter']) in subt['values']:
+            subtables.append(subt['subtable'])
+
     for subt in subtables:
         attr_tables.update(
             {k: subt for k in list(db['tables'][subt])}
@@ -111,9 +92,9 @@ def get_dtypes(table):
     for k, v in table.items():
         if not (v['index'] is False):   # index is False when it's not an index
             continue
-        elif v['type'] == 'TEXT' or v['type'] == 'QString':  # the second is the new format
+        elif v['type'] == 'QString':
             dtypes.append((k, 'U4096'))
-        elif v['type'] == 'FLOAT' or v['type'] == 'double':  # the second is the new format
+        elif v['type'] == 'double':
             dtypes.append((k, 'float'))
         else:
             assert False
