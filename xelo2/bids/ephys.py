@@ -99,20 +99,25 @@ def _convert_sidecar(run, rec, d):
         'SoftwareFilters': 'n/a',
         }
     channels = rec.channels
+    reference = 'n/a'
     if channels is not None:
         if channels.Reference is not None:
-            if rec.modality == 'ieeg':
-                D['iEEGReference'] = rec.channels.Reference
-            elif rec.modality == 'eeg':
-                D['EEGReference'] = rec.channels.Reference
+            reference = channels.Reference
+
         chans = channels.data
         for field, chan_type in CHAN_TYPES.items():
             n_chan = int(sum(chans['type'] == chan_type))
             if n_chan > 0:
                 D[field] = n_chan
+
+    if rec.modality == 'ieeg':
+        D['iEEGReference'] = reference
+    elif rec.modality == 'eeg':
+        D['EEGReference'] = reference
     D['RecordingDuration'] = run.duration
     D['RecordingType'] = 'continuous'
-    D['ElectricalStimulation'] = False
+    if rec.modality == 'ieeg':
+        D['ElectricalStimulation'] = False
 
     return D
 

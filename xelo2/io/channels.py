@@ -74,13 +74,9 @@ def def_chan_type(label):
         return 'MISC'
     if label == '':
         return 'OTHER'  # TODO: empty?
-    if label.endswith('+'):
-        return 'OTHER'
-    if label.endswith('-'):
-        return 'OTHER'
-    if '...' in label:
-        return 'OTHER'
     if label in ('MKR1+', 'MKR2+'):
+        return 'TRIG'
+    if '...' in label:
         return 'OTHER'
     if label.lower() in ('wangl', 'wangr'):
         return 'MISC'
@@ -94,9 +90,15 @@ def def_chan_type(label):
         return 'EMG'
     if label[:3].lower() == 'orb':
         return 'EOG'
+    if label[:3].lower() == 'eog':
+        return 'EOG'
     if label.startswith('el'):
         return 'OTHER'
     if label.startswith('x'):
+        return 'OTHER'
+    if label.endswith('+'):
+        return 'OTHER'
+    if label.endswith('-'):
         return 'OTHER'
     if label.startswith('D'):
         return 'SEEG'
