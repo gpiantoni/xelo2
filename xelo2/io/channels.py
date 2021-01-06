@@ -80,6 +80,8 @@ def def_chan_type(label):
         return 'OTHER'
     if '...' in label:
         return 'OTHER'
+    if label in ('MKR1+', 'MKR2+'):
+        return 'OTHER'
     if label.lower() in ('wangl', 'wangr'):
         return 'MISC'
     if label.lower().startswith('ah'):

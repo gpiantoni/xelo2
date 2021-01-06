@@ -3,7 +3,6 @@ CREATE TABLE `recordings_ephys` (
   `channel_group_id` int(11) DEFAULT NULL,
   `electrode_group_id` int(11) DEFAULT NULL,
   `Manufacturer` text DEFAULT NULL,
-  `Reference` text DEFAULT NULL,
   UNIQUE KEY `recording_id` (`recording_id`),
   KEY `channel_group_id` (`channel_group_id`),
   KEY `electrode_group_id` (`electrode_group_id`),

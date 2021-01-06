@@ -7,6 +7,18 @@ from ..io.tsv import save_tsv
 from ..io.ephys import localize_blackrock
 
 
+CHAN_TYPES = {
+    'ECOGChannelCount': 'ECOG',
+    'SEEGChannelCount': 'SEEG',
+    'EEGChannelCount': 'EEG',
+    'EOGChannelCount': 'EOG',
+    'ECGChannelCount': 'ECG',
+    'EMGChannelCount': 'EMG',
+    'MiscChannelCount': 'MISC',
+    'TriggerChannelCount': 'TRIG',
+    }
+
+
 lg = getLogger(__name__)
 
 
@@ -29,7 +41,7 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         name['acq'] = 'acq-none'
     else:
         name['acq'] = f'acq-{rec.Manufacturer.lower()}'
-    output_ephys = dest_path / f'{make_bids_name(name, "ephys")}'
+    output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ephys, 'brainvision', markers=markers, anonymize=True)
 
@@ -83,16 +95,22 @@ def _convert_sidecar(run, rec, d):
         'TaskName': rename_task(run.task_name),
         'TaskDescription': make_taskdescription(run),
         'SamplingFrequency': int(d.header['s_freq']),
-        'iEEGReference': str(rec.Reference),
         'PowerLineFrequency': 50,
         'SoftwareFilters': 'n/a',
         }
     channels = rec.channels
     if channels is not None:
+        if channels.Reference is not None:
+            if rec.modality == 'ieeg':
+                D['iEEGReference'] = rec.channels.Reference
+            elif rec.modality == 'eeg':
+                D['EEGReference'] = rec.channels.Reference
         chans = channels.data
-        for chan_type in ('ECOG', 'SEEG', 'EEG', 'EOG', 'ECG', 'EMG', 'Misc', 'Trigger'):
-            D[f'{chan_type}ChannelCount'] = int(sum(chans['type'] == chan_type))
-    D['RecordingDuration'] = int(run.duration)
+        for field, chan_type in CHAN_TYPES.items():
+            n_chan = int(sum(chans['type'] == chan_type))
+            if n_chan > 0:
+                D[field] = n_chan
+    D['RecordingDuration'] = run.duration
     D['RecordingType'] = 'continuous'
     D['ElectricalStimulation'] = False
 

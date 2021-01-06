@@ -151,7 +151,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 acquisition = get_bids_acquisition(run)
                 bids_name['run'] = f'run-{run_count[run.task_name]}'
 
-                if acquisition in ('ieeg', 'func'):
+                if acquisition in ('ieeg', 'eeg', 'meg', 'func'):
                     bids_name['task'] = f'task-{rename_task(run.task_name)}'
                 else:
                     bids_name['task'] = None
@@ -171,7 +171,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     if rec.modality in ('bold', 'T1w', 'T2w', 'T2star', 'PD', 'FLAIR', 'angio', 'epi'):
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
-                    elif rec.modality == 'ieeg':
+                    elif rec.modality in ('ieeg', 'eeg', 'meg'):
                         if run.duration is None:
                             lg.warning(f'You need to specify duration for {subj.codes}/{run}')
                             continue
@@ -281,6 +281,10 @@ def get_bids_acquisition(run):
         modality = recording.modality
         if modality == 'ieeg':
             return 'ieeg'
+        elif modality == 'eeg':
+            return 'eeg'
+        elif modality == 'meg':
+            return 'meg'
         elif modality in ('T1w', 'T2w', 'T2star', 'FLAIR', 'PD', 'angio'):
             return 'anat'
         elif modality in ('bold', 'phase'):
@@ -311,7 +315,7 @@ def add_intended_for_topup(db, subset):
     """Add topup"""
     topups = []
     for run_id in subset['runs']:
-        query = QSqlQuery(db)
+        query = QSqlQuery(db['db'])
         query.prepare("SELECT run_id FROM intended_for WHERE target = :targetid")
         query.bindValue(':targetid', run_id)
 
@@ -423,7 +427,7 @@ def _add_intendedfor_to_json(json_file, fields):
 
 
 def find_intendedfor(db, run_id):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     query.prepare("SELECT target FROM intended_for WHERE run_id = :runid")
     query.bindValue(':runid', run_id)
 
