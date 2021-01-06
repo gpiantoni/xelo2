@@ -189,7 +189,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                         lg.warning(f'Unknown modality {rec.modality} for {rec}')
                         continue
 
-                    if data_name is not None and acquisition in ('ieeg', 'func'):
+                    if data_name is not None and acquisition in ('ieeg', 'eeg', 'meg', 'func'):
                         convert_events(run, mod_path, c(bids_name))
 
                     if data_name is not None and rec.modality != 'physio':  # secondary modality

@@ -1,6 +1,6 @@
 CREATE TABLE `sessions_mri` (
   `session_id` int(11) DEFAULT NULL,
-  `MagneticFieldStrength` text DEFAULT NULL,
+  `MagneticFieldStrength` text DEFAULT NULL COMMENT "Magnetic Field Strength: Strength of the magnetic field, in Tesla",
   UNIQUE KEY `session_id` (`session_id`),
   CONSTRAINT `sessions_mri_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
 ) ;
@@ -61,7 +61,7 @@ DELIMITER ;
 
 CREATE TABLE `sessions_or` (
   `session_id` int(11) DEFAULT NULL,
-  `date_of_surgery` date DEFAULT NULL,
+  `date_of_surgery` date DEFAULT NULL COMMENT "Date of Surgery: when the surgery was performed",
   UNIQUE KEY `session_id` (`session_id`),
   CONSTRAINT `sessions_or_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
 ) ;
@@ -94,8 +94,8 @@ DELIMITER ;
 
 CREATE TABLE `sessions_iemu` (
   `session_id` int(11) DEFAULT NULL,
-  `date_of_implantation` date DEFAULT NULL,
-  `date_of_explantation` date DEFAULT NULL,
+  `date_of_implantation` date DEFAULT NULL COMMENT "Date of Implantation: when the electrodes were implanted / modified",
+  `date_of_explantation` date DEFAULT NULL COMMENT "Date of Explantation: when the electrodes were removed",
   UNIQUE KEY `session_id` (`session_id`),
   CONSTRAINT `sessions_iemu_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE
 ) ;
