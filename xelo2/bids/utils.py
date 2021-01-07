@@ -1,16 +1,19 @@
 from pathlib import Path
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
-
-from ..database.queries import prepare_query
+from textwrap import dedent
 
 lg = getLogger(__name__)
 
 
 def prepare_subset(db, where, subset=None):
 
-    query_str = prepare_query(('subjects', 'sessions', 'runs', 'recordings'))[0]
-    query = QSqlQuery(db)
+    query_str = dedent("""\
+    SELECT * FROM `subjects`
+    LEFT JOIN `sessions` ON `sessions`.`subject_id` = `subjects`.`id`
+    LEFT JOIN `runs` ON `runs`.`session_id` = `sessions`.`id`
+    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`""")
+    query = QSqlQuery(db['db'])
     query.prepare(f"""{query_str} WHERE {where}""")
     if not query.exec():
         raise SyntaxError(query.lastError().text())

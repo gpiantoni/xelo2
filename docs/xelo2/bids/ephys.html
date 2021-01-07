@@ -33,6 +33,18 @@ from ..io.tsv import save_tsv
 from ..io.ephys import localize_blackrock
 
 
+CHAN_TYPES = {
+    &#39;ECOGChannelCount&#39;: &#39;ECOG&#39;,
+    &#39;SEEGChannelCount&#39;: &#39;SEEG&#39;,
+    &#39;EEGChannelCount&#39;: &#39;EEG&#39;,
+    &#39;EOGChannelCount&#39;: &#39;EOG&#39;,
+    &#39;ECGChannelCount&#39;: &#39;ECG&#39;,
+    &#39;EMGChannelCount&#39;: &#39;EMG&#39;,
+    &#39;MiscChannelCount&#39;: &#39;MISC&#39;,
+    &#39;TriggerChannelCount&#39;: &#39;TRIG&#39;,
+    }
+
+
 lg = getLogger(__name__)
 
 
@@ -55,7 +67,7 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ephys = dest_path / f&#39;{make_bids_name(name, &#34;ephys&#34;)}&#39;
+    output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
@@ -109,18 +121,29 @@ def _convert_sidecar(run, rec, d):
         &#39;TaskName&#39;: rename_task(run.task_name),
         &#39;TaskDescription&#39;: make_taskdescription(run),
         &#39;SamplingFrequency&#39;: int(d.header[&#39;s_freq&#39;]),
-        &#39;iEEGReference&#39;: str(rec.Reference),
         &#39;PowerLineFrequency&#39;: 50,
         &#39;SoftwareFilters&#39;: &#39;n/a&#39;,
         }
     channels = rec.channels
+    reference = &#39;n/a&#39;
     if channels is not None:
+        if channels.Reference is not None:
+            reference = channels.Reference
+
         chans = channels.data
-        for chan_type in (&#39;ECOG&#39;, &#39;SEEG&#39;, &#39;EEG&#39;, &#39;EOG&#39;, &#39;ECG&#39;, &#39;EMG&#39;, &#39;Misc&#39;, &#39;Trigger&#39;):
-            D[f&#39;{chan_type}ChannelCount&#39;] = int(sum(chans[&#39;type&#39;] == chan_type))
-    D[&#39;RecordingDuration&#39;] = int(run.duration)
+        for field, chan_type in CHAN_TYPES.items():
+            n_chan = int(sum(chans[&#39;type&#39;] == chan_type))
+            if n_chan &gt; 0:
+                D[field] = n_chan
+
+    if rec.modality == &#39;ieeg&#39;:
+        D[&#39;iEEGReference&#39;] = reference
+    elif rec.modality == &#39;eeg&#39;:
+        D[&#39;EEGReference&#39;] = reference
+    D[&#39;RecordingDuration&#39;] = run.duration
     D[&#39;RecordingType&#39;] = &#39;continuous&#39;
-    D[&#39;ElectricalStimulation&#39;] = False
+    if rec.modality == &#39;ieeg&#39;:
+        D[&#39;ElectricalStimulation&#39;] = False
 
     return D
 
@@ -194,7 +217,7 @@ def convert_events_to_wonambi(events):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
-    output_ephys = dest_path / f&#39;{make_bids_name(name, &#34;ephys&#34;)}&#39;
+    output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
     data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
 

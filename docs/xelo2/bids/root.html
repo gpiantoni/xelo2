@@ -177,7 +177,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 acquisition = get_bids_acquisition(run)
                 bids_name[&#39;run&#39;] = f&#39;run-{run_count[run.task_name]}&#39;
 
-                if acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                if acquisition in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;, &#39;func&#39;):
                     bids_name[&#39;task&#39;] = f&#39;task-{rename_task(run.task_name)}&#39;
                 else:
                     bids_name[&#39;task&#39;] = None
@@ -197,7 +197,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                     if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
-                    elif rec.modality == &#39;ieeg&#39;:
+                    elif rec.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                         if run.duration is None:
                             lg.warning(f&#39;You need to specify duration for {subj.codes}/{run}&#39;)
                             continue
@@ -215,7 +215,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                         lg.warning(f&#39;Unknown modality {rec.modality} for {rec}&#39;)
                         continue
 
-                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;, &#39;func&#39;):
                         convert_events(run, mod_path, c(bids_name))
 
                     if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
@@ -307,6 +307,10 @@ def get_bids_acquisition(run):
         modality = recording.modality
         if modality == &#39;ieeg&#39;:
             return &#39;ieeg&#39;
+        elif modality == &#39;eeg&#39;:
+            return &#39;eeg&#39;
+        elif modality == &#39;meg&#39;:
+            return &#39;meg&#39;
         elif modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;FLAIR&#39;, &#39;PD&#39;, &#39;angio&#39;):
             return &#39;anat&#39;
         elif modality in (&#39;bold&#39;, &#39;phase&#39;):
@@ -337,7 +341,7 @@ def add_intended_for_topup(db, subset):
     &#34;&#34;&#34;Add topup&#34;&#34;&#34;
     topups = []
     for run_id in subset[&#39;runs&#39;]:
-        query = QSqlQuery(db)
+        query = QSqlQuery(db[&#39;db&#39;])
         query.prepare(&#34;SELECT run_id FROM intended_for WHERE target = :targetid&#34;)
         query.bindValue(&#39;:targetid&#39;, run_id)
 
@@ -449,7 +453,7 @@ def _add_intendedfor_to_json(json_file, fields):
 
 
 def find_intendedfor(db, run_id):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(&#34;SELECT target FROM intended_for WHERE run_id = :runid&#34;)
     query.bindValue(&#39;:runid&#39;, run_id)
 
@@ -538,7 +542,7 @@ def remove_phase(bids_dir):
     &#34;&#34;&#34;Add topup&#34;&#34;&#34;
     topups = []
     for run_id in subset[&#39;runs&#39;]:
-        query = QSqlQuery(db)
+        query = QSqlQuery(db[&#39;db&#39;])
         query.prepare(&#34;SELECT run_id FROM intended_for WHERE target = :targetid&#34;)
         query.bindValue(&#39;:targetid&#39;, run_id)
 
@@ -681,7 +685,7 @@ def remove_phase(bids_dir):
                 acquisition = get_bids_acquisition(run)
                 bids_name[&#39;run&#39;] = f&#39;run-{run_count[run.task_name]}&#39;
 
-                if acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                if acquisition in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;, &#39;func&#39;):
                     bids_name[&#39;task&#39;] = f&#39;task-{rename_task(run.task_name)}&#39;
                 else:
                     bids_name[&#39;task&#39;] = None
@@ -701,7 +705,7 @@ def remove_phase(bids_dir):
                     if rec.modality in (&#39;bold&#39;, &#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;PD&#39;, &#39;FLAIR&#39;, &#39;angio&#39;, &#39;epi&#39;):
                         data_name = convert_mri(run, rec, mod_path, c(bids_name), deface)
 
-                    elif rec.modality == &#39;ieeg&#39;:
+                    elif rec.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                         if run.duration is None:
                             lg.warning(f&#39;You need to specify duration for {subj.codes}/{run}&#39;)
                             continue
@@ -719,7 +723,7 @@ def remove_phase(bids_dir):
                         lg.warning(f&#39;Unknown modality {rec.modality} for {rec}&#39;)
                         continue
 
-                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;func&#39;):
+                    if data_name is not None and acquisition in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;, &#39;func&#39;):
                         convert_events(run, mod_path, c(bids_name))
 
                     if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
@@ -767,7 +771,7 @@ def remove_phase(bids_dir):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def find_intendedfor(db, run_id):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(&#34;SELECT target FROM intended_for WHERE run_id = :runid&#34;)
     query.bindValue(&#39;:runid&#39;, run_id)
 
@@ -794,6 +798,10 @@ def remove_phase(bids_dir):
         modality = recording.modality
         if modality == &#39;ieeg&#39;:
             return &#39;ieeg&#39;
+        elif modality == &#39;eeg&#39;:
+            return &#39;eeg&#39;
+        elif modality == &#39;meg&#39;:
+            return &#39;meg&#39;
         elif modality in (&#39;T1w&#39;, &#39;T2w&#39;, &#39;T2star&#39;, &#39;FLAIR&#39;, &#39;PD&#39;, &#39;angio&#39;):
             return &#39;anat&#39;
         elif modality in (&#39;bold&#39;, &#39;phase&#39;):

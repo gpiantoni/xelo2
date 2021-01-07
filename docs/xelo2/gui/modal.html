@@ -54,7 +54,7 @@ from numpy import issubdtype, floating, integer
 from .utils import _protocol_name
 from ..api.filetype import parse_filetype
 from ..api.frontend import list_experimenters
-from ..database.tables import LEVELS
+from ..database.tables import LEVELS, lookup_allowed_values
 from ..io.ephys import read_info_from_ephys
 
 lg = getLogger(__name__)
@@ -79,7 +79,7 @@ class NewFile(QDialog):
         browse = QPushButton(&#39;Browse ...&#39;)
         browse.clicked.connect(self.browse)
         self.format = QComboBox()
-        self.format.addItems([&#39;Unknown&#39;, ] + list_allowed_values(parent.db, &#39;files&#39;, &#39;format&#39;))
+        self.format.addItems([&#39;Unknown&#39;, ] + lookup_allowed_values(parent.db[&#39;db&#39;], &#39;files&#39;, &#39;format&#39;))
 
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
@@ -742,7 +742,7 @@ def parse_accessdatabase(parent):
         browse = QPushButton(&#39;Browse ...&#39;)
         browse.clicked.connect(self.browse)
         self.format = QComboBox()
-        self.format.addItems([&#39;Unknown&#39;, ] + list_allowed_values(parent.db, &#39;files&#39;, &#39;format&#39;))
+        self.format.addItems([&#39;Unknown&#39;, ] + lookup_allowed_values(parent.db[&#39;db&#39;], &#39;files&#39;, &#39;format&#39;))
 
         bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)

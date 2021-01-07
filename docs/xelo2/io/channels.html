@@ -100,10 +100,8 @@ def def_chan_type(label):
         return &#39;MISC&#39;
     if label == &#39;&#39;:
         return &#39;OTHER&#39;  # TODO: empty?
-    if label.endswith(&#39;+&#39;):
-        return &#39;OTHER&#39;
-    if label.endswith(&#39;-&#39;):
-        return &#39;OTHER&#39;
+    if label in (&#39;MKR1+&#39;, &#39;MKR2+&#39;):
+        return &#39;TRIG&#39;
     if &#39;...&#39; in label:
         return &#39;OTHER&#39;
     if label.lower() in (&#39;wangl&#39;, &#39;wangr&#39;):
@@ -118,9 +116,15 @@ def def_chan_type(label):
         return &#39;EMG&#39;
     if label[:3].lower() == &#39;orb&#39;:
         return &#39;EOG&#39;
+    if label[:3].lower() == &#39;eog&#39;:
+        return &#39;EOG&#39;
     if label.startswith(&#39;el&#39;):
         return &#39;OTHER&#39;
     if label.startswith(&#39;x&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;+&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;-&#39;):
         return &#39;OTHER&#39;
     if label.startswith(&#39;D&#39;):
         return &#39;SEEG&#39;
@@ -271,10 +275,8 @@ def _choose_group(label, groups):
         return &#39;MISC&#39;
     if label == &#39;&#39;:
         return &#39;OTHER&#39;  # TODO: empty?
-    if label.endswith(&#39;+&#39;):
-        return &#39;OTHER&#39;
-    if label.endswith(&#39;-&#39;):
-        return &#39;OTHER&#39;
+    if label in (&#39;MKR1+&#39;, &#39;MKR2+&#39;):
+        return &#39;TRIG&#39;
     if &#39;...&#39; in label:
         return &#39;OTHER&#39;
     if label.lower() in (&#39;wangl&#39;, &#39;wangr&#39;):
@@ -289,9 +291,15 @@ def _choose_group(label, groups):
         return &#39;EMG&#39;
     if label[:3].lower() == &#39;orb&#39;:
         return &#39;EOG&#39;
+    if label[:3].lower() == &#39;eog&#39;:
+        return &#39;EOG&#39;
     if label.startswith(&#39;el&#39;):
         return &#39;OTHER&#39;
     if label.startswith(&#39;x&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;+&#39;):
+        return &#39;OTHER&#39;
+    if label.endswith(&#39;-&#39;):
         return &#39;OTHER&#39;
     if label.startswith(&#39;D&#39;):
         return &#39;SEEG&#39;

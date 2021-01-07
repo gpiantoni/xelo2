@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
 <title>xelo2.database.queries API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="TO DELETE" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,11 +20,14 @@
 <h1 class="title">Module <code>xelo2.database.queries</code></h1>
 </header>
 <section id="section-intro">
+<p>TO DELETE</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from collections import defaultdict
+<pre><code class="python">&#34;&#34;&#34;TO DELETE&#34;&#34;&#34;
+
+from collections import defaultdict
 
 
 def prepare_query_files(level):
@@ -62,81 +65,16 @@ def prepare_query_experimenters():
     return query_str, columns
 
 
-def prepare_query(table_names):
-    &#34;&#34;&#34;JOIN all the tables in table_names and create a nice query, with all the
+def prepare_query():
+    &#34;&#34;&#34;JOIN all the tables  and create a nice query, with all the
     columns&#34;&#34;&#34;
-    all_tables = get_tables_and_subtables(table_names)
     query_str = prepare_query_str(all_tables)
 
     columns = defaultdict(list)
     for table_name in all_tables:
         for column_name in get_columns(table_name):
             columns[table_name].append(column_name)
-    return query_str, columns
-
-
-def prepare_query_with_column_names(table_names):
-    query_str, columns = prepare_query(table_names)
-    column_names = []
-    for k, v in columns.items():
-        column_names.extend(f&#39;`{k}`.`{v0}`&#39; for v0 in v if not v0.endswith(&#39;id&#39;))  # do not use id
-    sql_cmd = query_str.replace(&#39;*&#39;, &#39;, &#39;.join(column_names))
-    return sql_cmd
-
-
-def prepare_query_str(all_tables):
-
-    q = []
-    for table in all_tables:
-        if len(q) == 0:
-            q.append(f&#39;SELECT * FROM {table}&#39;)
-            continue
-        elif &#39;_&#39; in table:
-            main_table = table.split(&#39;_&#39;)[0][:-1]
-        elif table in &#39;sessions&#39;:
-            main_table = &#39;subject&#39;
-        elif table == &#39;runs&#39;:
-            main_table = &#39;session&#39;
-        elif table == &#39;recordings&#39;:
-            main_table = &#39;run&#39;
-        else:
-            print(&#39;missing table&#39;)
-        q.append(f&#39;LEFT JOIN {table} ON {main_table}s.id = {table}.{main_table}_id&#39;)
-
-    return &#39;\n&#39;.join(q)
-
-
-def get_tables_and_subtables(tables_of_interest):
-    &#34;&#34;&#34;Get the tables and their subtables.
-
-    Parameters
-    ----------
-    tables_of_interest : list of str
-        list of table names (only main tables)
-
-    Returns
-    -------
-    list of str
-        all tables in the input, plus all the subtables
-    &#34;&#34;&#34;
-    out = list(tables_of_interest)  # copy list
-
-    for t in tables_of_interest:
-        for table_name, table_info in TABLES.items():
-            if table_name.startswith(t) and &#39;when&#39; in table_info:
-                out.append(table_name)
-
-    return out
-
-
-def get_columns(T):
-    &#34;&#34;&#34;Get all the columns in one tables. It only excludes &#34;when&#34; because it is
-    used by subtables&#34;&#34;&#34;
-    cols = [x for x in TABLES[T] if x not in (&#39;when&#39;, )]
-
-    # put ids at the end because they are the least informative when sorting tsv
-    cols.sort(key=lambda x: x.endswith(&#39;id&#39;))
-    return cols</code></pre>
+    return query_str, columns</code></pre>
 </details>
 </section>
 <section>
@@ -146,82 +84,20 @@ def get_columns(T):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="xelo2.database.queries.get_columns"><code class="name flex">
-<span>def <span class="ident">get_columns</span></span>(<span>T)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Get all the columns in one tables. It only excludes "when" because it is
-used by subtables</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_columns(T):
-    &#34;&#34;&#34;Get all the columns in one tables. It only excludes &#34;when&#34; because it is
-    used by subtables&#34;&#34;&#34;
-    cols = [x for x in TABLES[T] if x not in (&#39;when&#39;, )]
-
-    # put ids at the end because they are the least informative when sorting tsv
-    cols.sort(key=lambda x: x.endswith(&#39;id&#39;))
-    return cols</code></pre>
-</details>
-</dd>
-<dt id="xelo2.database.queries.get_tables_and_subtables"><code class="name flex">
-<span>def <span class="ident">get_tables_and_subtables</span></span>(<span>tables_of_interest)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Get the tables and their subtables.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>tables_of_interest</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
-<dd>list of table names (only main tables)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>list</code> of <code>str</code></dt>
-<dd>all tables in the input, plus all the subtables</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_tables_and_subtables(tables_of_interest):
-    &#34;&#34;&#34;Get the tables and their subtables.
-
-    Parameters
-    ----------
-    tables_of_interest : list of str
-        list of table names (only main tables)
-
-    Returns
-    -------
-    list of str
-        all tables in the input, plus all the subtables
-    &#34;&#34;&#34;
-    out = list(tables_of_interest)  # copy list
-
-    for t in tables_of_interest:
-        for table_name, table_info in TABLES.items():
-            if table_name.startswith(t) and &#39;when&#39; in table_info:
-                out.append(table_name)
-
-    return out</code></pre>
-</details>
-</dd>
 <dt id="xelo2.database.queries.prepare_query"><code class="name flex">
-<span>def <span class="ident">prepare_query</span></span>(<span>table_names)</span>
+<span>def <span class="ident">prepare_query</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>JOIN all the tables in table_names and create a nice query, with all the
+<div class="desc"><p>JOIN all the tables
+and create a nice query, with all the
 columns</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def prepare_query(table_names):
-    &#34;&#34;&#34;JOIN all the tables in table_names and create a nice query, with all the
+<pre><code class="python">def prepare_query():
+    &#34;&#34;&#34;JOIN all the tables  and create a nice query, with all the
     columns&#34;&#34;&#34;
-    all_tables = get_tables_and_subtables(table_names)
     query_str = prepare_query_str(all_tables)
 
     columns = defaultdict(list)
@@ -284,55 +160,6 @@ columns</p></div>
     return query_str, columns</code></pre>
 </details>
 </dd>
-<dt id="xelo2.database.queries.prepare_query_str"><code class="name flex">
-<span>def <span class="ident">prepare_query_str</span></span>(<span>all_tables)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def prepare_query_str(all_tables):
-
-    q = []
-    for table in all_tables:
-        if len(q) == 0:
-            q.append(f&#39;SELECT * FROM {table}&#39;)
-            continue
-        elif &#39;_&#39; in table:
-            main_table = table.split(&#39;_&#39;)[0][:-1]
-        elif table in &#39;sessions&#39;:
-            main_table = &#39;subject&#39;
-        elif table == &#39;runs&#39;:
-            main_table = &#39;session&#39;
-        elif table == &#39;recordings&#39;:
-            main_table = &#39;run&#39;
-        else:
-            print(&#39;missing table&#39;)
-        q.append(f&#39;LEFT JOIN {table} ON {main_table}s.id = {table}.{main_table}_id&#39;)
-
-    return &#39;\n&#39;.join(q)</code></pre>
-</details>
-</dd>
-<dt id="xelo2.database.queries.prepare_query_with_column_names"><code class="name flex">
-<span>def <span class="ident">prepare_query_with_column_names</span></span>(<span>table_names)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def prepare_query_with_column_names(table_names):
-    query_str, columns = prepare_query(table_names)
-    column_names = []
-    for k, v in columns.items():
-        column_names.extend(f&#39;`{k}`.`{v0}`&#39; for v0 in v if not v0.endswith(&#39;id&#39;))  # do not use id
-    sql_cmd = query_str.replace(&#39;*&#39;, &#39;, &#39;.join(column_names))
-    return sql_cmd</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -351,13 +178,9 @@ columns</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="xelo2.database.queries.get_columns" href="#xelo2.database.queries.get_columns">get_columns</a></code></li>
-<li><code><a title="xelo2.database.queries.get_tables_and_subtables" href="#xelo2.database.queries.get_tables_and_subtables">get_tables_and_subtables</a></code></li>
 <li><code><a title="xelo2.database.queries.prepare_query" href="#xelo2.database.queries.prepare_query">prepare_query</a></code></li>
 <li><code><a title="xelo2.database.queries.prepare_query_experimenters" href="#xelo2.database.queries.prepare_query_experimenters">prepare_query_experimenters</a></code></li>
 <li><code><a title="xelo2.database.queries.prepare_query_files" href="#xelo2.database.queries.prepare_query_files">prepare_query_files</a></code></li>
-<li><code><a title="xelo2.database.queries.prepare_query_str" href="#xelo2.database.queries.prepare_query_str">prepare_query_str</a></code></li>
-<li><code><a title="xelo2.database.queries.prepare_query_with_column_names" href="#xelo2.database.queries.prepare_query_with_column_names">prepare_query_with_column_names</a></code></li>
 </ul>
 </li>
 </ul>

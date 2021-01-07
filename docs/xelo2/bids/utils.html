@@ -27,16 +27,19 @@
 <pre><code class="python">from pathlib import Path
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
-
-from ..database.queries import prepare_query
+from textwrap import dedent
 
 lg = getLogger(__name__)
 
 
 def prepare_subset(db, where, subset=None):
 
-    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
-    query = QSqlQuery(db)
+    query_str = dedent(&#34;&#34;&#34;\
+    SELECT * FROM `subjects`
+    LEFT JOIN `sessions` ON `sessions`.`subject_id` = `subjects`.`id`
+    LEFT JOIN `runs` ON `runs`.`session_id` = `sessions`.`id`
+    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`&#34;&#34;&#34;)
+    query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
@@ -97,9 +100,9 @@ def make_bids_name(bids_name, level=None):
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
         appendix = &#39;_coordsystem.json&#39;
 
-    elif level == &#39;ieeg&#39;:
+    elif level in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;acq&#39;, &#39;run&#39;]  # acq is not official https://neurostars.org/t/two-amplifiers-for-ieeg-recordings/17492
-        appendix = &#39;_ieeg.eeg&#39;
+        appendix = f&#39;_{level}.eeg&#39;
 
     elif level == &#39;physio&#39;:
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;recording&#39;]
@@ -230,9 +233,9 @@ def make_taskdescription(run):
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;acq&#39;, &#39;space&#39;]
         appendix = &#39;_coordsystem.json&#39;
 
-    elif level == &#39;ieeg&#39;:
+    elif level in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;acq&#39;, &#39;run&#39;]  # acq is not official https://neurostars.org/t/two-amplifiers-for-ieeg-recordings/17492
-        appendix = &#39;_ieeg.eeg&#39;
+        appendix = f&#39;_{level}.eeg&#39;
 
     elif level == &#39;physio&#39;:
         acceptable_levels = [&#39;sub&#39;, &#39;ses&#39;, &#39;task&#39;, &#39;run&#39;, &#39;recording&#39;]
@@ -286,8 +289,12 @@ performance and acquisition</p></div>
 </summary>
 <pre><code class="python">def prepare_subset(db, where, subset=None):
 
-    query_str = prepare_query((&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;, &#39;recordings&#39;))[0]
-    query = QSqlQuery(db)
+    query_str = dedent(&#34;&#34;&#34;\
+    SELECT * FROM `subjects`
+    LEFT JOIN `sessions` ON `sessions`.`subject_id` = `subjects`.`id`
+    LEFT JOIN `runs` ON `runs`.`session_id` = `sessions`.`id`
+    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`&#34;&#34;&#34;)
+    query = QSqlQuery(db[&#39;db&#39;])
     query.prepare(f&#34;&#34;&#34;{query_str} WHERE {where}&#34;&#34;&#34;)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
