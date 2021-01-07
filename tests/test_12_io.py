@@ -4,7 +4,7 @@ from xelo2.api import Subject, Run
 from xelo2.io.tsv import save_tsv, load_tsv
 from xelo2.io.parrec import add_parrec
 from xelo2.database import access_database, close_database
-from xelo2.io.ieeg import add_ieeg_to_sess
+from xelo2.io.ephys import add_ephys_to_sess
 from xelo2.io.channels import create_channels
 
 from .paths import TSV_PATH, T1_PATH, TRC_PATH, DB_ARGS
@@ -43,7 +43,7 @@ def test_import_ieeg():
     sess = subj.list_sessions()[1]
 
     n_runs = len(sess.list_runs())
-    run = add_ieeg_to_sess(db, sess, TRC_PATH)
+    run = add_ephys_to_sess(db, sess, TRC_PATH)
     assert len(sess.list_runs()) == n_runs + 1
 
     rec = run.list_recordings()[0]

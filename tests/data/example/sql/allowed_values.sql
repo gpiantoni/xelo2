@@ -4,7 +4,6 @@ CREATE TABLE `allowed_values` (
   `allowed_value` text NOT NULL
 );
 
-
 DELIMITER ;;
 
 CREATE TRIGGER prevent_duplicated_allowed_values
