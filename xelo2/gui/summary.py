@@ -25,7 +25,7 @@ class Summary(QDialog):
         lay.addRow(
             '# Subjects',
             _info(parent.db, 'SELECT COUNT(id) FROM subjects'))
-        for session_name in lookup_allowed_values(parent.db, 'sessions', 'name'):
+        for session_name in lookup_allowed_values(parent.db['db'], 'sessions', 'name'):
             lay.addRow(
                 f'# Subjects with {session_name} session',
                 _info(parent.db, f'SELECT COUNT(DISTINCT subject_id) FROM sessions WHERE name = "{session_name}"'))
@@ -74,7 +74,7 @@ class Summary(QDialog):
 
 
 def _info(db, s):
-    query = QSqlQuery(db)
+    query = QSqlQuery(db['db'])
     assert query.exec(s)
     label = QLabel()
     label.setAlignment(Qt.AlignRight)
