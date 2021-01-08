@@ -122,7 +122,6 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
                 'session_id': bids_name['ses'],
                 'resection': 'n/a',
                 'implantation': 'no',
-                'breathing_challenge': 'no',
                 })
             if sess.name in ('IEMU', 'OR', 'CT'):
                 sess_files[-1]['implantation'] = 'yes'

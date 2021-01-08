@@ -9,7 +9,7 @@ CREATE TABLE `protocols` (
   CONSTRAINT `protocols_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE
 ) ;
 
-INSERT INTO `allowed_values` VALUES ('protocols','metc','07-260'),('protocols','metc','14-090'),('protocols','metc','14-420'),('protocols','metc','14-622'),('protocols','metc','16-816'),('protocols','metc','19-562');
+INSERT INTO `allowed_values` VALUES ('protocols','metc','07-260'),('protocols','metc','14-090'),('protocols','metc','14-420'),('protocols','metc','14-622'),('protocols','metc','16-816'),('protocols','metc','19-562'),('protocols','metc','ORCHIID');
 
 DELIMITER ;;
 CREATE TRIGGER validate_metc_before_insert_to_protocols

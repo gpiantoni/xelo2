@@ -79,7 +79,7 @@ CREATE TABLE `recordings_mri` (
 
 INSERT INTO `allowed_values` VALUES ('recordings_mri','PhaseEncodingDirection','LR'),('recordings_mri','PhaseEncodingDirection','RL'),('recordings_mri','PhaseEncodingDirection','AP'),('recordings_mri','PhaseEncodingDirection','PA'),('recordings_mri','PhaseEncodingDirection','SI'),('recordings_mri','PhaseEncodingDirection','IS');
 INSERT INTO `allowed_values` VALUES ('recordings_mri','SliceEncodingDirection','LR'),('recordings_mri','SliceEncodingDirection','RL'),('recordings_mri','SliceEncodingDirection','AP'),('recordings_mri','SliceEncodingDirection','PA'),('recordings_mri','SliceEncodingDirection','SI'),('recordings_mri','SliceEncodingDirection','IS');
-INSERT INTO `allowed_values` VALUES ('recordings_mri','SliceOrder','Sequential'),('recordings_mri','SliceOrder','Interleaved');
+INSERT INTO `allowed_values` VALUES ('recordings_mri','SliceOrder','Sequential'),('recordings_mri','SliceOrder','Interleaved'),('recordings_mri','SliceOrder','3D');
 INSERT INTO `allowed_values` VALUES ('recordings_mri','Sequence','3T FLAIR'),('recordings_mri','Sequence','3T T1w'),('recordings_mri','Sequence','3T Gradient-Echo Multiband'),('recordings_mri','Sequence','7T Gradient-Echo Head Coil'),('recordings_mri','Sequence','7T Wouter 1.6s'),('recordings_mri','Sequence','3T DWI'),('recordings_mri','Sequence','3T Spin-Echo Multiband'),('recordings_mri','Sequence','7T Gradient-Echo Surface Coil'),('recordings_mri','Sequence','7T Spin-Echo Surface Coil'),('recordings_mri','Sequence','3T PRESTO'),('recordings_mri','Sequence','7T Standard 2.1s'),('recordings_mri','Sequence','7T MP2RAGE');
 
 DELIMITER ;;
@@ -104,7 +104,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_PhaseEncodingDirection_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_PhaseEncodingDirection_before_insert_to_recordings_mri` 
+  BEFORE INSERT ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.PhaseEncodingDirection IS NOT NULL AND
     BINARY NEW.PhaseEncodingDirection NOT IN (
@@ -116,7 +118,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_PhaseEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_PhaseEncodingDirection_before_update_to_recordings_mri` 
+  BEFORE UPDATE ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.PhaseEncodingDirection IS NOT NULL AND
     BINARY NEW.PhaseEncodingDirection NOT IN (
@@ -128,7 +132,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_SliceEncodingDirection_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_SliceEncodingDirection_before_insert_to_recordings_mri` 
+  BEFORE INSERT ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.SliceEncodingDirection IS NOT NULL AND
     BINARY NEW.SliceEncodingDirection NOT IN (
@@ -140,7 +146,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_SliceEncodingDirection_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_SliceEncodingDirection_before_update_to_recordings_mri` 
+  BEFORE UPDATE ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.SliceEncodingDirection IS NOT NULL AND
     BINARY NEW.SliceEncodingDirection NOT IN (
@@ -152,7 +160,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_Sequence_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_Sequence_before_insert_to_recordings_mri` 
+  BEFORE INSERT ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.Sequence IS NOT NULL AND
     BINARY NEW.Sequence NOT IN (
@@ -164,7 +174,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_Sequence_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_Sequence_before_update_to_recordings_mri` 
+  BEFORE UPDATE ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.Sequence IS NOT NULL AND
     BINARY NEW.Sequence NOT IN (
@@ -176,7 +188,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_SliceOrder_before_insert_to_recordings_mri` BEFORE INSERT ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_SliceOrder_before_insert_to_recordings_mri` 
+  BEFORE INSERT ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.SliceOrder IS NOT NULL AND
     BINARY NEW.SliceOrder NOT IN (
@@ -188,7 +202,9 @@ BEGIN
   END IF;
 END ;;
 
-CREATE TRIGGER `validate_SliceOrder_before_update_to_recordings_mri` BEFORE UPDATE ON `recordings_mri` FOR EACH ROW
+CREATE TRIGGER `validate_SliceOrder_before_update_to_recordings_mri` 
+  BEFORE UPDATE ON `recordings_mri` 
+  FOR EACH ROW
 BEGIN
   IF NEW.SliceOrder IS NOT NULL AND
     BINARY NEW.SliceOrder NOT IN (
@@ -197,6 +213,26 @@ BEGIN
     AND column_name = 'SliceOrder')
   THEN
     SIGNAL SQLSTATE '2201R' SET MESSAGE_TEXT = 'Entered value in column SliceOrder is not allowed in table recordings_mri';
+  END IF;
+END ;;
+
+CREATE TRIGGER `update_SliceOrder_before_insert_to_recordings_mri`
+  BEFORE INSERT ON recordings_mri
+  FOR EACH ROW
+BEGIN
+  IF NEW.Sequence = '3T PRESTO'
+  THEN
+    SET NEW.SliceOrder = '3D' ;
+  END IF;
+END ;;
+
+CREATE TRIGGER `update_SliceOrder_before_update_to_recordings_mri`
+  BEFORE UPDATE ON recordings_mri
+  FOR EACH ROW
+BEGIN
+  IF NEW.Sequence = '3T PRESTO'
+  THEN
+    SET NEW.SliceOrder = '3D' ;
   END IF;
 END ;;
 

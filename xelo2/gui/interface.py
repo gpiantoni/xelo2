@@ -975,7 +975,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Session for {current_subject}',
                 'Session Name:',
-                lookup_allowed_values(self.db, 'sessions', 'name'),
+                lookup_allowed_values(self.db['db'], 'sessions', 'name'),
                 0, False)
 
         elif level == 'protocols':
@@ -984,7 +984,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Protocol for {current_subject}',
                 'Protocol Name:',
-                lookup_allowed_values(self.db, 'protocols', 'metc'),
+                lookup_allowed_values(self.db['db'], 'protocols', 'metc'),
                 0, False)
 
         elif level == 'runs':
@@ -994,7 +994,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Run for {current_session.name}',
                 'Task Name:',
-                lookup_allowed_values(self.db, 'runs', 'task_name'),
+                lookup_allowed_values(self.db['db'], 'runs', 'task_name'),
                 0, False)
 
         elif level == 'recordings':
@@ -1004,7 +1004,7 @@ class Interface(QMainWindow):
                 self,
                 f'Add New Recording for {current_run.task_name}',
                 'Modality:',
-                lookup_allowed_values(self.db, 'recordings', 'modality'),
+                lookup_allowed_values(self.db['db'], 'recordings', 'modality'),
                 0, False)
 
         elif level in ('channels', 'electrodes'):
@@ -1308,11 +1308,6 @@ def list_parameters(db, obj, parent=None):
     for col, t in columns.items():
         col_info = db['tables'][t][col]
 
-        if col_info['alias'] is not None:
-            col_name = col_info['alias']
-        else:
-            col_name = col
-
         if not (col_info['index'] is False):
             continue
 
@@ -1320,19 +1315,19 @@ def list_parameters(db, obj, parent=None):
 
         if col_info['type'] == 'QDateTime':
             w = make_datetime(value)
-            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info['type'] == 'QDate':
             w = make_date(value)
-            w.dateChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info['type'] == 'double':
             w = make_float(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info['type'] == 'int':
             w = make_integer(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info['type'] == 'QString':
             if col_info['values']:
@@ -1341,10 +1336,10 @@ def list_parameters(db, obj, parent=None):
                     values = sorted(values)
                 w = make_combobox(value, values)
 
-                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
+                w.currentTextChanged.connect(partial(parent.changed, obj, col))
             else:
                 w = make_edit(value)
-                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
+                w.editingFinished.connect(partial(parent.changed, obj, col, w))
 
         else:
             raise ValueError(f'unknown type "{col_info["type"]}"')

@@ -29,8 +29,8 @@ ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remote
 To connect to the database (in localhost), you need to specify the `DATABASE_NAME`, the MySQL `USERNAME` and the MySQL `PASSWORD`.
 
 ```python
-from xelo2.database.create import open_database
-db = open_database('QMYSQL', DATABASE_NAME, USERNAME, PASSWORD)
+from xelo2.database import access_database
+db = access_database(DATABASE_NAME, USERNAME, PASSWORD)
 ```
 
 ## Look up MRI files for one subject
