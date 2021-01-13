@@ -1,6 +1,6 @@
 CREATE TABLE `runs_speak` (
   `run_id` int(11) DEFAULT NULL,
-  `overt_covert` text DEFAULT NULL,
+  `overt_covert` text DEFAULT NULL COMMENT 'Overt / Covert: Whether subject moved or only imagined the movement',
   UNIQUE KEY `run_id` (`run_id`),
   CONSTRAINT `runs_speak_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
@@ -63,9 +63,9 @@ DELIMITER ;
 
 CREATE TABLE `runs_sensorimotor` (
   `run_id` int(11) DEFAULT NULL,
-  `body_part` text DEFAULT NULL,
-  `left_right` text DEFAULT NULL,
-  `execution_imagery` text DEFAULT NULL,
+  `body_part` text DEFAULT NULL COMMENT 'Body Part: which body part was involved in the task',
+  `left_right` text DEFAULT NULL COMMENT 'Laterality: which side was used',
+  `execution_imagery` text DEFAULT NULL 'Execution / Imagery: whether task was executed or imagined',
   UNIQUE KEY `run_id` (`run_id`),
   CONSTRAINT `runs_sensorimotor_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;
@@ -186,7 +186,7 @@ DELIMITER ;
 
 CREATE TABLE `runs_mario` (
   `run_id` int(11) DEFAULT NULL,
-  `velocity` text DEFAULT NULL,
+  `velocity` text DEFAULT NULL COMMENT 'Velocity: Velocity of the stimulus',
   UNIQUE KEY `run_id` (`run_id`),
   CONSTRAINT `runs_mario_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
 ) ;

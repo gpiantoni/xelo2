@@ -2,7 +2,7 @@ CREATE TABLE `recordings_ephys` (
   `recording_id` int(11) DEFAULT NULL,
   `channel_group_id` int(11) DEFAULT NULL,
   `electrode_group_id` int(11) DEFAULT NULL,
-  `Manufacturer` text DEFAULT NULL,
+  `Manufacturer` text DEFAULT NULL COMMENT 'Manufacturer: Manufacturer of the amplifier system (e.g., "TDT", "Blackrock")',
   UNIQUE KEY `recording_id` (`recording_id`),
   KEY `channel_group_id` (`channel_group_id`),
   KEY `electrode_group_id` (`electrode_group_id`),
@@ -67,12 +67,12 @@ DELIMITER ;
 
 CREATE TABLE `recordings_mri` (
   `recording_id` int(11) DEFAULT NULL,
-  `region_of_interest` text DEFAULT NULL,
-  `Sequence` text DEFAULT NULL,
-  `MultibandAccelerationFactor` int(11) DEFAULT NULL,
-  `PhaseEncodingDirection` text DEFAULT NULL,
-  `SliceEncodingDirection` text DEFAULT NULL,
-  `SliceOrder` text DEFAULT NULL,
+  `region_of_interest` text DEFAULT NULL COMMENT 'Region of Interest: Free text to describe the ROI ("whole brain", "occipital cortex")',
+  `Sequence` text DEFAULT NULL COMMENT 'Sequence: Scanning sequence used',
+  `MultibandAccelerationFactor` int(11) DEFAULT NULL COMMENT 'Multiband Acceleration Factor: 1 means No multiband',
+  `SliceEncodingDirection` text DEFAULT NULL COMMENT 'Slice Encoding Direction: ',
+  `SliceOrder` text DEFAULT NULL COMMENT 'Slice Order: This parameter is not in BIDS but it is used to compute SliceTiming. Use "Sequential" when Multiband is present',
+  `PhaseEncodingDirection` text DEFAULT NULL COMMENT 'Phase Encoding Direction: If Philips scanner says "P", you should enter "AP"',
   UNIQUE KEY `recording_id` (`recording_id`),
   CONSTRAINT `recordings_mri_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE
 ) ;
@@ -204,8 +204,7 @@ DELIMITER ;
 
 CREATE TABLE `recordings_epi` (
   `recording_id` int(11) DEFAULT NULL,
-  `RepetitionTime` float DEFAULT NULL,
-  `NumberOfVolumesDiscardedByScanner` int(11) DEFAULT NULL,
+  `RepetitionTime` float DEFAULT NULL COMMENT 'Repetition Time: Philips calls it "Dynamic scan time"',
   UNIQUE KEY `recording_id` (`recording_id`),
   CONSTRAINT `recordings_epi_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE
 ) ;
