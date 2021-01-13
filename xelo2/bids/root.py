@@ -67,15 +67,13 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
 
         # use relative date based on date_of_signature
         reference_dates = [p.date_of_signature for p in subj.list_protocols()]
+        reference_dates = [date for date in reference_dates if date is not None]
         if len(reference_dates) == 0:
-            lg.warning(f'You need to add at least one research protocol for {subj.codes}')
-            reference_dates = [datetime.now().date(), ]
-
-        reference_date = max(reference_dates)
-        if reference_date is None:
-            lg.warning(f'You need to add date_of_signature to the METC of {subj.codes}')
+            lg.warning(f'You need to add at least one research protocol with dates for {subj.codes}')
             lg.info('Using date of the first task performed by the subject')
             reference_date = min([x.start_time for x in subj.list_sessions()]).date()
+        else:
+            reference_date = max(reference_dates)
 
         lg.info(f'Adding {subj.codes}')
         codes = subj.codes

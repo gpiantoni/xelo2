@@ -1,3 +1,13 @@
+## Database
+
+### Privileges
+Add permission to read the `xelo2` database but not to modify it.
+
+```SQL
+GRANT SELECT, SHOW VIEW, TRIGGER ON xelo2.* TO `user`@`localhost` ;
+FLUSH PRIVILEGES ;
+```
+
 ## Allowed values
 Possible values are stored in `tables.json` and also in the table `allowed_values`. 
 The best way is to keep everything in `allowed_values`.
