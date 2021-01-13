@@ -10,6 +10,7 @@ from PyQt5.QtSql import QSqlQuery
 
 from ..database.tables import LEVELS
 from .summary import show_summary
+from ..bids.utils import SEARCH_STATEMENT
 
 
 def create_menubar(main):
@@ -132,17 +133,6 @@ def create_shortcuts(main):
 
     shortcut = QShortcut(QKeySequence.Save, main)
     shortcut.activated.connect(main.sql_commit)
-
-
-SEARCH_STATEMENT = """\
-    SELECT subjects.id, sessions.id, runs.id, recordings.id FROM subjects
-    LEFT JOIN sessions ON sessions.subject_id = subjects.id
-    LEFT JOIN sessions_mri ON sessions_mri.session_id = sessions.id
-    LEFT JOIN runs ON runs.session_id = sessions.id
-    LEFT JOIN recordings ON recordings.run_id = runs.id
-    LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
-    LEFT JOIN recordings_mri ON recordings_mri.recording_id = recordings.id
-    WHERE """
 
 
 class Search():

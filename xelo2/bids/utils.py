@@ -5,19 +5,21 @@ from textwrap import dedent
 
 lg = getLogger(__name__)
 
+SEARCH_STATEMENT = dedent("""\
+    SELECT subjects.id, sessions.id, runs.id, recordings.id FROM subjects
+    LEFT JOIN sessions ON sessions.subject_id = subjects.id
+    LEFT JOIN sessions_mri ON sessions_mri.session_id = sessions.id
+    LEFT JOIN runs ON runs.session_id = sessions.id
+    LEFT JOIN recordings ON recordings.run_id = runs.id
+    LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
+    LEFT JOIN recordings_mri ON recordings_mri.recording_id = recordings.id
+    WHERE """)
+
 
 def prepare_subset(db, where, subset=None):
 
-    query_str = dedent("""\
-    SELECT * FROM `subjects`
-    LEFT JOIN `sessions` ON `sessions`.`subject_id` = `subjects`.`id`
-    LEFT JOIN `sessions_mri` ON `sessions_mri`.`session_id` = `sessions`.`id`
-    LEFT JOIN `runs` ON `runs`.`session_id` = `sessions`.`id`
-    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`
-    LEFT JOIN `recordings_ephys` ON `recordings_ephys`.`recording_id` = `recordings`.`id`
-    """)
     query = QSqlQuery(db['db'])
-    query.prepare(f"""{query_str} WHERE {where}""")
+    query.prepare(SEARCH_STATEMENT + where)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
 
