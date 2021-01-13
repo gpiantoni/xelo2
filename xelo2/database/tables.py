@@ -60,8 +60,12 @@ def parse_all_tables(info_schema, db):
             if doc is None:
                 d['alias'] = name
                 d['doc'] = None
-            else:
+            elif ': ' in doc:
                 d['alias'], d['doc'] = doc.split(': ')
+            else:
+                d['alias'] = doc.strip()
+                d['doc'] = None
+
             table_d[name] = d
 
         TABLES[table] = table_d

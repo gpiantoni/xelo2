@@ -89,7 +89,7 @@ CREATE TABLE `events` (
   `run_id` int(11) DEFAULT NULL,
   `onset` float DEFAULT NULL COMMENT 'Onset: Onset (in seconds) of the event measured from the beginning of the acquisition of the first volume in the corresponding task imaging data file. Negative numbers in "onset" are allowed.',
   `duration` float DEFAULT NULL COMMENT 'Duration: Duration of the event (measured from onset) in seconds. Must always be either zero or positive. A "duration" value of zero implies that the delta function or event is so short as to be effectively modeled as an impulse.',
-  `trial_type` text DEFAULT NULL COMMENT 'Trial Type: Primary categorisation of each trial to identify them as instances of the experimental conditions. For example: for a response inhibition task, it could take on values "go" and "no-go" to refer to response initiation and response inhibition experimental conditions.',
+  `trial_type` text DEFAULT NULL COMMENT 'Trial Type: Primary categorisation of each trial to identify them as instances of the experimental conditions. e.g. for a response inhibition task, it could take on values "go" and "no-go" to refer to response initiation and response inhibition experimental conditions.',
   `response_time` text DEFAULT NULL COMMENT 'Response Time: Response time measured in seconds. A negative response time can be used to represent preemptive responses and "n/a" denotes a missed response.',
   `value` text DEFAULT NULL COMMENT 'Value: Marker value associated with the event (e.g., the value of a TTL trigger that was recorded at the onset of the event).',
   KEY `run_id` (`run_id`),

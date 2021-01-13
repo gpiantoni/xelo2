@@ -70,7 +70,7 @@ CREATE TABLE `recordings_mri` (
   `region_of_interest` text DEFAULT NULL COMMENT 'Region of Interest: Free text to describe the ROI ("whole brain", "occipital cortex")',
   `Sequence` text DEFAULT NULL COMMENT 'Sequence: Scanning sequence used',
   `MultibandAccelerationFactor` int(11) DEFAULT NULL COMMENT 'Multiband Acceleration Factor: 1 means No multiband',
-  `SliceEncodingDirection` text DEFAULT NULL COMMENT 'Slice Encoding Direction: ',
+  `SliceEncodingDirection` text DEFAULT NULL COMMENT 'Slice Encoding Direction',
   `SliceOrder` text DEFAULT NULL COMMENT 'Slice Order: This parameter is not in BIDS but it is used to compute SliceTiming. Use "Sequential" when Multiband is present',
   `PhaseEncodingDirection` text DEFAULT NULL COMMENT 'Phase Encoding Direction: If Philips scanner says "P", you should enter "AP"',
   UNIQUE KEY `recording_id` (`recording_id`),

@@ -82,7 +82,7 @@ CREATE TABLE `electrodes` (
   `material` text DEFAULT NULL COMMENT 'Material: Material of the electrodes.',
   `manufacturer` text DEFAULT NULL COMMENT 'Manufacturer: Recommended field to specify the manufacturer for each electrode. Can be used if electrodes were manufactured by more than one company.',
   `groups` text DEFAULT NULL COMMENT 'Group: Optional field to specify the group that the electrode is a part of.',
-  `hemisphere` text DEFAULT NULL COMMENT 'Hemisphere: Optional field to specify the hemisphere in which the electrode is placed, one of ['L' or 'R'] (use capital).',
+  `hemisphere` text DEFAULT NULL COMMENT 'Hemisphere: Optional field to specify the hemisphere in which the electrode is placed, one of ["L" or "R"] (use capital).',
   `type` text DEFAULT NULL COMMENT 'Type: Optional type of the electrode, e.g., cup, ring, clip-on, wire, needle, ...',
   `impedance` float DEFAULT NULL COMMENT 'Impedance: Impedance of the electrode in kOhm.',
   `dimension` text DEFAULT NULL COMMENT 'Dimension: Size of the group (grid/strip/probe) that this electrode belongs to. Must be of form [AxB] with the smallest dimension first (e.g., [1x8]).',
