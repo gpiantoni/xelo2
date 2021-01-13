@@ -1,8 +1,8 @@
 CREATE TABLE `recordings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `run_id` int(11) DEFAULT NULL,
-  `modality` text DEFAULT NULL,
-  `offset` float DEFAULT 0,
+  `modality` text DEFAULT NULL COMMENT 'Modality: Name of recording modality (this is BIDS specific)' ,
+  `offset` float DEFAULT 0 COMMENT 'Offset: Offset between the run time and the time stamp in the dataset file. When you use only one recording system (say Micromed), there is no issue but if you use two recording systems (Micromed, Blackrock, Dataglove), you can use this value to correct the offset between the clock time of the run (and events) and the clock time of this specific recording',
   PRIMARY KEY (`id`),
   KEY `run_id` (`run_id`),
   CONSTRAINT `recordings_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
