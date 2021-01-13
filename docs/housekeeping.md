@@ -69,3 +69,22 @@ The 3 conditions are:
    - check that the main condition related to the subtable has changed
    - check that the main condition has the correct value (you might need `IN` syntax instead of `=` when you have multiple values)
    - check whether the `id` already exists in the subtable. This happens when the task was `motor`, then it was changed to something else, then back to `motor`. The old info is still stored in the subtable even when the condition does not apply. This approach leaves some old data in the subtables (which is not shown and possibly not relevant) but it's useful when a user changes the condition by mistake, and then goes back. It would be disappointing to add the info in the subtable again.
+
+
+## SQL examples
+
+### PRESTO
+Update PRESTO sequence with the appropriate parameters:
+
+```SQL
+UPDATE `recordings_mri` SET  `SliceOrder` = '3D', `PhaseEncodingDirection` = 'PA', `SliceEncodingDirection` = 'RL' WHERE `Sequence` = '3T PRESTO';
+```
+
+### FLAIR
+If task is `flair`, use this syntax
+
+```SQL
+UPDATE `recordings_mri` SET `Sequence` = '3T FLAIR' WHERE `recording_id` IN (SELECT `id` FROM `recordings` WHERE `run_id` IN (SELECT `id` FROM `runs` WHERE `task_name` = 'flair_anatomy_scan'));
+```
+
+

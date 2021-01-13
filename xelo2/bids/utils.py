@@ -11,8 +11,11 @@ def prepare_subset(db, where, subset=None):
     query_str = dedent("""\
     SELECT * FROM `subjects`
     LEFT JOIN `sessions` ON `sessions`.`subject_id` = `subjects`.`id`
+    LEFT JOIN `sessions_mri` ON `sessions_mri`.`session_id` = `sessions`.`id`
     LEFT JOIN `runs` ON `runs`.`session_id` = `sessions`.`id`
-    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`""")
+    LEFT JOIN `recordings` ON `recordings`.`run_id` = `runs`.`id`
+    LEFT JOIN `recordings_ephys` ON `recordings_ephys`.`recording_id` = `recordings`.`id`
+    """)
     query = QSqlQuery(db['db'])
     query.prepare(f"""{query_str} WHERE {where}""")
     if not query.exec():
