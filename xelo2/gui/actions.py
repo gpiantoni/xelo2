@@ -141,6 +141,7 @@ SEARCH_STATEMENT = """\
     LEFT JOIN runs ON runs.session_id = sessions.id
     LEFT JOIN recordings ON recordings.run_id = runs.id
     LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
+    LEFT JOIN recordings_mri ON recordings_mri.recording_id = recordings.id
     WHERE """
 
 
@@ -160,7 +161,7 @@ class Search():
         self.clear()
         self.previous = where
 
-        query = QSqlQuery(db)
+        query = QSqlQuery(db['db'])
         query.prepare(SEARCH_STATEMENT + where)
         if not query.exec():
             raise ValueError(query.lastError().text())
