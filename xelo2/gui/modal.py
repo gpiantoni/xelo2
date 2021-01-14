@@ -287,7 +287,7 @@ class Popup_IntendedFor(QPushButton):
         for i, one_run in enumerate(run.session.list_runs()):
             if one_run.id == run.id:
                 continue
-            name = f'#{i + 1: 3d}: {one_run.task_name}'
+            name = f'#{i + 1: 2d}: {one_run.task_name}'
             action = QAction(name, self)
             action.setCheckable(True)
             if one_run.id in current_targets:

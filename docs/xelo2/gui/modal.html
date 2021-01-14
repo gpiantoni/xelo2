@@ -313,7 +313,7 @@ class Popup_IntendedFor(QPushButton):
         for i, one_run in enumerate(run.session.list_runs()):
             if one_run.id == run.id:
                 continue
-            name = f&#39;#{i + 1: 3d}: {one_run.task_name}&#39;
+            name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
             action = QAction(name, self)
             action.setCheckable(True)
             if one_run.id in current_targets:
@@ -965,7 +965,7 @@ QPushButton(QIcon, str, parent: QWidget = None)</p></div>
         for i, one_run in enumerate(run.session.list_runs()):
             if one_run.id == run.id:
                 continue
-            name = f&#39;#{i + 1: 3d}: {one_run.task_name}&#39;
+            name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
             action = QAction(name, self)
             action.setCheckable(True)
             if one_run.id in current_targets:

@@ -31,7 +31,25 @@
         date_str = &#39;unknown date&#39;
     else:
         date_str = f&#39;{protocol.date_of_signature:%d %b %Y}&#39;
-    return f&#39;{protocol.metc} ({date_str})&#39;</code></pre>
+    return f&#39;{protocol.metc} ({date_str})&#39;
+
+
+def _name(name):
+    if name is None:
+        return &#39;(untitled)&#39;
+    else:
+        return name
+
+def _session_name(sess):
+    extra = &#39;&#39;
+    if sess.name == &#39;MRI&#39;:
+        extra = f&#39;{sess.MagneticFieldStrength} &#39;
+
+    if sess.start_time is None:
+        date_str = &#39;unknown date&#39;
+    else:
+        date_str = f&#39;{sess.start_time:%d %b %Y}&#39;
+    return f&#39;{extra}{sess.name} ({date_str})&#39;</code></pre>
 </details>
 </section>
 <section>

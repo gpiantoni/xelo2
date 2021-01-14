@@ -86,8 +86,12 @@ def parse_all_tables(info_schema, db):
             if doc is None:
                 d[&#39;alias&#39;] = name
                 d[&#39;doc&#39;] = None
-            else:
+            elif &#39;: &#39; in doc:
                 d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+            else:
+                d[&#39;alias&#39;] = doc.strip()
+                d[&#39;doc&#39;] = None
+
             table_d[name] = d
 
         TABLES[table] = table_d
@@ -533,8 +537,12 @@ for foreign keys, it's table_name (column_name)</dd>
             if doc is None:
                 d[&#39;alias&#39;] = name
                 d[&#39;doc&#39;] = None
-            else:
+            elif &#39;: &#39; in doc:
                 d[&#39;alias&#39;], d[&#39;doc&#39;] = doc.split(&#39;: &#39;)
+            else:
+                d[&#39;alias&#39;] = doc.strip()
+                d[&#39;doc&#39;] = None
+
             table_d[name] = d
 
         TABLES[table] = table_d

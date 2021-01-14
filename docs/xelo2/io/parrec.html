@@ -89,7 +89,6 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
         run.acquisition = hdr[&#39;protocol_name&#39;]
     if info[&#39;modality&#39;] == &#39;bold&#39;:
         recording.RepetitionTime = TR
-        recording.FlipAngle = image[&#39;image_flip_angle&#39;][0]
 
 
 def _get_MRI_info(hdr):
@@ -276,8 +275,7 @@ def _get_MRI_info(hdr):
     if run.acquisition is None:
         run.acquisition = hdr[&#39;protocol_name&#39;]
     if info[&#39;modality&#39;] == &#39;bold&#39;:
-        recording.RepetitionTime = TR
-        recording.FlipAngle = image[&#39;image_flip_angle&#39;][0]</code></pre>
+        recording.RepetitionTime = TR</code></pre>
 </details>
 </dd>
 </dl>

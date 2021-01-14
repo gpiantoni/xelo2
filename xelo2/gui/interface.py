@@ -65,7 +65,7 @@ from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ephys
 from ..io.tsv import load_tsv, save_tsv
 
-from .utils import _protocol_name
+from .utils import _protocol_name, _name, _session_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import (
     NewFile,
@@ -244,7 +244,7 @@ class Interface(QMainWindow):
         temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
         elec_layout = QVBoxLayout(temp_widget)
         elec_layout.addWidget(self.elec_form)
-        elec_layout.addWidget(self.electrodes_view)
+        elec_layout.addWidget(self.electrodes_view, stretch=1)
         dockwidget.setWidget(temp_widget)
 
         dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
@@ -507,7 +507,7 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(self.db, obj, self))
+            parameters.update(list_parameters(self, obj))
 
             if k == 'runs':
                 w = Popup_Experimenters(obj, self)
@@ -521,7 +521,7 @@ class Interface(QMainWindow):
             elif k == 'recordings':
 
                 if obj.modality in ('ieeg', 'eeg', 'meg'):
-                    parameters.update(list_parameters(self.db, obj, self))
+                    parameters.update(list_parameters(self, obj))
 
                     sess = self.current('sessions')
 
@@ -585,6 +585,13 @@ class Interface(QMainWindow):
 
         elif data.t == 'electrode_group':
             recording.attach_electrodes(data)
+
+    def electrode_intendedfor(self, index, elec, combobox):
+        if index == 0:
+            elec.IntendedFor = None
+        else:
+            elec.IntendedFor = combobox[index]
+        self.modified()
 
     def current(self, level):
 
@@ -677,7 +684,8 @@ class Interface(QMainWindow):
         elif item.t == 'electrode_group':
             self.elec_form.blockSignals(True)
 
-            parameters = list_parameters(item, self)
+            parameters = list_parameters(self, item)
+            parameters['Intended For'] = make_electrode_combobox(self, item)
             self.elec_form.setRowCount(len(parameters))
             for i, kv in enumerate(parameters.items()):
                 k, v = kv
@@ -1300,7 +1308,8 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def list_parameters(db, obj, parent=None):
+def list_parameters(parent, obj):
+    db = parent.db
 
     columns = collect_columns(db, obj=obj)
 
@@ -1403,6 +1412,25 @@ def make_combobox(value, possible_values):
 
     return w
 
+def make_electrode_combobox(self, elec):
+    subj = self.lists['subjects'].currentItem().data(Qt.UserRole)
+    INTENDED = {'Unknown': 0}
+    for sess in subj.list_sessions():
+        sess_name = _session_name(sess)
+        for i, one_run in enumerate(sess.list_runs()):
+            if one_run.task_name in ('ct_anatomy_scan', 'flair_anatomy_scan', 't1_anatomy_scan', 't2_anatomy_scan', 't2star_anatomy_scan'):
+                name = f'#{i + 1: 2d}: {one_run.task_name}'
+                INTENDED[sess_name + ' / ' + name] = one_run.id
+
+    w = QComboBox()
+    for k in INTENDED:
+        w.addItem(k)
+
+    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
+
+    return w
+
 
 def make_date(value):
     w = QDateEdit()
@@ -1455,20 +1483,6 @@ class QListWidgetItem_time(QListWidgetItem):
 
     def __lt__(self, other):
         return self.obj.start_time < other.obj.start_time
-
-
-def _name(name):
-    if name is None:
-        return '(untitled)'
-    else:
-        return name
-
-def _session_name(sess):
-    if sess.start_time is None:
-        date_str = 'unknown date'
-    else:
-        date_str = f'{sess.start_time:%d %b %Y}'
-    return f'{sess.name} ({date_str})'
 
 
 def _fake_names(X):

@@ -91,7 +91,7 @@ from ..io.electrodes import import_electrodes
 from ..io.events import read_events_from_ephys
 from ..io.tsv import load_tsv, save_tsv
 
-from .utils import _protocol_name
+from .utils import _protocol_name, _name, _session_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import (
     NewFile,
@@ -270,7 +270,7 @@ class Interface(QMainWindow):
         temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
         elec_layout = QVBoxLayout(temp_widget)
         elec_layout.addWidget(self.elec_form)
-        elec_layout.addWidget(self.electrodes_view)
+        elec_layout.addWidget(self.electrodes_view, stretch=1)
         dockwidget.setWidget(temp_widget)
 
         dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
@@ -533,7 +533,7 @@ class Interface(QMainWindow):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(self.db, obj, self))
+            parameters.update(list_parameters(self, obj))
 
             if k == &#39;runs&#39;:
                 w = Popup_Experimenters(obj, self)
@@ -547,7 +547,7 @@ class Interface(QMainWindow):
             elif k == &#39;recordings&#39;:
 
                 if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
-                    parameters.update(list_parameters(self.db, obj, self))
+                    parameters.update(list_parameters(self, obj))
 
                     sess = self.current(&#39;sessions&#39;)
 
@@ -611,6 +611,13 @@ class Interface(QMainWindow):
 
         elif data.t == &#39;electrode_group&#39;:
             recording.attach_electrodes(data)
+
+    def electrode_intendedfor(self, index, elec, combobox):
+        if index == 0:
+            elec.IntendedFor = None
+        else:
+            elec.IntendedFor = combobox[index]
+        self.modified()
 
     def current(self, level):
 
@@ -703,7 +710,8 @@ class Interface(QMainWindow):
         elif item.t == &#39;electrode_group&#39;:
             self.elec_form.blockSignals(True)
 
-            parameters = list_parameters(item, self)
+            parameters = list_parameters(self, item)
+            parameters[&#39;Intended For&#39;] = make_electrode_combobox(self, item)
             self.elec_form.setRowCount(len(parameters))
             for i, kv in enumerate(parameters.items()):
                 k, v = kv
@@ -1001,7 +1009,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Session for {current_subject}&#39;,
                 &#39;Session Name:&#39;,
-                lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;sessions&#39;, &#39;name&#39;),
                 0, False)
 
         elif level == &#39;protocols&#39;:
@@ -1010,7 +1018,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Protocol for {current_subject}&#39;,
                 &#39;Protocol Name:&#39;,
-                lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;protocols&#39;, &#39;metc&#39;),
                 0, False)
 
         elif level == &#39;runs&#39;:
@@ -1020,7 +1028,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Run for {current_session.name}&#39;,
                 &#39;Task Name:&#39;,
-                lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;runs&#39;, &#39;task_name&#39;),
                 0, False)
 
         elif level == &#39;recordings&#39;:
@@ -1030,7 +1038,7 @@ class Interface(QMainWindow):
                 self,
                 f&#39;Add New Recording for {current_run.task_name}&#39;,
                 &#39;Modality:&#39;,
-                lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;recordings&#39;, &#39;modality&#39;),
                 0, False)
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
@@ -1326,18 +1334,14 @@ class Interface(QMainWindow):
         event.accept()
 
 
-def list_parameters(db, obj, parent=None):
+def list_parameters(parent, obj):
+    db = parent.db
 
     columns = collect_columns(db, obj=obj)
 
     d = {}
     for col, t in columns.items():
         col_info = db[&#39;tables&#39;][t][col]
-
-        if col_info[&#39;alias&#39;] is not None:
-            col_name = col_info[&#39;alias&#39;]
-        else:
-            col_name = col
 
         if not (col_info[&#39;index&#39;] is False):
             continue
@@ -1346,19 +1350,19 @@ def list_parameters(db, obj, parent=None):
 
         if col_info[&#39;type&#39;] == &#39;QDateTime&#39;:
             w = make_datetime(value)
-            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;QDate&#39;:
             w = make_date(value)
-            w.dateChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;double&#39;:
             w = make_float(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;int&#39;:
             w = make_integer(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;QString&#39;:
             if col_info[&#39;values&#39;]:
@@ -1367,10 +1371,10 @@ def list_parameters(db, obj, parent=None):
                     values = sorted(values)
                 w = make_combobox(value, values)
 
-                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
+                w.currentTextChanged.connect(partial(parent.changed, obj, col))
             else:
                 w = make_edit(value)
-                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
+                w.editingFinished.connect(partial(parent.changed, obj, col, w))
 
         else:
             raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
@@ -1434,6 +1438,25 @@ def make_combobox(value, possible_values):
 
     return w
 
+def make_electrode_combobox(self, elec):
+    subj = self.lists[&#39;subjects&#39;].currentItem().data(Qt.UserRole)
+    INTENDED = {&#39;Unknown&#39;: 0}
+    for sess in subj.list_sessions():
+        sess_name = _session_name(sess)
+        for i, one_run in enumerate(sess.list_runs()):
+            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;):
+                name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
+                INTENDED[sess_name + &#39; / &#39; + name] = one_run.id
+
+    w = QComboBox()
+    for k in INTENDED:
+        w.addItem(k)
+
+    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
+
+    return w
+
 
 def make_date(value):
     w = QDateEdit()
@@ -1488,20 +1511,6 @@ class QListWidgetItem_time(QListWidgetItem):
         return self.obj.start_time &lt; other.obj.start_time
 
 
-def _name(name):
-    if name is None:
-        return &#39;(untitled)&#39;
-    else:
-        return name
-
-def _session_name(sess):
-    if sess.start_time is None:
-        date_str = &#39;unknown date&#39;
-    else:
-        date_str = f&#39;{sess.start_time:%d %b %Y}&#39;
-    return f&#39;{sess.name} ({date_str})&#39;
-
-
 def _fake_names(X):
     &#34;&#34;&#34;We cannot have empty channel names, so we use it the MICROMED
     convention
@@ -1551,7 +1560,7 @@ def _fake_names(X):
 </details>
 </dd>
 <dt id="xelo2.gui.interface.list_parameters"><code class="name flex">
-<span>def <span class="ident">list_parameters</span></span>(<span>db, obj, parent=None)</span>
+<span>def <span class="ident">list_parameters</span></span>(<span>parent, obj)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1559,18 +1568,14 @@ def _fake_names(X):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def list_parameters(db, obj, parent=None):
+<pre><code class="python">def list_parameters(parent, obj):
+    db = parent.db
 
     columns = collect_columns(db, obj=obj)
 
     d = {}
     for col, t in columns.items():
         col_info = db[&#39;tables&#39;][t][col]
-
-        if col_info[&#39;alias&#39;] is not None:
-            col_name = col_info[&#39;alias&#39;]
-        else:
-            col_name = col
 
         if not (col_info[&#39;index&#39;] is False):
             continue
@@ -1579,19 +1584,19 @@ def _fake_names(X):
 
         if col_info[&#39;type&#39;] == &#39;QDateTime&#39;:
             w = make_datetime(value)
-            w.dateTimeChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateTimeChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;QDate&#39;:
             w = make_date(value)
-            w.dateChanged.connect(partial(parent.changed, obj, col_name))
+            w.dateChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;double&#39;:
             w = make_float(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;int&#39;:
             w = make_integer(value)
-            w.valueChanged.connect(partial(parent.changed, obj, col_name))
+            w.valueChanged.connect(partial(parent.changed, obj, col))
 
         elif col_info[&#39;type&#39;] == &#39;QString&#39;:
             if col_info[&#39;values&#39;]:
@@ -1600,10 +1605,10 @@ def _fake_names(X):
                     values = sorted(values)
                 w = make_combobox(value, values)
 
-                w.currentTextChanged.connect(partial(parent.changed, obj, col_name))
+                w.currentTextChanged.connect(partial(parent.changed, obj, col))
             else:
                 w = make_edit(value)
-                w.editingFinished.connect(partial(parent.changed, obj, col_name, w))
+                w.editingFinished.connect(partial(parent.changed, obj, col, w))
 
         else:
             raise ValueError(f&#39;unknown type &#34;{col_info[&#34;type&#34;]}&#34;&#39;)
@@ -1694,6 +1699,35 @@ def _fake_names(X):
 <pre><code class="python">def make_edit(value):
     w = QLineEdit()
     w.insert(value)
+    return w</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.make_electrode_combobox"><code class="name flex">
+<span>def <span class="ident">make_electrode_combobox</span></span>(<span>self, elec)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_electrode_combobox(self, elec):
+    subj = self.lists[&#39;subjects&#39;].currentItem().data(Qt.UserRole)
+    INTENDED = {&#39;Unknown&#39;: 0}
+    for sess in subj.list_sessions():
+        sess_name = _session_name(sess)
+        for i, one_run in enumerate(sess.list_runs()):
+            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;):
+                name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
+                INTENDED[sess_name + &#39; / &#39; + name] = one_run.id
+
+    w = QComboBox()
+    for k in INTENDED:
+        w.addItem(k)
+
+    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
+
     return w</code></pre>
 </details>
 </dd>
@@ -1928,7 +1962,7 @@ def _fake_names(X):
         temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
         elec_layout = QVBoxLayout(temp_widget)
         elec_layout.addWidget(self.elec_form)
-        elec_layout.addWidget(self.electrodes_view)
+        elec_layout.addWidget(self.electrodes_view, stretch=1)
         dockwidget.setWidget(temp_widget)
 
         dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
@@ -2191,7 +2225,7 @@ def _fake_names(X):
             obj = item.data(Qt.UserRole)
 
             parameters = {}
-            parameters.update(list_parameters(self.db, obj, self))
+            parameters.update(list_parameters(self, obj))
 
             if k == &#39;runs&#39;:
                 w = Popup_Experimenters(obj, self)
@@ -2205,7 +2239,7 @@ def _fake_names(X):
             elif k == &#39;recordings&#39;:
 
                 if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
-                    parameters.update(list_parameters(self.db, obj, self))
+                    parameters.update(list_parameters(self, obj))
 
                     sess = self.current(&#39;sessions&#39;)
 
@@ -2269,6 +2303,13 @@ def _fake_names(X):
 
         elif data.t == &#39;electrode_group&#39;:
             recording.attach_electrodes(data)
+
+    def electrode_intendedfor(self, index, elec, combobox):
+        if index == 0:
+            elec.IntendedFor = None
+        else:
+            elec.IntendedFor = combobox[index]
+        self.modified()
 
     def current(self, level):
 
@@ -2361,7 +2402,8 @@ def _fake_names(X):
         elif item.t == &#39;electrode_group&#39;:
             self.elec_form.blockSignals(True)
 
-            parameters = list_parameters(item, self)
+            parameters = list_parameters(self, item)
+            parameters[&#39;Intended For&#39;] = make_electrode_combobox(self, item)
             self.elec_form.setRowCount(len(parameters))
             for i, kv in enumerate(parameters.items()):
                 k, v = kv
@@ -2659,7 +2701,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Session for {current_subject}&#39;,
                 &#39;Session Name:&#39;,
-                lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;sessions&#39;, &#39;name&#39;),
                 0, False)
 
         elif level == &#39;protocols&#39;:
@@ -2668,7 +2710,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Protocol for {current_subject}&#39;,
                 &#39;Protocol Name:&#39;,
-                lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;protocols&#39;, &#39;metc&#39;),
                 0, False)
 
         elif level == &#39;runs&#39;:
@@ -2678,7 +2720,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Run for {current_session.name}&#39;,
                 &#39;Task Name:&#39;,
-                lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;runs&#39;, &#39;task_name&#39;),
                 0, False)
 
         elif level == &#39;recordings&#39;:
@@ -2688,7 +2730,7 @@ def _fake_names(X):
                 self,
                 f&#39;Add New Recording for {current_run.task_name}&#39;,
                 &#39;Modality:&#39;,
-                lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
+                lookup_allowed_values(self.db[&#39;db&#39;], &#39;recordings&#39;, &#39;modality&#39;),
                 0, False)
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
@@ -3276,6 +3318,23 @@ def _fake_names(X):
         self.modified()</code></pre>
 </details>
 </dd>
+<dt id="xelo2.gui.interface.Interface.electrode_intendedfor"><code class="name flex">
+<span>def <span class="ident">electrode_intendedfor</span></span>(<span>self, index, elec, combobox)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def electrode_intendedfor(self, index, elec, combobox):
+    if index == 0:
+        elec.IntendedFor = None
+    else:
+        elec.IntendedFor = combobox[index]
+    self.modified()</code></pre>
+</details>
+</dd>
 <dt id="xelo2.gui.interface.Interface.exporting"><code class="name flex">
 <span>def <span class="ident">exporting</span></span>(<span>self, checked=None, subj=None, sess=None, run=None)</span>
 </code></dt>
@@ -3694,7 +3753,7 @@ def _fake_names(X):
         obj = item.data(Qt.UserRole)
 
         parameters = {}
-        parameters.update(list_parameters(self.db, obj, self))
+        parameters.update(list_parameters(self, obj))
 
         if k == &#39;runs&#39;:
             w = Popup_Experimenters(obj, self)
@@ -3708,7 +3767,7 @@ def _fake_names(X):
         elif k == &#39;recordings&#39;:
 
             if obj.modality in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
-                parameters.update(list_parameters(self.db, obj, self))
+                parameters.update(list_parameters(self, obj))
 
                 sess = self.current(&#39;sessions&#39;)
 
@@ -3951,7 +4010,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Session for {current_subject}&#39;,
             &#39;Session Name:&#39;,
-            lookup_allowed_values(self.db, &#39;sessions&#39;, &#39;name&#39;),
+            lookup_allowed_values(self.db[&#39;db&#39;], &#39;sessions&#39;, &#39;name&#39;),
             0, False)
 
     elif level == &#39;protocols&#39;:
@@ -3960,7 +4019,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Protocol for {current_subject}&#39;,
             &#39;Protocol Name:&#39;,
-            lookup_allowed_values(self.db, &#39;protocols&#39;, &#39;metc&#39;),
+            lookup_allowed_values(self.db[&#39;db&#39;], &#39;protocols&#39;, &#39;metc&#39;),
             0, False)
 
     elif level == &#39;runs&#39;:
@@ -3970,7 +4029,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Run for {current_session.name}&#39;,
             &#39;Task Name:&#39;,
-            lookup_allowed_values(self.db, &#39;runs&#39;, &#39;task_name&#39;),
+            lookup_allowed_values(self.db[&#39;db&#39;], &#39;runs&#39;, &#39;task_name&#39;),
             0, False)
 
     elif level == &#39;recordings&#39;:
@@ -3980,7 +4039,7 @@ code of the subject to select</p></div>
             self,
             f&#39;Add New Recording for {current_run.task_name}&#39;,
             &#39;Modality:&#39;,
-            lookup_allowed_values(self.db, &#39;recordings&#39;, &#39;modality&#39;),
+            lookup_allowed_values(self.db[&#39;db&#39;], &#39;recordings&#39;, &#39;modality&#39;),
             0, False)
 
     elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
@@ -4247,7 +4306,8 @@ def show_channels_electrodes(self, current=None, previous=None):
     elif item.t == &#39;electrode_group&#39;:
         self.elec_form.blockSignals(True)
 
-        parameters = list_parameters(item, self)
+        parameters = list_parameters(self, item)
+        parameters[&#39;Intended For&#39;] = make_electrode_combobox(self, item)
         self.elec_form.setRowCount(len(parameters))
         for i, kv in enumerate(parameters.items()):
             k, v = kv
@@ -4518,7 +4578,7 @@ QListWidgetItem(QListWidgetItem)</p></div>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="xelo2.gui.interface.copy_to_clipboard" href="#xelo2.gui.interface.copy_to_clipboard">copy_to_clipboard</a></code></li>
 <li><code><a title="xelo2.gui.interface.highlight" href="#xelo2.gui.interface.highlight">highlight</a></code></li>
 <li><code><a title="xelo2.gui.interface.list_parameters" href="#xelo2.gui.interface.list_parameters">list_parameters</a></code></li>
@@ -4526,6 +4586,7 @@ QListWidgetItem(QListWidgetItem)</p></div>
 <li><code><a title="xelo2.gui.interface.make_date" href="#xelo2.gui.interface.make_date">make_date</a></code></li>
 <li><code><a title="xelo2.gui.interface.make_datetime" href="#xelo2.gui.interface.make_datetime">make_datetime</a></code></li>
 <li><code><a title="xelo2.gui.interface.make_edit" href="#xelo2.gui.interface.make_edit">make_edit</a></code></li>
+<li><code><a title="xelo2.gui.interface.make_electrode_combobox" href="#xelo2.gui.interface.make_electrode_combobox">make_electrode_combobox</a></code></li>
 <li><code><a title="xelo2.gui.interface.make_float" href="#xelo2.gui.interface.make_float">make_float</a></code></li>
 <li><code><a title="xelo2.gui.interface.make_integer" href="#xelo2.gui.interface.make_integer">make_integer</a></code></li>
 </ul>
@@ -4547,6 +4608,7 @@ QListWidgetItem(QListWidgetItem)</p></div>
 <li><code><a title="xelo2.gui.interface.Interface.do_export" href="#xelo2.gui.interface.Interface.do_export">do_export</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_file" href="#xelo2.gui.interface.Interface.edit_file">edit_file</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_subject_codes" href="#xelo2.gui.interface.Interface.edit_subject_codes">edit_subject_codes</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.electrode_intendedfor" href="#xelo2.gui.interface.Interface.electrode_intendedfor">electrode_intendedfor</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.exporting" href="#xelo2.gui.interface.Interface.exporting">exporting</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.io_channels" href="#xelo2.gui.interface.Interface.io_channels">io_channels</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.io_electrodes" href="#xelo2.gui.interface.Interface.io_electrodes">io_electrodes</a></code></li>

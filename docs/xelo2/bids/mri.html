@@ -184,6 +184,19 @@ def _convert_sidecar(run, rec, hdr=None, shape=None):
 
 
 def add_slicetiming(D, hdr, rec):
+    &#34;&#34;&#34;
+
+    TODO
+    ----
+    Is there a SliceTiming when the SliceOrder is 3D?
+    &#34;&#34;&#34;
+    if rec.SliceOrder is None:
+        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
+        return
+
+    elif rec.SliceOrder == &#39;3D&#39;:
+        return
+
     # get TR from SQL, but if it&#39;s not specified used PAR/REC
     TR = D.get(&#39;RepetitionTime&#39;, hdr[&#39;RepetitionTime&#39;])
 
@@ -193,9 +206,6 @@ def add_slicetiming(D, hdr, rec):
     n_slices = int(n_slices / multiband)
 
     SliceTiming = linspace(0, TR, n_slices + 1)[:-1]
-    if rec.SliceOrder is None:
-        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
-        return
 
     if rec.SliceOrder == &#39;Interleaved&#39;:
         SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
@@ -246,12 +256,26 @@ def gz(input_file, output_file):
 <span>def <span class="ident">add_slicetiming</span></span>(<span>D, hdr, rec)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="todo">Todo</h2>
+<p>Is there a SliceTiming when the SliceOrder is 3D?</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_slicetiming(D, hdr, rec):
+    &#34;&#34;&#34;
+
+    TODO
+    ----
+    Is there a SliceTiming when the SliceOrder is 3D?
+    &#34;&#34;&#34;
+    if rec.SliceOrder is None:
+        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
+        return
+
+    elif rec.SliceOrder == &#39;3D&#39;:
+        return
+
     # get TR from SQL, but if it&#39;s not specified used PAR/REC
     TR = D.get(&#39;RepetitionTime&#39;, hdr[&#39;RepetitionTime&#39;])
 
@@ -261,9 +285,6 @@ def gz(input_file, output_file):
     n_slices = int(n_slices / multiband)
 
     SliceTiming = linspace(0, TR, n_slices + 1)[:-1]
-    if rec.SliceOrder is None:
-        lg.warning(f&#39;Please specify SliceOrder for Recording(db, id={rec.id})&#39;)
-        return
 
     if rec.SliceOrder == &#39;Interleaved&#39;:
         SliceTiming = r_[SliceTiming[::2], SliceTiming[1::2]]
