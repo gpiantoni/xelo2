@@ -2,7 +2,7 @@ from logging import getLogger
 from pathlib import Path
 from datetime import date, datetime
 from functools import partial
-from numpy import isin
+from numpy import isin, array
 
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -69,6 +69,7 @@ from .utils import _protocol_name, _name, _session_name
 from .actions import create_menubar, Search, create_shortcuts, FilesWidget
 from .modal import (
     NewFile,
+    EditElectrodes,
     Popup_Experimenters,
     Popup_Protocols,
     Popup_IntendedFor,
@@ -464,6 +465,7 @@ class Interface(QMainWindow):
         self.electrodes_model.setFilter('electrode_group_id = 0')
         self.electrodes_model.select()
         self.electrodes_view.setEnabled(False)
+        self.elec_form.clearContents()
 
         if recording is None:
             return
@@ -668,14 +670,15 @@ class Interface(QMainWindow):
         self.events_model.select()
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
-    def show_channels_electrodes(self, current=None, previous=None):
-        if current is None:
+    def show_channels_electrodes(self, current=None, previous=None, item=None):
+
+        if current is not None:
+            item = current.data(Qt.UserRole)
+
+        if item is None:
             return
 
         self.statusbar_selected()
-
-        item = current.data(Qt.UserRole)
-
         if item.t == 'channel_group':
             self.channels_view.setEnabled(True)
             self.channels_model.setFilter(f'channel_group_id = {item.id}')
@@ -1114,6 +1117,22 @@ class Interface(QMainWindow):
         self.list_files()
         self.modified()
 
+    def edit_electrode_data(self):
+        elec = self.current('electrodes')
+        data = elec.data
+        edit_electrodes = EditElectrodes(self, data)
+        result = edit_electrodes.exec()
+
+        if result:
+            parameter = edit_electrodes.parameter.currentText()
+            value = edit_electrodes.value.text()
+
+            data[parameter] = array(value).astype(data.dtype[parameter])
+            elec.data = data
+
+            self.show_channels_electrodes(item=elec)
+            self.modified()
+
     def io_parrec(self):
         run = self.current('runs')
         recording = self.current('recordings')
@@ -1418,7 +1437,7 @@ def make_electrode_combobox(self, elec):
     for sess in subj.list_sessions():
         sess_name = _session_name(sess)
         for i, one_run in enumerate(sess.list_runs()):
-            if one_run.task_name in ('ct_anatomy_scan', 'flair_anatomy_scan', 't1_anatomy_scan', 't2_anatomy_scan', 't2star_anatomy_scan'):
+            if one_run.task_name in ('ct_anatomy_scan', 'flair_anatomy_scan', 't1_anatomy_scan', 't2_anatomy_scan', 't2star_anatomy_scan', 'MP2RAGE'):
                 name = f'#{i + 1: 2d}: {one_run.task_name}'
                 INTENDED[sess_name + ' / ' + name] = one_run.id
 
@@ -1426,7 +1445,9 @@ def make_electrode_combobox(self, elec):
     for k in INTENDED:
         w.addItem(k)
 
-    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    intendedfor = elec.IntendedFor
+    if intendedfor is not None:
+        w.setCurrentIndex(list(INTENDED.values()).index(intendedfor))
     w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
 
     return w

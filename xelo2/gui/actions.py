@@ -72,7 +72,7 @@ def create_menubar(main):
 
     # New
     menu_new = menubar.addMenu('Add')
-    for level in LEVELS:
+    for level in LEVELS + ['channels', 'electrodes']:
         action = QAction(f'new {level[:-1]}', main)
         action.triggered.connect(partial(main.new_item, level=level))
         menu_new.addAction(action)
@@ -82,11 +82,14 @@ def create_menubar(main):
     action.triggered.connect(main.new_file)
     menu_new.addAction(action)
 
-    # search
+    # Edit
     menu_edit = menubar.addMenu('Edit')
     menu_new.addSeparator()
     action = QAction('subject codes ...', main)
     action.triggered.connect(main.edit_subject_codes)
+    menu_edit.addAction(action)
+    action = QAction('data for all the electrodes ...', main)
+    action.triggered.connect(main.edit_electrode_data)
     menu_edit.addAction(action)
 
     # io

@@ -103,6 +103,37 @@ class NewFile(QDialog):
         else:
             self.format.setCurrentText(filetype)
 
+
+class EditElectrodes(QDialog):
+
+    def __init__(self, parent, data):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.parameter = QComboBox()
+        for n in data.dtype.names:
+            if n in ('name', 'x', 'y', 'z'):
+                continue
+            self.parameter.addItem(n)
+
+        self.value = QLineEdit()
+        self.value.setFixedWidth(800)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        layout_file = QHBoxLayout()
+        layout_file.addWidget(self.parameter)
+        layout_file.addWidget(self.value)
+
+        layout = QVBoxLayout()
+        layout.addLayout(layout_file)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+
 def _prepare_values(run, info):
     run_duration = run.duration
     if run_duration is None:
