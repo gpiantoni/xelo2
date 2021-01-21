@@ -13,13 +13,13 @@ SEARCH_STATEMENT = dedent("""\
     LEFT JOIN recordings ON recordings.run_id = runs.id
     LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
     LEFT JOIN recordings_mri ON recordings_mri.recording_id = recordings.id
-    WHERE """)
+    """)
 
 
-def prepare_subset(db, where, subset=None):
+def prepare_subset(db, where, subset=None, join=None):
 
     query = QSqlQuery(db['db'])
-    query.prepare(SEARCH_STATEMENT + where)
+    query.prepare(SEARCH_STATEMENT + join + ' WHERE ' + where)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
 

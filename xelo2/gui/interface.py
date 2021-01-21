@@ -1189,7 +1189,7 @@ class Interface(QMainWindow):
         if ephys_file == '':
             return
 
-        add_ephys_to_sess(sess, Path(ephys_file))
+        add_ephys_to_sess(self.db, sess, Path(ephys_file))
 
         self.list_runs(sess)
         self.list_params()
