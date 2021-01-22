@@ -1020,11 +1020,11 @@ class Interface(QMainWindow):
 
         elif level in ('channels', 'electrodes'):
             current_recording = self.current('recordings')
-            if current_recording is None or current_recording.modality != 'ephys':
+            if current_recording is None or current_recording.modality not in ('ieeg', 'eeg', 'meg'):
                 QMessageBox.warning(
                     self,
                     f'Cannot add {level}',
-                    'You should first select an "ephys" recording')
+                    'You should first select an "ieeg" / "eeg" / "meg" recording')
                 return
 
             text, ok = QInputDialog.getText(
@@ -1199,7 +1199,7 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ephys':
+        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
             return
 
         ephys_files = recording.list_files()
@@ -1223,7 +1223,7 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ephys':
+        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
             return
 
         ephys_files = recording.list_files()
@@ -1248,7 +1248,7 @@ class Interface(QMainWindow):
     def io_channels(self):
         recording = self.current('recordings')
 
-        if recording is None or recording.modality != 'ephys':
+        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
             return
 
         ephys_files = recording.list_files()

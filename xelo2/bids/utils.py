@@ -16,7 +16,7 @@ SEARCH_STATEMENT = dedent("""\
     """)
 
 
-def prepare_subset(db, where, subset=None, join=None):
+def prepare_subset(db, where, subset=None, join=''):
 
     query = QSqlQuery(db['db'])
     query.prepare(SEARCH_STATEMENT + join + ' WHERE ' + where)

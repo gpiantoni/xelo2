@@ -155,7 +155,7 @@ class Search():
         self.previous = where
 
         query = QSqlQuery(db['db'])
-        query.prepare(SEARCH_STATEMENT + where)
+        query.prepare(SEARCH_STATEMENT + ' WHERE ' + where)
         if not query.exec():
             raise ValueError(query.lastError().text())
 

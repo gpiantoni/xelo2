@@ -177,7 +177,7 @@ class CompareEvents(QDialog):
     def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ephys(ephys_file)
+        self.info = read_info_from_ephys(parent.db, ephys_file)
 
         layout = QGridLayout(self)
 
