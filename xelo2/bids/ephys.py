@@ -64,7 +64,7 @@ def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):
         if n_chan != chan_data.shape[0]:
             lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels')
         channels_tsv = dest_path / make_bids_name(name, 'channels')
-        save_tsv(channels_tsv, chan_data, ['name', 'type', 'units'])
+        save_tsv(channels_tsv, chan_data, ['name', 'type', 'units', 'low_cutoff', 'high_cutoff'])
         replace_micro(channels_tsv)
 
     electrodes = rec.electrodes
