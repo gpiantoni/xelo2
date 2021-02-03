@@ -901,7 +901,7 @@ class Interface(QMainWindow):
     def open_file(self, file_path):
         if file_path.suffix.lower() == '.par':
             print(f'converting {file_path}')
-            file_path = convert_parrec_nibabel(file_path)
+            file_path = convert_parrec_nibabel(file_path)[0]
             print(f'converted to {file_path}')
 
         url_file = QUrl.fromLocalFile(str(file_path))
