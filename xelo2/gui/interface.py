@@ -1140,7 +1140,7 @@ class Interface(QMainWindow):
         success = False
         for file in recording.list_files():
             if file.format == 'parrec':
-                add_parrec(file.path, run=run, recording=recording)
+                add_parrec(file.path, run=run, recording=recording, update=True)
                 success = True
                 break
 

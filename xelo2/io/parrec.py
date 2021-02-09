@@ -3,7 +3,7 @@ from nibabel.parrec import parse_PAR_header
 from numpy import round
 
 
-def add_parrec(par_file, sess=None, run=None, recording=None):
+def add_parrec(par_file, sess=None, run=None, recording=None, update=False):
     """Parse information from PAR file to a session, run or recording
 
     Parameters
@@ -16,6 +16,9 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
 
     recording : instance of Recording
 
+    update : bool
+        do not add file. The function was called when the file is already
+        linked and we just update run and recording
     """
     hdr, image = parse_PAR_header(par_file.open())
 
@@ -46,7 +49,8 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
     else:
         recording.modality = info['modality']
 
-    recording.add_file('parrec', par_file)
+    if not update:
+        recording.add_file('parrec', par_file)
 
     n_dyns = image['dynamic scan number'].max()
     if n_dyns == 1:
