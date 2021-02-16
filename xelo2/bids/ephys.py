@@ -36,10 +36,12 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     n_chan = len(data.chan[0])
 
     channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
-    if n_chan == channels.shape[0]:
+    if channels is None:
+        lg.warning(f'No channel information for {str(rec)}')
+    elif n_chan == channels.shape[0]:
         data.chan[0] = channels['name']
     else:
-        lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels. The labels will not be correct')
+        lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct')
 
     # get acq from manufacturer. It might be better to use channels.name but
     # I am not sure
@@ -62,6 +64,13 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
 
 
 def _convert_chan_elec(rec, dest_path, name, intendedfor):
+    """
+
+    Returns
+    -------
+    numpy 1d array
+        channels info with 'name', 'type' etc, if it exists. Otherwise None
+    """
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
