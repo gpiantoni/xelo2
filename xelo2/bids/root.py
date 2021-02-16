@@ -71,7 +71,11 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
         if len(reference_dates) == 0:
             lg.warning(f'You need to add at least one research protocol with dates for {subj.codes}')
             lg.info('Using date of the first task performed by the subject')
-            reference_date = min([x.start_time for x in subj.list_sessions()]).date()
+            reference_dates = [x.start_time for x in subj.list_sessions() if x.start_time is not None]
+            if len(reference_dates):
+                reference_date = min(reference_dates).date()
+            else:
+                reference_date = datetime(2000, 1, 1, 12, 0, 0)  # if no task has dates, then use a random date
         else:
             reference_date = max(reference_dates)
 

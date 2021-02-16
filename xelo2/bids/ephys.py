@@ -31,6 +31,14 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     if file is None:
         return
 
+    # get acq from manufacturer. It might be better to use channels.name but
+    # I am not sure
+    if rec.Manufacturer is None:
+        lg.warning(f'Please specify Manufacturer for {run} / {rec}')
+        name['acq'] = 'acq-none'
+    else:
+        name['acq'] = f'acq-{rec.Manufacturer.lower()}'
+
     d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)
     n_chan = len(data.chan[0])
@@ -43,13 +51,6 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     else:
         lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct')
 
-    # get acq from manufacturer. It might be better to use channels.name but
-    # I am not sure
-    if rec.Manufacturer is None:
-        lg.warning(f'Please specify Manufacturer for {run} / {rec}')
-        name['acq'] = 'acq-none'
-    else:
-        name['acq'] = f'acq-{rec.Manufacturer.lower()}'
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
 
@@ -70,6 +71,10 @@ def _convert_chan_elec(rec, dest_path, name, intendedfor):
     -------
     numpy 1d array
         channels info with 'name', 'type' etc, if it exists. Otherwise None
+
+    TODO
+    ----
+    add sampling frequency to channels
     """
     electrodes = rec.electrodes
     if electrodes is not None:

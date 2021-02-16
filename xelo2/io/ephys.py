@@ -46,7 +46,7 @@ def read_info_from_ephys(db, path_to_file):
 
     info = {
         'start_time': d.header['start_time'],
-        'duration': d.header['n_samples'] / d.header['s_freq'],
+        'duration': (d.header['n_samples'] - 1) / d.header['s_freq'],  # add -1 to avoid rounding errors that generate NaN when converting
         'events': ev,
         'manufacturer': manufacturer,
         }

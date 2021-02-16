@@ -1237,7 +1237,10 @@ class Interface(QMainWindow):
         result = compare_events.exec()
 
         if result == QDialog.Accepted:
+            print(compare_events.info)
+            print(run.start_time)
             run.start_time = compare_events.info['start_time']
+            print(run.start_time)
             run.duration = compare_events.info['duration']
             run.events = compare_events.info['events']
 
