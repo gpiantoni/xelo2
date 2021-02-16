@@ -33,6 +33,13 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
 
     d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)
+    n_chan = len(data.chan[0])
+
+    channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
+    if n_chan == channels.shape[0]:
+        data.chan[0] = channels['name']
+    else:
+        lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels. The labels will not be correct')
 
     # get acq from manufacturer. It might be better to use channels.name but
     # I am not sure
@@ -43,6 +50,7 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         name['acq'] = f'acq-{rec.Manufacturer.lower()}'
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
+
     data.export(output_ephys, 'brainvision', markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
@@ -50,29 +58,26 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     with sidecar_file.open('w') as f:
         dump(sidecar, f, indent=2)
 
-    n_chan = len(d.header['chan_name'])
-
-    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
     return output_ephys
 
 
-def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):
-    channels = rec.channels
-    if channels is not None:
-        chan_data = channels.data
-
-        if n_chan != chan_data.shape[0]:
-            lg.warning(f'{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels')
-        channels_tsv = dest_path / make_bids_name(name, 'channels')
-        save_tsv(channels_tsv, chan_data, ['name', 'type', 'units', 'low_cutoff', 'high_cutoff'])
-        replace_micro(channels_tsv)
-
+def _convert_chan_elec(rec, dest_path, name, intendedfor):
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
         save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z', 'size'])
         electrodes_json = dest_path / make_bids_name(name, 'coordsystem')
         save_coordsystem(electrodes_json, electrodes, intendedfor)
+
+    channels = rec.channels
+    if channels is not None:
+        chan_data = channels.data
+
+        channels_tsv = dest_path / make_bids_name(name, 'channels')
+        save_tsv(channels_tsv, chan_data, ['name', 'type', 'units', 'low_cutoff', 'high_cutoff'])
+        replace_micro(channels_tsv)
+
+    return chan_data
 
 
 def replace_micro(channels_tsv):
