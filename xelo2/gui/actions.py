@@ -3,9 +3,7 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
     QShortcut,
-    QTableWidget,
     )
-from PyQt5.QtCore import QUrl
 from PyQt5.QtSql import QSqlQuery
 
 from ..database.tables import LEVELS
@@ -87,6 +85,9 @@ def create_menubar(main):
     menu_new.addSeparator()
     action = QAction('subject codes ...', main)
     action.triggered.connect(main.edit_subject_codes)
+    menu_edit.addAction(action)
+    action = QAction('compare events to those on file', main)
+    action.triggered.connect(main.compare_events_with_file)
     menu_edit.addAction(action)
     action = QAction('data for all the electrodes ...', main)
     action.triggered.connect(main.edit_electrode_data)
@@ -173,22 +174,3 @@ class Search():
         self.recordings = []
 
         self.previous = ''
-
-
-class FilesWidget(QTableWidget):
-    def __init__(self, parent):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.parent = parent
-
-    def dragEnterEvent(self, event):
-        event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        # this one is also necessary for QTableWidget
-        event.accept()
-
-    def dropEvent(self, event):
-        file_text = event.mimeData().text()
-        file_path = QUrl(file_text).toLocalFile().strip()
-        self.parent.new_file(filename=file_path)

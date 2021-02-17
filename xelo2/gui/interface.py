@@ -58,6 +58,7 @@ from ..database import access_database, lookup_allowed_values
 from ..database.tables import LEVELS
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
+from ..bids.utils import find_one_file
 from ..io.parrec import add_parrec
 from ..io.ephys import add_ephys_to_sess
 from ..io.channels import create_channels
@@ -66,7 +67,8 @@ from ..io.events import read_events_from_ephys
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import _protocol_name, _name, _session_name
-from .actions import create_menubar, Search, create_shortcuts, FilesWidget
+from .actions import create_menubar, Search, create_shortcuts
+from .models import FilesWidget, EventsModel
 from .modal import (
     NewFile,
     EditElectrodes,
@@ -129,6 +131,7 @@ class Interface(QMainWindow):
         # EVENTS: Widget
         self.events_view = QTableView(self)
         self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setAlternatingRowColors(True)
         self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table='events'))
 
@@ -304,8 +307,8 @@ class Interface(QMainWindow):
         self.db = access_database(db_name, username, password)
         self.db['db'].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db['db'])
-        self.events_model.setTable('events')
+        self.events_model = EventsModel(self.db)
+
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
@@ -666,8 +669,19 @@ class Interface(QMainWindow):
         self.modified()
 
     def show_events(self, item):
-        self.events_model.setFilter(f'run_id = {item.id}')
-        self.events_model.select()
+        self.events_model.update(item.events)
+
+    def compare_events_with_file(self):
+
+        run = self.current('runs')
+        rec = self.current('recordings')
+
+        file = find_one_file(rec, ('blackrock', 'micromed', 'bci2000'))
+        if file is None:
+            print('Could not find electrophysiology file')
+            return
+
+        self.events_model.compare(run, rec, file)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
     def show_channels_electrodes(self, current=None, previous=None, item=None):
