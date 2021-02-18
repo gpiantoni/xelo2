@@ -381,7 +381,7 @@ def _datetime(s):
     if s is None:
         return &#39;null&#39;
     else:
-        return f&#39;&#34;{s:%Y-%m-%dT%H:%M:%S}&#34;&#39;
+        return &#39;&#34;&#39; + f&#39;{s:%Y-%m-%dT%H:%M:%S.%f}&#39;[:-3] + &#39;&#34;&#39;
 
 
 def _create_query(row):

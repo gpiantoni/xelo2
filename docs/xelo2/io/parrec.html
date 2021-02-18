@@ -29,7 +29,7 @@ from nibabel.parrec import parse_PAR_header
 from numpy import round
 
 
-def add_parrec(par_file, sess=None, run=None, recording=None):
+def add_parrec(par_file, sess=None, run=None, recording=None, update=False):
     &#34;&#34;&#34;Parse information from PAR file to a session, run or recording
 
     Parameters
@@ -42,6 +42,9 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
 
     recording : instance of Recording
 
+    update : bool
+        do not add file. The function was called when the file is already
+        linked and we just update run and recording
     &#34;&#34;&#34;
     hdr, image = parse_PAR_header(par_file.open())
 
@@ -72,7 +75,8 @@ def add_parrec(par_file, sess=None, run=None, recording=None):
     else:
         recording.modality = info[&#39;modality&#39;]
 
-    recording.add_file(&#39;parrec&#39;, par_file)
+    if not update:
+        recording.add_file(&#39;parrec&#39;, par_file)
 
     n_dyns = image[&#39;dynamic scan number&#39;].max()
     if n_dyns == 1:
@@ -197,7 +201,7 @@ def _get_MRI_info(hdr):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.io.parrec.add_parrec"><code class="name flex">
-<span>def <span class="ident">add_parrec</span></span>(<span>par_file, sess=None, run=None, recording=None)</span>
+<span>def <span class="ident">add_parrec</span></span>(<span>par_file, sess=None, run=None, recording=None, update=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Parse information from PAR file to a session, run or recording</p>
@@ -211,12 +215,15 @@ def _get_MRI_info(hdr):
 <dd>&nbsp;</dd>
 <dt><strong><code>recording</code></strong> :&ensp;<code>instance</code> of <code>Recording</code></dt>
 <dd>&nbsp;</dd>
+<dt><strong><code>update</code></strong> :&ensp;<code>bool</code></dt>
+<dd>do not add file. The function was called when the file is already
+linked and we just update run and recording</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_parrec(par_file, sess=None, run=None, recording=None):
+<pre><code class="python">def add_parrec(par_file, sess=None, run=None, recording=None, update=False):
     &#34;&#34;&#34;Parse information from PAR file to a session, run or recording
 
     Parameters
@@ -229,6 +236,9 @@ def _get_MRI_info(hdr):
 
     recording : instance of Recording
 
+    update : bool
+        do not add file. The function was called when the file is already
+        linked and we just update run and recording
     &#34;&#34;&#34;
     hdr, image = parse_PAR_header(par_file.open())
 
@@ -259,7 +269,8 @@ def _get_MRI_info(hdr):
     else:
         recording.modality = info[&#39;modality&#39;]
 
-    recording.add_file(&#39;parrec&#39;, par_file)
+    if not update:
+        recording.add_file(&#39;parrec&#39;, par_file)
 
     n_dyns = image[&#39;dynamic scan number&#39;].max()
     if n_dyns == 1:

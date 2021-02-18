@@ -47,10 +47,7 @@ def parse_filetype(file_path):
     elif suffix == &#39;.trc&#39;:
         data_type = &#39;micromed&#39;
 
-    elif suffix == &#39;.nev&#39;:
-        data_type = &#39;blackrock&#39;
-
-    elif suffix == &#39;.ns3&#39;:
+    elif suffix in (&#39;.nev&#39;, &#39;.ns3&#39;, &#39;.ns5&#39;, &#39;.ns6&#39;):
         data_type = &#39;blackrock&#39;
 
     elif suffix == &#39;.pdf&#39;:
@@ -107,10 +104,7 @@ def parse_filetype(file_path):
     elif suffix == &#39;.trc&#39;:
         data_type = &#39;micromed&#39;
 
-    elif suffix == &#39;.nev&#39;:
-        data_type = &#39;blackrock&#39;
-
-    elif suffix == &#39;.ns3&#39;:
+    elif suffix in (&#39;.nev&#39;, &#39;.ns3&#39;, &#39;.ns5&#39;, &#39;.ns6&#39;):
         data_type = &#39;blackrock&#39;
 
     elif suffix == &#39;.pdf&#39;:

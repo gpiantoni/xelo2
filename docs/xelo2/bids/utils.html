@@ -39,13 +39,13 @@ SEARCH_STATEMENT = dedent(&#34;&#34;&#34;\
     LEFT JOIN recordings ON recordings.run_id = runs.id
     LEFT JOIN recordings_ephys ON recordings_ephys.recording_id = recordings.id
     LEFT JOIN recordings_mri ON recordings_mri.recording_id = recordings.id
-    WHERE &#34;&#34;&#34;)
+    &#34;&#34;&#34;)
 
 
-def prepare_subset(db, where, subset=None):
+def prepare_subset(db, where, subset=None, join=&#39;&#39;):
 
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(SEARCH_STATEMENT + where)
+    query.prepare(SEARCH_STATEMENT + join + &#39; WHERE &#39; + where)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
 
@@ -284,7 +284,7 @@ performance and acquisition</p></div>
 </details>
 </dd>
 <dt id="xelo2.bids.utils.prepare_subset"><code class="name flex">
-<span>def <span class="ident">prepare_subset</span></span>(<span>db, where, subset=None)</span>
+<span>def <span class="ident">prepare_subset</span></span>(<span>db, where, subset=None, join='')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -292,10 +292,10 @@ performance and acquisition</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def prepare_subset(db, where, subset=None):
+<pre><code class="python">def prepare_subset(db, where, subset=None, join=&#39;&#39;):
 
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(SEARCH_STATEMENT + where)
+    query.prepare(SEARCH_STATEMENT + join + &#39; WHERE &#39; + where)
     if not query.exec():
         raise SyntaxError(query.lastError().text())
 

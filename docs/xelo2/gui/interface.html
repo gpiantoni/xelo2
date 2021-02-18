@@ -28,7 +28,7 @@
 from pathlib import Path
 from datetime import date, datetime
 from functools import partial
-from numpy import isin
+from numpy import isin, array
 
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -84,6 +84,7 @@ from ..database import access_database, lookup_allowed_values
 from ..database.tables import LEVELS
 from ..bids.root import create_bids
 from ..bids.io.parrec import convert_parrec_nibabel
+from ..bids.utils import find_one_file
 from ..io.parrec import add_parrec
 from ..io.ephys import add_ephys_to_sess
 from ..io.channels import create_channels
@@ -92,9 +93,11 @@ from ..io.events import read_events_from_ephys
 from ..io.tsv import load_tsv, save_tsv
 
 from .utils import _protocol_name, _name, _session_name
-from .actions import create_menubar, Search, create_shortcuts, FilesWidget
+from .actions import create_menubar, Search, create_shortcuts
+from .models import FilesWidget, EventsModel
 from .modal import (
     NewFile,
+    EditElectrodes,
     Popup_Experimenters,
     Popup_Protocols,
     Popup_IntendedFor,
@@ -154,6 +157,7 @@ class Interface(QMainWindow):
         # EVENTS: Widget
         self.events_view = QTableView(self)
         self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setAlternatingRowColors(True)
         self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;events&#39;))
 
@@ -329,8 +333,8 @@ class Interface(QMainWindow):
         self.db = access_database(db_name, username, password)
         self.db[&#39;db&#39;].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
-        self.events_model.setTable(&#39;events&#39;)
+        self.events_model = EventsModel(self.db)
+
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
@@ -490,6 +494,7 @@ class Interface(QMainWindow):
         self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
         self.electrodes_model.select()
         self.electrodes_view.setEnabled(False)
+        self.elec_form.clearContents()
 
         if recording is None:
             return
@@ -690,18 +695,30 @@ class Interface(QMainWindow):
         self.modified()
 
     def show_events(self, item):
-        self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
-        self.events_model.select()
+        self.events_model.update(item.events)
+
+    def compare_events_with_file(self):
+
+        run = self.current(&#39;runs&#39;)
+        rec = self.current(&#39;recordings&#39;)
+
+        file = find_one_file(rec, (&#39;blackrock&#39;, &#39;micromed&#39;, &#39;bci2000&#39;))
+        if file is None:
+            print(&#39;Could not find electrophysiology file&#39;)
+            return
+
+        self.events_model.compare(run, rec, file)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
-    def show_channels_electrodes(self, current=None, previous=None):
-        if current is None:
+    def show_channels_electrodes(self, current=None, previous=None, item=None):
+
+        if current is not None:
+            item = current.data(Qt.UserRole)
+
+        if item is None:
             return
 
         self.statusbar_selected()
-
-        item = current.data(Qt.UserRole)
-
         if item.t == &#39;channel_group&#39;:
             self.channels_view.setEnabled(True)
             self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
@@ -924,7 +941,7 @@ class Interface(QMainWindow):
     def open_file(self, file_path):
         if file_path.suffix.lower() == &#39;.par&#39;:
             print(f&#39;converting {file_path}&#39;)
-            file_path = convert_parrec_nibabel(file_path)
+            file_path = convert_parrec_nibabel(file_path)[0]
             print(f&#39;converted to {file_path}&#39;)
 
         url_file = QUrl.fromLocalFile(str(file_path))
@@ -1043,11 +1060,11 @@ class Interface(QMainWindow):
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
             current_recording = self.current(&#39;recordings&#39;)
-            if current_recording is None or current_recording.modality != &#39;ephys&#39;:
+            if current_recording is None or current_recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                 QMessageBox.warning(
                     self,
                     f&#39;Cannot add {level}&#39;,
-                    &#39;You should first select an &#34;ephys&#34; recording&#39;)
+                    &#39;You should first select an &#34;ieeg&#34; / &#34;eeg&#34; / &#34;meg&#34; recording&#39;)
                 return
 
             text, ok = QInputDialog.getText(
@@ -1140,6 +1157,22 @@ class Interface(QMainWindow):
         self.list_files()
         self.modified()
 
+    def edit_electrode_data(self):
+        elec = self.current(&#39;electrodes&#39;)
+        data = elec.data
+        edit_electrodes = EditElectrodes(self, data)
+        result = edit_electrodes.exec()
+
+        if result:
+            parameter = edit_electrodes.parameter.currentText()
+            value = edit_electrodes.value.text()
+
+            data[parameter] = array(value).astype(data.dtype[parameter])
+            elec.data = data
+
+            self.show_channels_electrodes(item=elec)
+            self.modified()
+
     def io_parrec(self):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
@@ -1147,7 +1180,7 @@ class Interface(QMainWindow):
         success = False
         for file in recording.list_files():
             if file.format == &#39;parrec&#39;:
-                add_parrec(file.path, run=run, recording=recording)
+                add_parrec(file.path, run=run, recording=recording, update=True)
                 success = True
                 break
 
@@ -1196,7 +1229,7 @@ class Interface(QMainWindow):
         if ephys_file == &#39;&#39;:
             return
 
-        add_ephys_to_sess(sess, Path(ephys_file))
+        add_ephys_to_sess(self.db, sess, Path(ephys_file))
 
         self.list_runs(sess)
         self.list_params()
@@ -1206,7 +1239,7 @@ class Interface(QMainWindow):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -1230,7 +1263,7 @@ class Interface(QMainWindow):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -1255,7 +1288,7 @@ class Interface(QMainWindow):
     def io_channels(self):
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -1444,7 +1477,7 @@ def make_electrode_combobox(self, elec):
     for sess in subj.list_sessions():
         sess_name = _session_name(sess)
         for i, one_run in enumerate(sess.list_runs()):
-            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;):
+            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;, &#39;MP2RAGE&#39;):
                 name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
                 INTENDED[sess_name + &#39; / &#39; + name] = one_run.id
 
@@ -1452,7 +1485,9 @@ def make_electrode_combobox(self, elec):
     for k in INTENDED:
         w.addItem(k)
 
-    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    intendedfor = elec.IntendedFor
+    if intendedfor is not None:
+        w.setCurrentIndex(list(INTENDED.values()).index(intendedfor))
     w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
 
     return w
@@ -1717,7 +1752,7 @@ def _fake_names(X):
     for sess in subj.list_sessions():
         sess_name = _session_name(sess)
         for i, one_run in enumerate(sess.list_runs()):
-            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;):
+            if one_run.task_name in (&#39;ct_anatomy_scan&#39;, &#39;flair_anatomy_scan&#39;, &#39;t1_anatomy_scan&#39;, &#39;t2_anatomy_scan&#39;, &#39;t2star_anatomy_scan&#39;, &#39;MP2RAGE&#39;):
                 name = f&#39;#{i + 1: 2d}: {one_run.task_name}&#39;
                 INTENDED[sess_name + &#39; / &#39; + name] = one_run.id
 
@@ -1725,7 +1760,9 @@ def _fake_names(X):
     for k in INTENDED:
         w.addItem(k)
 
-    w.setCurrentIndex(list(INTENDED.values()).index(elec.IntendedFor))
+    intendedfor = elec.IntendedFor
+    if intendedfor is not None:
+        w.setCurrentIndex(list(INTENDED.values()).index(intendedfor))
     w.currentIndexChanged.connect(partial(self.electrode_intendedfor, elec=elec, combobox=list(INTENDED.values())))
 
     return w</code></pre>
@@ -1846,6 +1883,7 @@ def _fake_names(X):
         # EVENTS: Widget
         self.events_view = QTableView(self)
         self.events_view.horizontalHeader().setStretchLastSection(True)
+        self.events_view.setAlternatingRowColors(True)
         self.events_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.events_view.customContextMenuRequested.connect(partial(self.rightclick_table, table=&#39;events&#39;))
 
@@ -2021,8 +2059,8 @@ def _fake_names(X):
         self.db = access_database(db_name, username, password)
         self.db[&#39;db&#39;].transaction()
 
-        self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
-        self.events_model.setTable(&#39;events&#39;)
+        self.events_model = EventsModel(self.db)
+
         self.events_view.setModel(self.events_model)
         self.events_view.hideColumn(0)
 
@@ -2182,6 +2220,7 @@ def _fake_names(X):
         self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
         self.electrodes_model.select()
         self.electrodes_view.setEnabled(False)
+        self.elec_form.clearContents()
 
         if recording is None:
             return
@@ -2382,18 +2421,30 @@ def _fake_names(X):
         self.modified()
 
     def show_events(self, item):
-        self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
-        self.events_model.select()
+        self.events_model.update(item.events)
+
+    def compare_events_with_file(self):
+
+        run = self.current(&#39;runs&#39;)
+        rec = self.current(&#39;recordings&#39;)
+
+        file = find_one_file(rec, (&#39;blackrock&#39;, &#39;micromed&#39;, &#39;bci2000&#39;))
+        if file is None:
+            print(&#39;Could not find electrophysiology file&#39;)
+            return
+
+        self.events_model.compare(run, rec, file)
 
     @pyqtSlot(QListWidgetItem, QListWidgetItem)
-    def show_channels_electrodes(self, current=None, previous=None):
-        if current is None:
+    def show_channels_electrodes(self, current=None, previous=None, item=None):
+
+        if current is not None:
+            item = current.data(Qt.UserRole)
+
+        if item is None:
             return
 
         self.statusbar_selected()
-
-        item = current.data(Qt.UserRole)
-
         if item.t == &#39;channel_group&#39;:
             self.channels_view.setEnabled(True)
             self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
@@ -2616,7 +2667,7 @@ def _fake_names(X):
     def open_file(self, file_path):
         if file_path.suffix.lower() == &#39;.par&#39;:
             print(f&#39;converting {file_path}&#39;)
-            file_path = convert_parrec_nibabel(file_path)
+            file_path = convert_parrec_nibabel(file_path)[0]
             print(f&#39;converted to {file_path}&#39;)
 
         url_file = QUrl.fromLocalFile(str(file_path))
@@ -2735,11 +2786,11 @@ def _fake_names(X):
 
         elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
             current_recording = self.current(&#39;recordings&#39;)
-            if current_recording is None or current_recording.modality != &#39;ephys&#39;:
+            if current_recording is None or current_recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
                 QMessageBox.warning(
                     self,
                     f&#39;Cannot add {level}&#39;,
-                    &#39;You should first select an &#34;ephys&#34; recording&#39;)
+                    &#39;You should first select an &#34;ieeg&#34; / &#34;eeg&#34; / &#34;meg&#34; recording&#39;)
                 return
 
             text, ok = QInputDialog.getText(
@@ -2832,6 +2883,22 @@ def _fake_names(X):
         self.list_files()
         self.modified()
 
+    def edit_electrode_data(self):
+        elec = self.current(&#39;electrodes&#39;)
+        data = elec.data
+        edit_electrodes = EditElectrodes(self, data)
+        result = edit_electrodes.exec()
+
+        if result:
+            parameter = edit_electrodes.parameter.currentText()
+            value = edit_electrodes.value.text()
+
+            data[parameter] = array(value).astype(data.dtype[parameter])
+            elec.data = data
+
+            self.show_channels_electrodes(item=elec)
+            self.modified()
+
     def io_parrec(self):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
@@ -2839,7 +2906,7 @@ def _fake_names(X):
         success = False
         for file in recording.list_files():
             if file.format == &#39;parrec&#39;:
-                add_parrec(file.path, run=run, recording=recording)
+                add_parrec(file.path, run=run, recording=recording, update=True)
                 success = True
                 break
 
@@ -2888,7 +2955,7 @@ def _fake_names(X):
         if ephys_file == &#39;&#39;:
             return
 
-        add_ephys_to_sess(sess, Path(ephys_file))
+        add_ephys_to_sess(self.db, sess, Path(ephys_file))
 
         self.list_runs(sess)
         self.list_params()
@@ -2898,7 +2965,7 @@ def _fake_names(X):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -2922,7 +2989,7 @@ def _fake_names(X):
         run = self.current(&#39;runs&#39;)
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -2947,7 +3014,7 @@ def _fake_names(X):
     def io_channels(self):
         recording = self.current(&#39;recordings&#39;)
 
-        if recording is None or recording.modality != &#39;ephys&#39;:
+        if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             return
 
         ephys_files = recording.list_files()
@@ -3162,6 +3229,28 @@ def _fake_names(X):
         recording.attach_electrodes(data)</code></pre>
 </details>
 </dd>
+<dt id="xelo2.gui.interface.Interface.compare_events_with_file"><code class="name flex">
+<span>def <span class="ident">compare_events_with_file</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_events_with_file(self):
+
+    run = self.current(&#39;runs&#39;)
+    rec = self.current(&#39;recordings&#39;)
+
+    file = find_one_file(rec, (&#39;blackrock&#39;, &#39;micromed&#39;, &#39;bci2000&#39;))
+    if file is None:
+        print(&#39;Could not find electrophysiology file&#39;)
+        return
+
+    self.events_model.compare(run, rec, file)</code></pre>
+</details>
+</dd>
 <dt id="xelo2.gui.interface.Interface.current"><code class="name flex">
 <span>def <span class="ident">current</span></span>(<span>self, level)</span>
 </code></dt>
@@ -3265,6 +3354,32 @@ def _fake_names(X):
 
     create_bids(self.db, Path(data_path), deface=False, subset=subset, progress=progress)
     progress.setValue(len(subset[&#39;runs&#39;]))</code></pre>
+</details>
+</dd>
+<dt id="xelo2.gui.interface.Interface.edit_electrode_data"><code class="name flex">
+<span>def <span class="ident">edit_electrode_data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def edit_electrode_data(self):
+    elec = self.current(&#39;electrodes&#39;)
+    data = elec.data
+    edit_electrodes = EditElectrodes(self, data)
+    result = edit_electrodes.exec()
+
+    if result:
+        parameter = edit_electrodes.parameter.currentText()
+        value = edit_electrodes.value.text()
+
+        data[parameter] = array(value).astype(data.dtype[parameter])
+        elec.data = data
+
+        self.show_channels_electrodes(item=elec)
+        self.modified()</code></pre>
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.edit_file"><code class="name flex">
@@ -3377,7 +3492,7 @@ def _fake_names(X):
 <pre><code class="python">def io_channels(self):
     recording = self.current(&#39;recordings&#39;)
 
-    if recording is None or recording.modality != &#39;ephys&#39;:
+    if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         return
 
     ephys_files = recording.list_files()
@@ -3462,7 +3577,7 @@ def _fake_names(X):
     if ephys_file == &#39;&#39;:
         return
 
-    add_ephys_to_sess(sess, Path(ephys_file))
+    add_ephys_to_sess(self.db, sess, Path(ephys_file))
 
     self.list_runs(sess)
     self.list_params()
@@ -3482,7 +3597,7 @@ def _fake_names(X):
     run = self.current(&#39;runs&#39;)
     recording = self.current(&#39;recordings&#39;)
 
-    if recording is None or recording.modality != &#39;ephys&#39;:
+    if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         return
 
     ephys_files = recording.list_files()
@@ -3518,7 +3633,7 @@ def _fake_names(X):
     run = self.current(&#39;runs&#39;)
     recording = self.current(&#39;recordings&#39;)
 
-    if recording is None or recording.modality != &#39;ephys&#39;:
+    if recording is None or recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
         return
 
     ephys_files = recording.list_files()
@@ -3555,7 +3670,7 @@ def _fake_names(X):
     success = False
     for file in recording.list_files():
         if file.format == &#39;parrec&#39;:
-            add_parrec(file.path, run=run, recording=recording)
+            add_parrec(file.path, run=run, recording=recording, update=True)
             success = True
             break
 
@@ -3625,6 +3740,7 @@ def _fake_names(X):
     self.electrodes_model.setFilter(&#39;electrode_group_id = 0&#39;)
     self.electrodes_model.select()
     self.electrodes_view.setEnabled(False)
+    self.elec_form.clearContents()
 
     if recording is None:
         return
@@ -4044,11 +4160,11 @@ code of the subject to select</p></div>
 
     elif level in (&#39;channels&#39;, &#39;electrodes&#39;):
         current_recording = self.current(&#39;recordings&#39;)
-        if current_recording is None or current_recording.modality != &#39;ephys&#39;:
+        if current_recording is None or current_recording.modality not in (&#39;ieeg&#39;, &#39;eeg&#39;, &#39;meg&#39;):
             QMessageBox.warning(
                 self,
                 f&#39;Cannot add {level}&#39;,
-                &#39;You should first select an &#34;ephys&#34; recording&#39;)
+                &#39;You should first select an &#34;ieeg&#34; / &#34;eeg&#34; / &#34;meg&#34; recording&#39;)
             return
 
         text, ok = QInputDialog.getText(
@@ -4109,7 +4225,7 @@ code of the subject to select</p></div>
 <pre><code class="python">def open_file(self, file_path):
     if file_path.suffix.lower() == &#39;.par&#39;:
         print(f&#39;converting {file_path}&#39;)
-        file_path = convert_parrec_nibabel(file_path)
+        file_path = convert_parrec_nibabel(file_path)[0]
         print(f&#39;converted to {file_path}&#39;)
 
     url_file = QUrl.fromLocalFile(str(file_path))
@@ -4281,7 +4397,7 @@ def proc_all(self, current=None, previous=None, item=None):
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.show_channels_electrodes"><code class="name flex">
-<span>def <span class="ident">show_channels_electrodes</span></span>(<span>self, current=None, previous=None)</span>
+<span>def <span class="ident">show_channels_electrodes</span></span>(<span>self, current=None, previous=None, item=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -4290,14 +4406,15 @@ def proc_all(self, current=None, previous=None, item=None):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pyqtSlot(QListWidgetItem, QListWidgetItem)
-def show_channels_electrodes(self, current=None, previous=None):
-    if current is None:
+def show_channels_electrodes(self, current=None, previous=None, item=None):
+
+    if current is not None:
+        item = current.data(Qt.UserRole)
+
+    if item is None:
         return
 
     self.statusbar_selected()
-
-    item = current.data(Qt.UserRole)
-
     if item.t == &#39;channel_group&#39;:
         self.channels_view.setEnabled(True)
         self.channels_model.setFilter(f&#39;channel_group_id = {item.id}&#39;)
@@ -4331,8 +4448,7 @@ def show_channels_electrodes(self, current=None, previous=None):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def show_events(self, item):
-    self.events_model.setFilter(f&#39;run_id = {item.id}&#39;)
-    self.events_model.select()</code></pre>
+    self.events_model.update(item.events)</code></pre>
 </details>
 </dd>
 <dt id="xelo2.gui.interface.Interface.sql_access"><code class="name flex">
@@ -4350,8 +4466,8 @@ def show_channels_electrodes(self, current=None, previous=None):
     self.db = access_database(db_name, username, password)
     self.db[&#39;db&#39;].transaction()
 
-    self.events_model = QSqlTableModel(self, self.db[&#39;db&#39;])
-    self.events_model.setTable(&#39;events&#39;)
+    self.events_model = EventsModel(self.db)
+
     self.events_view.setModel(self.events_model)
     self.events_view.hideColumn(0)
 
@@ -4601,11 +4717,13 @@ QListWidgetItem(QListWidgetItem)</p></div>
 <li><code><a title="xelo2.gui.interface.Interface.clear_export" href="#xelo2.gui.interface.Interface.clear_export">clear_export</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.closeEvent" href="#xelo2.gui.interface.Interface.closeEvent">closeEvent</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.combo_chanelec" href="#xelo2.gui.interface.Interface.combo_chanelec">combo_chanelec</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.compare_events_with_file" href="#xelo2.gui.interface.Interface.compare_events_with_file">compare_events_with_file</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.current" href="#xelo2.gui.interface.Interface.current">current</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.db" href="#xelo2.gui.interface.Interface.db">db</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.delete_file" href="#xelo2.gui.interface.Interface.delete_file">delete_file</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.delete_item" href="#xelo2.gui.interface.Interface.delete_item">delete_item</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.do_export" href="#xelo2.gui.interface.Interface.do_export">do_export</a></code></li>
+<li><code><a title="xelo2.gui.interface.Interface.edit_electrode_data" href="#xelo2.gui.interface.Interface.edit_electrode_data">edit_electrode_data</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_file" href="#xelo2.gui.interface.Interface.edit_file">edit_file</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.edit_subject_codes" href="#xelo2.gui.interface.Interface.edit_subject_codes">edit_subject_codes</a></code></li>
 <li><code><a title="xelo2.gui.interface.Interface.electrode_intendedfor" href="#xelo2.gui.interface.Interface.electrode_intendedfor">electrode_intendedfor</a></code></li>

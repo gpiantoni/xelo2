@@ -29,9 +29,7 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
     QShortcut,
-    QTableWidget,
     )
-from PyQt5.QtCore import QUrl
 from PyQt5.QtSql import QSqlQuery
 
 from ..database.tables import LEVELS
@@ -98,7 +96,7 @@ def create_menubar(main):
 
     # New
     menu_new = menubar.addMenu(&#39;Add&#39;)
-    for level in LEVELS:
+    for level in LEVELS + [&#39;channels&#39;, &#39;electrodes&#39;]:
         action = QAction(f&#39;new {level[:-1]}&#39;, main)
         action.triggered.connect(partial(main.new_item, level=level))
         menu_new.addAction(action)
@@ -108,11 +106,17 @@ def create_menubar(main):
     action.triggered.connect(main.new_file)
     menu_new.addAction(action)
 
-    # search
+    # Edit
     menu_edit = menubar.addMenu(&#39;Edit&#39;)
     menu_new.addSeparator()
     action = QAction(&#39;subject codes ...&#39;, main)
     action.triggered.connect(main.edit_subject_codes)
+    menu_edit.addAction(action)
+    action = QAction(&#39;compare events to those on file&#39;, main)
+    action.triggered.connect(main.compare_events_with_file)
+    menu_edit.addAction(action)
+    action = QAction(&#39;data for all the electrodes ...&#39;, main)
+    action.triggered.connect(main.edit_electrode_data)
     menu_edit.addAction(action)
 
     # io
@@ -178,7 +182,7 @@ class Search():
         self.previous = where
 
         query = QSqlQuery(db[&#39;db&#39;])
-        query.prepare(SEARCH_STATEMENT + where)
+        query.prepare(SEARCH_STATEMENT + &#39; WHERE &#39; + where)
         if not query.exec():
             raise ValueError(query.lastError().text())
 
@@ -195,26 +199,7 @@ class Search():
         self.runs = []
         self.recordings = []
 
-        self.previous = &#39;&#39;
-
-
-class FilesWidget(QTableWidget):
-    def __init__(self, parent):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.parent = parent
-
-    def dragEnterEvent(self, event):
-        event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        # this one is also necessary for QTableWidget
-        event.accept()
-
-    def dropEvent(self, event):
-        file_text = event.mimeData().text()
-        file_path = QUrl(file_text).toLocalFile().strip()
-        self.parent.new_file(filename=file_path)</code></pre>
+        self.previous = &#39;&#39;</code></pre>
 </details>
 </section>
 <section>
@@ -292,7 +277,7 @@ class FilesWidget(QTableWidget):
 
     # New
     menu_new = menubar.addMenu(&#39;Add&#39;)
-    for level in LEVELS:
+    for level in LEVELS + [&#39;channels&#39;, &#39;electrodes&#39;]:
         action = QAction(f&#39;new {level[:-1]}&#39;, main)
         action.triggered.connect(partial(main.new_item, level=level))
         menu_new.addAction(action)
@@ -302,11 +287,17 @@ class FilesWidget(QTableWidget):
     action.triggered.connect(main.new_file)
     menu_new.addAction(action)
 
-    # search
+    # Edit
     menu_edit = menubar.addMenu(&#39;Edit&#39;)
     menu_new.addSeparator()
     action = QAction(&#39;subject codes ...&#39;, main)
     action.triggered.connect(main.edit_subject_codes)
+    menu_edit.addAction(action)
+    action = QAction(&#39;compare events to those on file&#39;, main)
+    action.triggered.connect(main.compare_events_with_file)
+    menu_edit.addAction(action)
+    action = QAction(&#39;data for all the electrodes ...&#39;, main)
+    action.triggered.connect(main.edit_electrode_data)
     menu_edit.addAction(action)
 
     # io
@@ -369,94 +360,6 @@ class FilesWidget(QTableWidget):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="xelo2.gui.actions.FilesWidget"><code class="flex name class">
-<span>class <span class="ident">FilesWidget</span></span>
-<span>(</span><span>parent)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>QTableWidget(parent: QWidget = None)
-QTableWidget(int, int, parent: QWidget = None)</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class FilesWidget(QTableWidget):
-    def __init__(self, parent):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.parent = parent
-
-    def dragEnterEvent(self, event):
-        event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        # this one is also necessary for QTableWidget
-        event.accept()
-
-    def dropEvent(self, event):
-        file_text = event.mimeData().text()
-        file_path = QUrl(file_text).toLocalFile().strip()
-        self.parent.new_file(filename=file_path)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>PyQt5.QtWidgets.QTableWidget</li>
-<li>PyQt5.QtWidgets.QTableView</li>
-<li>PyQt5.QtWidgets.QAbstractItemView</li>
-<li>PyQt5.QtWidgets.QAbstractScrollArea</li>
-<li>PyQt5.QtWidgets.QFrame</li>
-<li>PyQt5.QtWidgets.QWidget</li>
-<li>PyQt5.QtCore.QObject</li>
-<li>sip.wrapper</li>
-<li>PyQt5.QtGui.QPaintDevice</li>
-<li>sip.simplewrapper</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="xelo2.gui.actions.FilesWidget.dragEnterEvent"><code class="name flex">
-<span>def <span class="ident">dragEnterEvent</span></span>(<span>self, event)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>dragEnterEvent(self, QDragEnterEvent)</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def dragEnterEvent(self, event):
-    event.acceptProposedAction()</code></pre>
-</details>
-</dd>
-<dt id="xelo2.gui.actions.FilesWidget.dragMoveEvent"><code class="name flex">
-<span>def <span class="ident">dragMoveEvent</span></span>(<span>self, event)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>dragMoveEvent(self, QDragMoveEvent)</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def dragMoveEvent(self, event):
-    # this one is also necessary for QTableWidget
-    event.accept()</code></pre>
-</details>
-</dd>
-<dt id="xelo2.gui.actions.FilesWidget.dropEvent"><code class="name flex">
-<span>def <span class="ident">dropEvent</span></span>(<span>self, event)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>dropEvent(self, QDropEvent)</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def dropEvent(self, event):
-    file_text = event.mimeData().text()
-    file_path = QUrl(file_text).toLocalFile().strip()
-    self.parent.new_file(filename=file_path)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 <dt id="xelo2.gui.actions.Search"><code class="flex name class">
 <span>class <span class="ident">Search</span></span>
 </code></dt>
@@ -483,7 +386,7 @@ QTableWidget(int, int, parent: QWidget = None)</p></div>
         self.previous = where
 
         query = QSqlQuery(db[&#39;db&#39;])
-        query.prepare(SEARCH_STATEMENT + where)
+        query.prepare(SEARCH_STATEMENT + &#39; WHERE &#39; + where)
         if not query.exec():
             raise ValueError(query.lastError().text())
 
@@ -562,7 +465,7 @@ QTableWidget(int, int, parent: QWidget = None)</p></div>
     self.previous = where
 
     query = QSqlQuery(db[&#39;db&#39;])
-    query.prepare(SEARCH_STATEMENT + where)
+    query.prepare(SEARCH_STATEMENT + &#39; WHERE &#39; + where)
     if not query.exec():
         raise ValueError(query.lastError().text())
 
@@ -597,14 +500,6 @@ QTableWidget(int, int, parent: QWidget = None)</p></div>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li>
-<h4><code><a title="xelo2.gui.actions.FilesWidget" href="#xelo2.gui.actions.FilesWidget">FilesWidget</a></code></h4>
-<ul class="">
-<li><code><a title="xelo2.gui.actions.FilesWidget.dragEnterEvent" href="#xelo2.gui.actions.FilesWidget.dragEnterEvent">dragEnterEvent</a></code></li>
-<li><code><a title="xelo2.gui.actions.FilesWidget.dragMoveEvent" href="#xelo2.gui.actions.FilesWidget.dragMoveEvent">dragMoveEvent</a></code></li>
-<li><code><a title="xelo2.gui.actions.FilesWidget.dropEvent" href="#xelo2.gui.actions.FilesWidget.dropEvent">dropEvent</a></code></li>
-</ul>
-</li>
 <li>
 <h4><code><a title="xelo2.gui.actions.Search" href="#xelo2.gui.actions.Search">Search</a></code></h4>
 <ul class="two-column">

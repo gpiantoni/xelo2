@@ -72,7 +72,7 @@ def read_info_from_ephys(db, path_to_file):
 
     info = {
         &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: d.header[&#39;n_samples&#39;] / d.header[&#39;s_freq&#39;],
+        &#39;duration&#39;: (d.header[&#39;n_samples&#39;] - 1) / d.header[&#39;s_freq&#39;],  # add -1 to avoid rounding errors that generate NaN when converting
         &#39;events&#39;: ev,
         &#39;manufacturer&#39;: manufacturer,
         }
@@ -143,7 +143,7 @@ def read_info_from_ephys(db, path_to_file):
 
     info = {
         &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: d.header[&#39;n_samples&#39;] / d.header[&#39;s_freq&#39;],
+        &#39;duration&#39;: (d.header[&#39;n_samples&#39;] - 1) / d.header[&#39;s_freq&#39;],  # add -1 to avoid rounding errors that generate NaN when converting
         &#39;events&#39;: ev,
         &#39;manufacturer&#39;: manufacturer,
         }

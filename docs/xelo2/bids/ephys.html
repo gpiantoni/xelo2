@@ -57,9 +57,6 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     if file is None:
         return
 
-    d = localize_blackrock(file.path)
-    data = d.read_data(begtime=start_time, endtime=end_time)
-
     # get acq from manufacturer. It might be better to use channels.name but
     # I am not sure
     if rec.Manufacturer is None:
@@ -67,8 +64,22 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
+
+    d = localize_blackrock(file.path)
+    data = d.read_data(begtime=start_time, endtime=end_time)
+    n_chan = len(data.chan[0])
+
+    channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
+    if channels is None:
+        lg.warning(f&#39;No channel information for {str(rec)}&#39;)
+    elif n_chan == channels.shape[0]:
+        data.chan[0] = channels[&#39;name&#39;]
+    else:
+        lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct&#39;)
+
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
+
     data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
@@ -76,29 +87,37 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     with sidecar_file.open(&#39;w&#39;) as f:
         dump(sidecar, f, indent=2)
 
-    n_chan = len(d.header[&#39;chan_name&#39;])
-
-    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
     return output_ephys
 
 
-def _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan):
-    channels = rec.channels
-    if channels is not None:
-        chan_data = channels.data
+def _convert_chan_elec(rec, dest_path, name, intendedfor):
+    &#34;&#34;&#34;
 
-        if n_chan != chan_data.shape[0]:
-            lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels&#39;)
-        channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
-        save_tsv(channels_tsv, chan_data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;])
-        replace_micro(channels_tsv)
+    Returns
+    -------
+    numpy 1d array
+        channels info with &#39;name&#39;, &#39;type&#39; etc, if it exists. Otherwise None
 
+    TODO
+    ----
+    add sampling frequency to channels
+    &#34;&#34;&#34;
     electrodes = rec.electrodes
     if electrodes is not None:
         electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
         save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
         electrodes_json = dest_path / make_bids_name(name, &#39;coordsystem&#39;)
         save_coordsystem(electrodes_json, electrodes, intendedfor)
+
+    channels = rec.channels
+    if channels is not None:
+        chan_data = channels.data
+
+        channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
+        save_tsv(channels_tsv, chan_data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;, &#39;low_cutoff&#39;, &#39;high_cutoff&#39;])
+        replace_micro(channels_tsv)
+
+    return chan_data
 
 
 def replace_micro(channels_tsv):
@@ -207,9 +226,6 @@ def convert_events_to_wonambi(events):
     if file is None:
         return
 
-    d = localize_blackrock(file.path)
-    data = d.read_data(begtime=start_time, endtime=end_time)
-
     # get acq from manufacturer. It might be better to use channels.name but
     # I am not sure
     if rec.Manufacturer is None:
@@ -217,8 +233,22 @@ def convert_events_to_wonambi(events):
         name[&#39;acq&#39;] = &#39;acq-none&#39;
     else:
         name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
+
+    d = localize_blackrock(file.path)
+    data = d.read_data(begtime=start_time, endtime=end_time)
+    n_chan = len(data.chan[0])
+
+    channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
+    if channels is None:
+        lg.warning(f&#39;No channel information for {str(rec)}&#39;)
+    elif n_chan == channels.shape[0]:
+        data.chan[0] = channels[&#39;name&#39;]
+    else:
+        lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct&#39;)
+
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
+
     data.export(output_ephys, &#39;brainvision&#39;, markers=markers, anonymize=True)
 
     sidecar = _convert_sidecar(run, rec, d)
@@ -226,9 +256,6 @@ def convert_events_to_wonambi(events):
     with sidecar_file.open(&#39;w&#39;) as f:
         dump(sidecar, f, indent=2)
 
-    n_chan = len(d.header[&#39;chan_name&#39;])
-
-    _convert_chan_elec(rec, dest_path, name, intendedfor, n_chan)
     return output_ephys</code></pre>
 </details>
 </dd>

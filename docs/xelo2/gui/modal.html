@@ -129,6 +129,37 @@ class NewFile(QDialog):
         else:
             self.format.setCurrentText(filetype)
 
+
+class EditElectrodes(QDialog):
+
+    def __init__(self, parent, data):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.parameter = QComboBox()
+        for n in data.dtype.names:
+            if n in (&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;):
+                continue
+            self.parameter.addItem(n)
+
+        self.value = QLineEdit()
+        self.value.setFixedWidth(800)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        layout_file = QHBoxLayout()
+        layout_file.addWidget(self.parameter)
+        layout_file.addWidget(self.value)
+
+        layout = QVBoxLayout()
+        layout.addLayout(layout_file)
+        layout.addWidget(bbox)
+
+        self.setLayout(layout)
+
+
 def _prepare_values(run, info):
     run_duration = run.duration
     if run_duration is None:
@@ -172,7 +203,7 @@ class CompareEvents(QDialog):
     def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ephys(ephys_file)
+        self.info = read_info_from_ephys(parent.db, ephys_file)
 
         layout = QGridLayout(self)
 
@@ -680,7 +711,7 @@ def parse_accessdatabase(parent):
     def __init__(self, parent, run, ephys_file):
         super().__init__(parent)
 
-        self.info = read_info_from_ephys(ephys_file)
+        self.info = read_info_from_ephys(parent.db, ephys_file)
 
         layout = QGridLayout(self)
 
@@ -700,6 +731,55 @@ def parse_accessdatabase(parent):
         self.new.clicked.connect(self.accept)
         layout.addWidget(self.old, i0 + 2, 1)
         layout.addWidget(self.new, i0 + 2, 2)
+
+        self.setLayout(layout)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+</dd>
+<dt id="xelo2.gui.modal.EditElectrodes"><code class="flex name class">
+<span>class <span class="ident">EditElectrodes</span></span>
+<span>(</span><span>parent, data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>QDialog(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditElectrodes(QDialog):
+
+    def __init__(self, parent, data):
+        super().__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
+
+        self.parameter = QComboBox()
+        for n in data.dtype.names:
+            if n in (&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;):
+                continue
+            self.parameter.addItem(n)
+
+        self.value = QLineEdit()
+        self.value.setFixedWidth(800)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+
+        layout_file = QHBoxLayout()
+        layout_file.addWidget(self.parameter)
+        layout_file.addWidget(self.value)
+
+        layout = QVBoxLayout()
+        layout.addLayout(layout_file)
+        layout.addWidget(bbox)
 
         self.setLayout(layout)</code></pre>
 </details>
@@ -1176,6 +1256,9 @@ QPushButton(QIcon, str, parent: QWidget = None)</p></div>
 </li>
 <li>
 <h4><code><a title="xelo2.gui.modal.CompareEvents" href="#xelo2.gui.modal.CompareEvents">CompareEvents</a></code></h4>
+</li>
+<li>
+<h4><code><a title="xelo2.gui.modal.EditElectrodes" href="#xelo2.gui.modal.EditElectrodes">EditElectrodes</a></code></h4>
 </li>
 <li>
 <h4><code><a title="xelo2.gui.modal.NewFile" href="#xelo2.gui.modal.NewFile">NewFile</a></code></h4>
