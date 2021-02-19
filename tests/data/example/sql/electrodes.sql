@@ -5,8 +5,7 @@ CREATE TABLE `electrode_groups` (
   `CoordinateUnits` text DEFAULT NULL COMMENT 'Coordinate Units: Units of the _electrodes.tsv',
   `IntendedFor` int(11) DEFAULT NULL COMMENT 'Intended For: The MRI/CT it refers to (should be a valid ID from the runs table)',
   PRIMARY KEY (`id`),
-  KEY `IntendedFor` (`IntendedFor`),
-  CONSTRAINT `electrode_groups_ibfk_1` FOREIGN KEY (`IntendedFor`) REFERENCES `runs` (`id`) ON DELETE CASCADE
+  KEY `IntendedFor` (`IntendedFor`)
 ) ;
 
 INSERT INTO `allowed_values` VALUES ('electrode_groups','CoordinateSystem','Image'),('electrode_groups','CoordinateSystem','ACPC'),('electrode_groups','CoordinateSystem','Pixels');
