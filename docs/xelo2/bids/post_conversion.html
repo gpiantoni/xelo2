@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>xelo2.bids API documentation</title>
+<title>xelo2.bids.post_conversion API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,64 +17,121 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>xelo2.bids</code></h1>
+<h1 class="title">Module <code>xelo2.bids.post_conversion</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .root import create_bids</code></pre>
+<pre><code class="python">from itertools import chain
+
+
+def anonymize_subjects(bids_dir, subj_code):
+    &#34;&#34;&#34;
+
+    Parameters
+    ----------
+    bids_dir : path
+        path to bids folder
+    subj_code : dict
+        keys are current subject names and values are new subject names, f.e.
+        {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+    &#34;&#34;&#34;
+    TEXT_FILES = chain(
+        bids_dir.glob(&#39;**/*.tsv&#39;),
+        bids_dir.glob(&#39;**/*.vhdr&#39;),
+        bids_dir.glob(&#39;**/*.vmrk&#39;),
+        bids_dir.glob(&#39;**/*.json&#39;),
+        )
+
+    for tsv_file in TEXT_FILES:
+        with tsv_file.open() as f:
+            txt = f.read()
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+        with tsv_file.open(&#39;w&#39;) as f:
+            f.write(txt)
+
+    for subj_path in bids_dir.glob(&#39;sub-*&#39;):
+        txt = subj_path.name
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+
+        new_subj_path = subj_path.parent / txt
+        subj_path.rename(new_subj_path)
+
+    for old_file in bids_dir.glob(&#39;**/*.*&#39;):
+        txt = old_file.name
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+        old_file.rename(old_file.parent / txt)</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="xelo2.bids.bair_project" href="bair_project.html">xelo2.bids.bair_project</a></code></dt>
+<dt id="xelo2.bids.post_conversion.anonymize_subjects"><code class="name flex">
+<span>def <span class="ident">anonymize_subjects</span></span>(<span>bids_dir, subj_code)</span>
+</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.ephys" href="ephys.html">xelo2.bids.ephys</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.events" href="events.html">xelo2.bids.events</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.io" href="io/index.html">xelo2.bids.io</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.mri" href="mri.html">xelo2.bids.mri</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.physio" href="physio.html">xelo2.bids.physio</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.post_conversion" href="post_conversion.html">xelo2.bids.post_conversion</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.root" href="root.html">xelo2.bids.root</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.templates" href="templates/index.html">xelo2.bids.templates</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="xelo2.bids.utils" href="utils.html">xelo2.bids.utils</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>bids_dir</code></strong> :&ensp;<code>path</code></dt>
+<dd>path to bids folder</dd>
+<dt><strong><code>subj_code</code></strong> :&ensp;<code>dict</code></dt>
+<dd _sub-001_="'sub-001'" _sub-oldname_:="'sub-oldname':">keys are current subject names and values are new subject names, f.e.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def anonymize_subjects(bids_dir, subj_code):
+    &#34;&#34;&#34;
+
+    Parameters
+    ----------
+    bids_dir : path
+        path to bids folder
+    subj_code : dict
+        keys are current subject names and values are new subject names, f.e.
+        {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+    &#34;&#34;&#34;
+    TEXT_FILES = chain(
+        bids_dir.glob(&#39;**/*.tsv&#39;),
+        bids_dir.glob(&#39;**/*.vhdr&#39;),
+        bids_dir.glob(&#39;**/*.vmrk&#39;),
+        bids_dir.glob(&#39;**/*.json&#39;),
+        )
+
+    for tsv_file in TEXT_FILES:
+        with tsv_file.open() as f:
+            txt = f.read()
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+        with tsv_file.open(&#39;w&#39;) as f:
+            f.write(txt)
+
+    for subj_path in bids_dir.glob(&#39;sub-*&#39;):
+        txt = subj_path.name
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+
+        new_subj_path = subj_path.parent / txt
+        subj_path.rename(new_subj_path)
+
+    for old_file in bids_dir.glob(&#39;**/*.*&#39;):
+        txt = old_file.name
+        for old, new in subj_code.items():
+            txt = txt.replace(old, new)
+        old_file.rename(old_file.parent / txt)</code></pre>
+</details>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -87,21 +144,12 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="xelo2" href="../index.html">xelo2</a></code></li>
+<li><code><a title="xelo2.bids" href="index.html">xelo2.bids</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="xelo2.bids.bair_project" href="bair_project.html">xelo2.bids.bair_project</a></code></li>
-<li><code><a title="xelo2.bids.ephys" href="ephys.html">xelo2.bids.ephys</a></code></li>
-<li><code><a title="xelo2.bids.events" href="events.html">xelo2.bids.events</a></code></li>
-<li><code><a title="xelo2.bids.io" href="io/index.html">xelo2.bids.io</a></code></li>
-<li><code><a title="xelo2.bids.mri" href="mri.html">xelo2.bids.mri</a></code></li>
-<li><code><a title="xelo2.bids.physio" href="physio.html">xelo2.bids.physio</a></code></li>
-<li><code><a title="xelo2.bids.post_conversion" href="post_conversion.html">xelo2.bids.post_conversion</a></code></li>
-<li><code><a title="xelo2.bids.root" href="root.html">xelo2.bids.root</a></code></li>
-<li><code><a title="xelo2.bids.templates" href="templates/index.html">xelo2.bids.templates</a></code></li>
-<li><code><a title="xelo2.bids.utils" href="utils.html">xelo2.bids.utils</a></code></li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="xelo2.bids.post_conversion.anonymize_subjects" href="#xelo2.bids.post_conversion.anonymize_subjects">anonymize_subjects</a></code></li>
 </ul>
 </li>
 </ul>
