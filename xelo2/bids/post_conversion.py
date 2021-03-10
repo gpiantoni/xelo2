@@ -1,7 +1,7 @@
 from itertools import chain
 
 
-def anonymize_subjects(bids_dir, subj_code):
+def anonymize_subjects(bids_dir, subj_code=None):
     """
 
     Parameters
@@ -9,9 +9,12 @@ def anonymize_subjects(bids_dir, subj_code):
     bids_dir : path
         path to bids folder
     subj_code : dict
-        keys are current subject names and values are new subject names, f.e.
-        {'sub-oldname': 'sub-001'}
+        keys are current subject names and values are new subject names, f.e. {'sub-oldname': 'sub-001'}
+        If it's not specified, then the first subject in alphabetical order will be sub-001 etc.
     """
+    if subj_code is None:
+        subj_code = {k.name: f"sub-{i + 1:03d}" for i, k in enumerate(sorted(bids_dir.glob('sub-*')))}
+
     TEXT_FILES = chain(
         bids_dir.glob('**/*.tsv'),
         bids_dir.glob('**/*.vhdr'),

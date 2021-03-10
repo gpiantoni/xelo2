@@ -57,13 +57,12 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     if file is None:
         return
 
-    # get acq from manufacturer. It might be better to use channels.name but
-    # I am not sure
-    if rec.Manufacturer is None:
-        lg.warning(f&#39;Please specify Manufacturer for {run} / {rec}&#39;)
-        name[&#39;acq&#39;] = &#39;acq-none&#39;
+    electrodes = rec.electrodes
+    if electrodes is not None:
+        name[&#39;acq&#39;] = electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
     else:
-        name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
+        lg.warning(f&#39;No electrodes for {run} / {rec}, so no _acq-&lt;label&gt;_ field&#39;)
+        name[&#39;acq&#39;] = None
 
     d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)
@@ -226,13 +225,12 @@ def convert_events_to_wonambi(events):
     if file is None:
         return
 
-    # get acq from manufacturer. It might be better to use channels.name but
-    # I am not sure
-    if rec.Manufacturer is None:
-        lg.warning(f&#39;Please specify Manufacturer for {run} / {rec}&#39;)
-        name[&#39;acq&#39;] = &#39;acq-none&#39;
+    electrodes = rec.electrodes
+    if electrodes is not None:
+        name[&#39;acq&#39;] = electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
     else:
-        name[&#39;acq&#39;] = f&#39;acq-{rec.Manufacturer.lower()}&#39;
+        lg.warning(f&#39;No electrodes for {run} / {rec}, so no _acq-&lt;label&gt;_ field&#39;)
+        name[&#39;acq&#39;] = None
 
     d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)

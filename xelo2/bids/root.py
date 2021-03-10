@@ -258,16 +258,14 @@ def _make_dataset_description(data_path):
     d = {
         "Name": data_path.name,
         "BIDSVersion": "1.2.1",
-        "License": "CCBY",
+        "License": "CC0",
         "Authors": [
             "Giovanni Piantoni",
             "Nick Ramsey",
-            "Natalia Petridou",
             ],
         "Acknowledgements": "",
         "HowToAcknowledge": '',
         "Funding": [
-            "NIH R01 MH111417",
             ],
         "ReferencesAndLinks": ["", ],
         "DatasetDOI": ""

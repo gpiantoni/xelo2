@@ -31,13 +31,12 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
     if file is None:
         return
 
-    # get acq from manufacturer. It might be better to use channels.name but
-    # I am not sure
-    if rec.Manufacturer is None:
-        lg.warning(f'Please specify Manufacturer for {run} / {rec}')
-        name['acq'] = 'acq-none'
+    electrodes = rec.electrodes
+    if electrodes is not None:
+        name['acq'] = electrodes.name.replace(' ', '').replace('_', '')
     else:
-        name['acq'] = f'acq-{rec.Manufacturer.lower()}'
+        lg.warning(f'No electrodes for {run} / {rec}, so no _acq-<label>_ field')
+        name['acq'] = None
 
     d = localize_blackrock(file.path)
     data = d.read_data(begtime=start_time, endtime=end_time)

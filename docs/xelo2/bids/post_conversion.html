@@ -27,7 +27,7 @@
 <pre><code class="python">from itertools import chain
 
 
-def anonymize_subjects(bids_dir, subj_code):
+def anonymize_subjects(bids_dir, subj_code=None):
     &#34;&#34;&#34;
 
     Parameters
@@ -35,9 +35,12 @@ def anonymize_subjects(bids_dir, subj_code):
     bids_dir : path
         path to bids folder
     subj_code : dict
-        keys are current subject names and values are new subject names, f.e.
-        {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+        keys are current subject names and values are new subject names, f.e. {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+        If it&#39;s not specified, then the first subject in alphabetical order will be sub-001 etc.
     &#34;&#34;&#34;
+    if subj_code is None:
+        subj_code = {k.name: f&#34;sub-{i + 1:03d}&#34; for i, k in enumerate(sorted(bids_dir.glob(&#39;sub-*&#39;)))}
+
     TEXT_FILES = chain(
         bids_dir.glob(&#39;**/*.tsv&#39;),
         bids_dir.glob(&#39;**/*.vhdr&#39;),
@@ -76,7 +79,7 @@ def anonymize_subjects(bids_dir, subj_code):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="xelo2.bids.post_conversion.anonymize_subjects"><code class="name flex">
-<span>def <span class="ident">anonymize_subjects</span></span>(<span>bids_dir, subj_code)</span>
+<span>def <span class="ident">anonymize_subjects</span></span>(<span>bids_dir, subj_code=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="parameters">Parameters</h2>
@@ -84,13 +87,14 @@ def anonymize_subjects(bids_dir, subj_code):
 <dt><strong><code>bids_dir</code></strong> :&ensp;<code>path</code></dt>
 <dd>path to bids folder</dd>
 <dt><strong><code>subj_code</code></strong> :&ensp;<code>dict</code></dt>
-<dd _sub-001_="'sub-001'" _sub-oldname_:="'sub-oldname':">keys are current subject names and values are new subject names, f.e.</dd>
+<dd>keys are current subject names and values are new subject names, f.e. {'sub-oldname': 'sub-001'}
+If it's not specified, then the first subject in alphabetical order will be sub-001 etc.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def anonymize_subjects(bids_dir, subj_code):
+<pre><code class="python">def anonymize_subjects(bids_dir, subj_code=None):
     &#34;&#34;&#34;
 
     Parameters
@@ -98,9 +102,12 @@ def anonymize_subjects(bids_dir, subj_code):
     bids_dir : path
         path to bids folder
     subj_code : dict
-        keys are current subject names and values are new subject names, f.e.
-        {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+        keys are current subject names and values are new subject names, f.e. {&#39;sub-oldname&#39;: &#39;sub-001&#39;}
+        If it&#39;s not specified, then the first subject in alphabetical order will be sub-001 etc.
     &#34;&#34;&#34;
+    if subj_code is None:
+        subj_code = {k.name: f&#34;sub-{i + 1:03d}&#34; for i, k in enumerate(sorted(bids_dir.glob(&#39;sub-*&#39;)))}
+
     TEXT_FILES = chain(
         bids_dir.glob(&#39;**/*.tsv&#39;),
         bids_dir.glob(&#39;**/*.vhdr&#39;),
