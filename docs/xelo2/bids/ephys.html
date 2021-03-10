@@ -27,6 +27,8 @@
 <pre><code class="python">from logging import getLogger
 from datetime import timedelta
 from json import dump
+from numpy import isin, ones, array
+from numpy.lib.recfunctions import append_fields
 
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
@@ -47,6 +49,8 @@ CHAN_TYPES = {
 
 lg = getLogger(__name__)
 
+EXCLUDE_CHAN_TYPES = [&#39;OTHER&#39;, ]
+
 
 def convert_ephys(run, rec, dest_path, name, intendedfor):
     start_time = run.start_time + timedelta(seconds=rec.offset)
@@ -59,22 +63,43 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        name[&#39;acq&#39;] = electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+        name[&#39;acq&#39;] = &#39;acq-&#39; + electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+
+        electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
+        save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
+        electrodes_json = dest_path / make_bids_name(name, &#39;coordsystem&#39;)
+        save_coordsystem(electrodes_json, electrodes, intendedfor)
+
     else:
         lg.warning(f&#39;No electrodes for {run} / {rec}, so no _acq-&lt;label&gt;_ field&#39;)
         name[&#39;acq&#39;] = None
 
     d = localize_blackrock(file.path)
-    data = d.read_data(begtime=start_time, endtime=end_time)
-    n_chan = len(data.chan[0])
+    n_chan = len(d.header[&#39;chan_name&#39;])
 
-    channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
+    channels = rec.channels
+    chan_to_include = None
     if channels is None:
         lg.warning(f&#39;No channel information for {str(rec)}&#39;)
-    elif n_chan == channels.shape[0]:
-        data.chan[0] = channels[&#39;name&#39;]
     else:
-        lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct&#39;)
+        chan_data = channels.data
+        if n_chan == chan_data.shape[0]:
+            i_chan = ~isin(chan_data[&#39;type&#39;], EXCLUDE_CHAN_TYPES)
+            chan_data = chan_data[i_chan]
+            chan_data = append_fields(chan_data, [&#39;sampling_frequency&#39;, ], [d.header[&#39;s_freq&#39;] * ones(chan_data.shape[0]), ], usemask=False)
+
+            channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
+            save_tsv(channels_tsv, chan_data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;, &#39;low_cutoff&#39;, &#39;high_cutoff&#39;])
+            replace_micro(channels_tsv)
+
+            chan_to_include = array(d.header[&#39;chan_name&#39;])[i_chan]
+
+        else:
+            lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels. The labels will not be correct&#39;)
+
+    data = d.read_data(begtime=start_time, endtime=end_time, chan=chan_to_include)
+    if chan_to_include is not None:
+        data.chan[0] = chan_data[&#39;name&#39;]
 
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)
@@ -87,36 +112,6 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         dump(sidecar, f, indent=2)
 
     return output_ephys
-
-
-def _convert_chan_elec(rec, dest_path, name, intendedfor):
-    &#34;&#34;&#34;
-
-    Returns
-    -------
-    numpy 1d array
-        channels info with &#39;name&#39;, &#39;type&#39; etc, if it exists. Otherwise None
-
-    TODO
-    ----
-    add sampling frequency to channels
-    &#34;&#34;&#34;
-    electrodes = rec.electrodes
-    if electrodes is not None:
-        electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
-        save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
-        electrodes_json = dest_path / make_bids_name(name, &#39;coordsystem&#39;)
-        save_coordsystem(electrodes_json, electrodes, intendedfor)
-
-    channels = rec.channels
-    if channels is not None:
-        chan_data = channels.data
-
-        channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
-        save_tsv(channels_tsv, chan_data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;, &#39;low_cutoff&#39;, &#39;high_cutoff&#39;])
-        replace_micro(channels_tsv)
-
-    return chan_data
 
 
 def replace_micro(channels_tsv):
@@ -227,22 +222,43 @@ def convert_events_to_wonambi(events):
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        name[&#39;acq&#39;] = electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+        name[&#39;acq&#39;] = &#39;acq-&#39; + electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+
+        electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
+        save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
+        electrodes_json = dest_path / make_bids_name(name, &#39;coordsystem&#39;)
+        save_coordsystem(electrodes_json, electrodes, intendedfor)
+
     else:
         lg.warning(f&#39;No electrodes for {run} / {rec}, so no _acq-&lt;label&gt;_ field&#39;)
         name[&#39;acq&#39;] = None
 
     d = localize_blackrock(file.path)
-    data = d.read_data(begtime=start_time, endtime=end_time)
-    n_chan = len(data.chan[0])
+    n_chan = len(d.header[&#39;chan_name&#39;])
 
-    channels = _convert_chan_elec(rec, dest_path, name, intendedfor)
+    channels = rec.channels
+    chan_to_include = None
     if channels is None:
         lg.warning(f&#39;No channel information for {str(rec)}&#39;)
-    elif n_chan == channels.shape[0]:
-        data.chan[0] = channels[&#39;name&#39;]
     else:
-        lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {channels.shape[0]} channels. The labels will not be correct&#39;)
+        chan_data = channels.data
+        if n_chan == chan_data.shape[0]:
+            i_chan = ~isin(chan_data[&#39;type&#39;], EXCLUDE_CHAN_TYPES)
+            chan_data = chan_data[i_chan]
+            chan_data = append_fields(chan_data, [&#39;sampling_frequency&#39;, ], [d.header[&#39;s_freq&#39;] * ones(chan_data.shape[0]), ], usemask=False)
+
+            channels_tsv = dest_path / make_bids_name(name, &#39;channels&#39;)
+            save_tsv(channels_tsv, chan_data, [&#39;name&#39;, &#39;type&#39;, &#39;units&#39;, &#39;low_cutoff&#39;, &#39;high_cutoff&#39;])
+            replace_micro(channels_tsv)
+
+            chan_to_include = array(d.header[&#39;chan_name&#39;])[i_chan]
+
+        else:
+            lg.warning(f&#39;{str(rec)}: actual recording has {n_chan} channels, while the channels.tsv has {chan_data.shape[0]} channels. The labels will not be correct&#39;)
+
+    data = d.read_data(begtime=start_time, endtime=end_time, chan=chan_to_include)
+    if chan_to_include is not None:
+        data.chan[0] = chan_data[&#39;name&#39;]
 
     output_ephys = dest_path / make_bids_name(name, rec.modality)
     markers = convert_events_to_wonambi(run.events)

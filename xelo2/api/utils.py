@@ -115,7 +115,7 @@ def sort_subjects_date(subj):
 
 def sort_starttime(obj):
     if obj.start_time is None:
-        return datetime.now()
+        return datetime(1900, 1, 1, 0, 0, 0)
     else:
         return obj.start_time
 

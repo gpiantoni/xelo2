@@ -37,7 +37,7 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        name['acq'] = electrodes.name.replace(' ', '').replace('_', '')
+        name['acq'] = 'acq-' + electrodes.name.replace(' ', '').replace('_', '')
 
         electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
         save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z', 'size'])
