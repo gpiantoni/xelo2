@@ -55,6 +55,10 @@ def save_tsv(fname, X, necessary_columns=None):
                         values.append('n/a')
                     else:
                         values.append(x[name])
+
+                else:
+                    values.append(str(x[name]))
+
             f.write('\t'.join(values) + '\n')
 
 
