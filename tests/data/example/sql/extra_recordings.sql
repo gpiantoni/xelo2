@@ -7,6 +7,8 @@ CREATE TABLE `recordings_ephys` (
   KEY `channel_group_id` (`channel_group_id`),
   KEY `electrode_group_id` (`electrode_group_id`),
   CONSTRAINT `recordings_ephys_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`) ON DELETE CASCADE
+  CONSTRAINT `recordings_ephys_ibfk_2` FOREIGN KEY (`channel_group_id`) REFERENCES `channel_groups` (`id`) ON DELETE SET NULL
+  CONSTRAINT `recordings_ephys_ibfk_3` FOREIGN KEY (`electrode_group_id`) REFERENCES `electrode_groups` (`id`) ON DELETE SET NULL
 ) ;
 
 INSERT INTO `allowed_values` VALUES ('recordings_ephys','Manufacturer','BlackRock'),('recordings_ephys','Manufacturer','Micromed');
