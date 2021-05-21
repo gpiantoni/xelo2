@@ -83,12 +83,22 @@ The 3 conditions are:
 
 ## SQL examples
 
-### PRESTO
+### 3T PRESTO
 Update PRESTO sequence with the appropriate parameters:
 
 ```SQL
 UPDATE `recordings_mri` SET  `SliceOrder` = '3D', `PhaseEncodingDirection` = 'PA', `SliceEncodingDirection` = 'RL' WHERE `Sequence` = '3T PRESTO';
 ```
+
+
+### 3T T1w
+If task is `3T T1w`, use this syntax
+
+```SQL
+UPDATE `recordings_mri` SET  `SliceOrder` = 'Sequential', `SliceEncodingDirection` = 'IS' WHERE `Sequence` = '3T T1w';
+```
+
+I don't think that `PhaseEncodingDirection` is relevant here.
 
 ### FLAIR
 If task is `flair`, use this syntax

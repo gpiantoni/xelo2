@@ -1,5 +1,6 @@
 from wonambi.ioeeg import BlackRock
-from numpy import empty
+from numpy import empty, around
+from datetime import timedelta
 
 from .utils import localize_blackrock
 from .events import read_events_from_ephys
@@ -35,8 +36,8 @@ def read_info_from_ephys(db, path_to_file):
 
     DTYPES = get_dtypes(db['tables']['events'])
     ev = empty(len(mrk), dtype=DTYPES)
-    ev['onset'] = [x['start'] for x in mrk]
-    ev['duration'] = [x['end'] - x['start'] for x in mrk]
+    ev['onset'] = [around(x['start'], decimals=3) - 0.001 for x in mrk]
+    ev['duration'] = [around(x['end'] - x['start'], decimals=3) for x in mrk]
     ev['value'] = [x['name'] for x in mrk]
 
     if d.IOClass == BlackRock:
@@ -45,8 +46,8 @@ def read_info_from_ephys(db, path_to_file):
         manufacturer = 'Micromed'
 
     info = {
-        'start_time': d.header['start_time'],
-        'duration': (d.header['n_samples'] - 1) / d.header['s_freq'],  # add -1 to avoid rounding errors that generate NaN when converting
+        'start_time': d.header['start_time'] + timedelta(seconds=0.001),
+        'duration': (d.header['n_samples']) / d.header['s_freq'] - 0.001,  # add -1 to avoid rounding errors that generate NaN when converting
         'events': ev,
         'manufacturer': manufacturer,
         }

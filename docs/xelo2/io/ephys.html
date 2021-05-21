@@ -25,7 +25,8 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from wonambi.ioeeg import BlackRock
-from numpy import empty
+from numpy import empty, around
+from datetime import timedelta
 
 from .utils import localize_blackrock
 from .events import read_events_from_ephys
@@ -61,8 +62,8 @@ def read_info_from_ephys(db, path_to_file):
 
     DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
     ev = empty(len(mrk), dtype=DTYPES)
-    ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
-    ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]
+    ev[&#39;onset&#39;] = [around(x[&#39;start&#39;], decimals=3) - 0.001 for x in mrk]
+    ev[&#39;duration&#39;] = [around(x[&#39;end&#39;] - x[&#39;start&#39;], decimals=3) for x in mrk]
     ev[&#39;value&#39;] = [x[&#39;name&#39;] for x in mrk]
 
     if d.IOClass == BlackRock:
@@ -71,8 +72,8 @@ def read_info_from_ephys(db, path_to_file):
         manufacturer = &#39;Micromed&#39;
 
     info = {
-        &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: (d.header[&#39;n_samples&#39;] - 1) / d.header[&#39;s_freq&#39;],  # add -1 to avoid rounding errors that generate NaN when converting
+        &#39;start_time&#39;: d.header[&#39;start_time&#39;] + timedelta(seconds=0.001),
+        &#39;duration&#39;: (d.header[&#39;n_samples&#39;]) / d.header[&#39;s_freq&#39;] - 0.001,  # add -1 to avoid rounding errors that generate NaN when converting
         &#39;events&#39;: ev,
         &#39;manufacturer&#39;: manufacturer,
         }
@@ -132,8 +133,8 @@ def read_info_from_ephys(db, path_to_file):
 
     DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
     ev = empty(len(mrk), dtype=DTYPES)
-    ev[&#39;onset&#39;] = [x[&#39;start&#39;] for x in mrk]
-    ev[&#39;duration&#39;] = [x[&#39;end&#39;] - x[&#39;start&#39;] for x in mrk]
+    ev[&#39;onset&#39;] = [around(x[&#39;start&#39;], decimals=3) - 0.001 for x in mrk]
+    ev[&#39;duration&#39;] = [around(x[&#39;end&#39;] - x[&#39;start&#39;], decimals=3) for x in mrk]
     ev[&#39;value&#39;] = [x[&#39;name&#39;] for x in mrk]
 
     if d.IOClass == BlackRock:
@@ -142,8 +143,8 @@ def read_info_from_ephys(db, path_to_file):
         manufacturer = &#39;Micromed&#39;
 
     info = {
-        &#39;start_time&#39;: d.header[&#39;start_time&#39;],
-        &#39;duration&#39;: (d.header[&#39;n_samples&#39;] - 1) / d.header[&#39;s_freq&#39;],  # add -1 to avoid rounding errors that generate NaN when converting
+        &#39;start_time&#39;: d.header[&#39;start_time&#39;] + timedelta(seconds=0.001),
+        &#39;duration&#39;: (d.header[&#39;n_samples&#39;]) / d.header[&#39;s_freq&#39;] - 0.001,  # add -1 to avoid rounding errors that generate NaN when converting
         &#39;events&#39;: ev,
         &#39;manufacturer&#39;: manufacturer,
         }

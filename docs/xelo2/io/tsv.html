@@ -81,6 +81,10 @@ def save_tsv(fname, X, necessary_columns=None):
                         values.append(&#39;n/a&#39;)
                     else:
                         values.append(x[name])
+
+                else:
+                    values.append(str(x[name]))
+
             f.write(&#39;\t&#39;.join(values) + &#39;\n&#39;)
 
 
@@ -196,6 +200,10 @@ def _remove_empty_columns(tsv, necessary_columns=None):
                         values.append(&#39;n/a&#39;)
                     else:
                         values.append(x[name])
+
+                else:
+                    values.append(str(x[name]))
+
             f.write(&#39;\t&#39;.join(values) + &#39;\n&#39;)</code></pre>
 </details>
 </dd>
