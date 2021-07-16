@@ -62,9 +62,10 @@ def convert_mri(run, rec, dest_path, name, deface=True):
     nii_shape = _fix_tr(output_nii, rec)
 
     if PAR is not None and 'phase' in PAR['image_types']:
-        phase_nii = dest_path / f'{make_bids_name(name)}_phase.nii.gz'
-        lg.info(f'Splitting phase info to {phase_nii.name}')
-        select(output_nii, 'splithalf')
+        phase_file = dest_path / f'{make_bids_name(name)}_phase.nii.gz'
+        lg.info(f'Splitting phase info to {phase_file.name}')
+        phase_nii = select(output_nii, 'split')
+        phase_nii.to_filename(phase_file)
 
     if deface and rec.modality in ('T1w', 'T2w', 'T2star', 'PD', 'FLAIR'):
         run_deface(output_nii)
@@ -98,6 +99,7 @@ def select(nii, slicing):
         img = img.slicer[:, :, :, :half]
 
     img.to_filename(nii)
+
     return secondhalf
 
 
