@@ -149,7 +149,7 @@ def _find_task_type(subj_path, task_type):
     return 'no'
 
 
-def list_bair_ids(db, healthy_visual=True, subset=None):
+def list_bair_ids(db, healthy_visual=True, subset=None, public=False):
     """Collect all the subjects, sessions and runs for the BAIR project. This is
     all the subjects that did BAIR tasks since 2016 excluding a couple of
     subjects.
@@ -162,24 +162,35 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
         whether to include the healthy participants who did visual tasks
     subset : dict with {'subjects', 'sessions', 'runs'}
         runs selected previously
+    public : bool
+        if True, it uses only subjects that can be publicly shared
 
     Returns
     -------
     dict with {'subjects', 'sessions', 'runs'}
         ids for subjects, sessions, runs which are part of the BAIR tasks
     """
-
     healthy_visual_subjects = [f'umcu{x + 1:04d}' for x in range(13)]
     healthy_visual_ids = ', '.join(f'"{Subject(db, x).id}"' for x in healthy_visual_subjects)
-    subjects = ('boskoop', 'elst', 'sittard', 'bunnik', 'veendam')
-    subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects)
+
+    subjects_to_skip = healthy_visual_subjects.copy()
+    if public:
+        subjects_to_skip.extend([
+            'bunnik',  # patient / finger_mapping at 7T
+            'veendam',  # patient / finger_mapping at 7T
+            'boskoop',  # children
+            'elst',  # children
+            'linden',  # children
+            'sittard',  # children
+            ])
+    subj_ids = ', '.join(f'"{Subject(db, x).id}"' for x in subjects_to_skip)
 
     tasks = [x for v in TASK_TYPES.values() for x in v]
-
     task_list = ', '.join(f'"{t}"' for t in tasks)
+
     subset = prepare_subset(
         db,
-        f'`task_name` IN ({task_list}) AND `start_time` > "2016-06-01" AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})',
+        f'`task_name` IN ({task_list}) AND `start_time` > "2016-06-01" AND `subjects`.`id` NOT IN ({subj_ids})',
         subset=subset)
 
     if healthy_visual:
