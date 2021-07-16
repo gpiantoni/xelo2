@@ -29,12 +29,30 @@ from wonambi.dataset import UnrecognizedFormat
 from sys import maxsize
 from logging import getLogger
 from .utils import localize_blackrock
+from ..api.utils import get_dtypes
 
 lg = getLogger(__name__)
 
 
-def read_events_from_ephys(run, rec, file):
-    &#34;&#34;&#34;Make sure that rec.onset is in the good direction&#34;&#34;&#34;
+def read_events_from_ephys(file, run=None, rec=None, db=None):
+    &#34;&#34;&#34;Read events from ephys file. If you specify both run and rec, then it only
+    read the events in the period inside the run period
+
+    Parameters
+    ----------
+    file : File
+        instance of File
+    run : Run
+        instance of Run
+    rec : Recording
+        instance of Recording
+    db : database
+        only necessary if you don&#39;t specify run
+
+    Notes
+    -----
+    Make sure that rec.onset is in the good direction
+    &#34;&#34;&#34;
     try:
         d = localize_blackrock(file.path)
     except UnrecognizedFormat:
@@ -46,14 +64,23 @@ def read_events_from_ephys(run, rec, file):
 
     markers = d.read_markers()
 
-    start_t = (run.start_time - d.header[&#39;start_time&#39;]).total_seconds() + rec.offset
-    if run.duration is not None:
-        end_t = start_t + run.duration
+    if run is None:
+        start_t = 0
     else:
-        end_t = maxsize
+        start_t = (run.start_time - d.header[&#39;start_time&#39;]).total_seconds() + rec.offset
+        if run.duration is not None:
+            end_t = start_t + run.duration
+        else:
+            end_t = maxsize
 
-    markers = [m for m in markers if start_t &lt;= m[&#39;start&#39;] &lt;= end_t]
-    events = empty(len(markers), dtype=run.events.dtype)
+        markers = [m for m in markers if start_t &lt;= m[&#39;start&#39;] &lt;= end_t]
+
+    if run is not None:
+        DTYPES = run.events.dtype
+    else:
+        DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
+
+    events = empty(len(markers), dtype=DTYPES)
     events[&#39;value&#39;] = [m[&#39;name&#39;] for m in markers]
     events[&#39;onset&#39;] = [m[&#39;start&#39;] - start_t for m in markers]
     events[&#39;duration&#39;] = 0
@@ -94,16 +121,47 @@ def find_eegfile_in_run(run):
 </details>
 </dd>
 <dt id="xelo2.io.events.read_events_from_ephys"><code class="name flex">
-<span>def <span class="ident">read_events_from_ephys</span></span>(<span>run, rec, file)</span>
+<span>def <span class="ident">read_events_from_ephys</span></span>(<span>file, run=None, rec=None, db=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Make sure that rec.onset is in the good direction</p></div>
+<div class="desc"><p>Read events from ephys file. If you specify both run and rec, then it only
+read the events in the period inside the run period</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file</code></strong> :&ensp;<code>File</code></dt>
+<dd>instance of File</dd>
+<dt><strong><code>run</code></strong> :&ensp;<code>Run</code></dt>
+<dd>instance of Run</dd>
+<dt><strong><code>rec</code></strong> :&ensp;<code>Recording</code></dt>
+<dd>instance of Recording</dd>
+<dt><strong><code>db</code></strong> :&ensp;<code>database</code></dt>
+<dd>only necessary if you don't specify run</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>Make sure that rec.onset is in the good direction</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_events_from_ephys(run, rec, file):
-    &#34;&#34;&#34;Make sure that rec.onset is in the good direction&#34;&#34;&#34;
+<pre><code class="python">def read_events_from_ephys(file, run=None, rec=None, db=None):
+    &#34;&#34;&#34;Read events from ephys file. If you specify both run and rec, then it only
+    read the events in the period inside the run period
+
+    Parameters
+    ----------
+    file : File
+        instance of File
+    run : Run
+        instance of Run
+    rec : Recording
+        instance of Recording
+    db : database
+        only necessary if you don&#39;t specify run
+
+    Notes
+    -----
+    Make sure that rec.onset is in the good direction
+    &#34;&#34;&#34;
     try:
         d = localize_blackrock(file.path)
     except UnrecognizedFormat:
@@ -115,14 +173,23 @@ def find_eegfile_in_run(run):
 
     markers = d.read_markers()
 
-    start_t = (run.start_time - d.header[&#39;start_time&#39;]).total_seconds() + rec.offset
-    if run.duration is not None:
-        end_t = start_t + run.duration
+    if run is None:
+        start_t = 0
     else:
-        end_t = maxsize
+        start_t = (run.start_time - d.header[&#39;start_time&#39;]).total_seconds() + rec.offset
+        if run.duration is not None:
+            end_t = start_t + run.duration
+        else:
+            end_t = maxsize
 
-    markers = [m for m in markers if start_t &lt;= m[&#39;start&#39;] &lt;= end_t]
-    events = empty(len(markers), dtype=run.events.dtype)
+        markers = [m for m in markers if start_t &lt;= m[&#39;start&#39;] &lt;= end_t]
+
+    if run is not None:
+        DTYPES = run.events.dtype
+    else:
+        DTYPES = get_dtypes(db[&#39;tables&#39;][&#39;events&#39;])
+
+    events = empty(len(markers), dtype=DTYPES)
     events[&#39;value&#39;] = [m[&#39;name&#39;] for m in markers]
     events[&#39;onset&#39;] = [m[&#39;start&#39;] - start_t for m in markers]
     events[&#39;duration&#39;] = 0

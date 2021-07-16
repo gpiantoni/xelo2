@@ -9,8 +9,8 @@ FLUSH PRIVILEGES ;
 ```
 
 ## Allowed values
-Possible values are stored in `tables.json` and also in the table `allowed_values`. 
-The best way is to keep everything in `allowed_values`.
+Possible values are stored in the table `allowed_values`. 
+To allow for additional values, you need to add a new row to the `allowed_values` table.
 
 The only exception is the name of the experimenters.
 You need to change the `experimenters` directly (because we use the `id` from that table).

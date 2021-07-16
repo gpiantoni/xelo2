@@ -22,7 +22,7 @@ def add_ephys_to_sess(db, sess, ephys_file):
     filetype = parse_filetype(ephys_file)
     file = rec.add_file(filetype, ephys_file)
 
-    events = read_events_from_ephys(run, rec, file)
+    events = read_events_from_ephys(file, run, rec)
     if len(events) > 0:
         run.events = events
 

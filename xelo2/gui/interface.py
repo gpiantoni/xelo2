@@ -76,6 +76,7 @@ from .modal import (
     Popup_Protocols,
     Popup_IntendedFor,
     CompareEvents,
+    CalculateOffset,
     parse_accessdatabase,
     )
 
@@ -1131,6 +1132,42 @@ class Interface(QMainWindow):
         self.list_files()
         self.modified()
 
+    def calculate_offset(self):
+        warning_title = 'Cannot calculate offset'
+        run = self.current('runs')
+        recordings = run.list_recordings()
+
+        if len(recordings) == 0:
+            QMessageBox.warning(self, warning_title, 'There are no recordings')
+            return
+
+        rec_fixed = recordings[0]
+        rec_moving = self.current('recordings')
+        if rec_fixed.id == rec_moving.id:
+            QMessageBox.warning(self, warning_title, 'This function compares the first recording with the highlighted recording. Please select another recording to compute the offset')
+            return
+
+        file_fixed = find_one_file(rec_fixed, ('blackrock', 'micromed', 'bci2000'))
+        if file_fixed is None:
+            QMessageBox.warning(self, warning_title, 'The first recording does not have an ephys file')
+            return
+        file_moving = find_one_file(rec_moving, ('blackrock', 'micromed', 'bci2000'))
+        if file_moving is None:
+            QMessageBox.warning(self, warning_title, 'The selected recording does not have an ephys file')
+            return
+
+        calcoffset = CalculateOffset(self, file_fixed, file_moving)
+        result = calcoffset.exec()
+        if result:
+            text = calcoffset.offset.text()
+            if text.endswith(')'):
+                return
+            offset = float(text[:-1])
+            rec_moving.offset = offset
+
+            self.list_params()
+            self.modified()
+
     def edit_electrode_data(self):
         elec = self.current('electrodes')
         data = elec.data
@@ -1213,17 +1250,11 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
+        ephys_file = find_one_file(recording, ('blackrock', 'micromed', 'bci2000'))
+        if ephys_file is None:
             return
 
-        ephys_files = recording.list_files()
-        if len(ephys_files) == 0:
-            return
-
-        if not ephys_files[0].path.exists():
-            return
-
-        events = read_events_from_ephys(run, recording, ephys_files[0])
+        events = read_events_from_ephys(ephys_file, run, recording)
 
         if len(events) > 0:
             run.events = events
@@ -1237,17 +1268,11 @@ class Interface(QMainWindow):
         run = self.current('runs')
         recording = self.current('recordings')
 
-        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
+        ephys_file = find_one_file(recording, ('blackrock', 'micromed', 'bci2000'))
+        if ephys_file is None:
             return
 
-        ephys_files = recording.list_files()
-        if len(ephys_files) == 0:
-            return
-
-        if not ephys_files[0].path.exists():
-            return
-
-        compare_events = CompareEvents(self, run, ephys_files[0].path)
+        compare_events = CompareEvents(self, run, ephys_file)
         result = compare_events.exec()
 
         if result == QDialog.Accepted:
@@ -1262,17 +1287,11 @@ class Interface(QMainWindow):
     def io_channels(self):
         recording = self.current('recordings')
 
-        if recording is None or recording.modality not in ('ieeg', 'eeg', 'meg'):
+        ephys_file = find_one_file(recording, ('blackrock', 'micromed', 'bci2000'))
+        if ephys_file is None:
             return
 
-        ephys_files = recording.list_files()
-        if len(ephys_files) == 0:
-            return
-
-        if not ephys_files[0].path.exists():
-            return
-
-        chan = create_channels(self.db, ephys_files[0].path)
+        chan = create_channels(self.db, ephys_file.path)
         if chan is None:
             return
         chan.name = '(imported)'

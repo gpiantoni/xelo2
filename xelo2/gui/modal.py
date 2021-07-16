@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QGridLayout,
@@ -30,6 +31,8 @@ from ..api.filetype import parse_filetype
 from ..api.frontend import list_experimenters
 from ..database.tables import LEVELS, lookup_allowed_values
 from ..io.ephys import read_info_from_ephys
+from ..io.utils import localize_blackrock
+from ..io.events import read_events_from_ephys
 
 lg = getLogger(__name__)
 
@@ -102,6 +105,50 @@ class NewFile(QDialog):
 
         else:
             self.format.setCurrentText(filetype)
+
+
+class CalculateOffset(QDialog):
+    def __init__(self, parent, file_fixed, file_moving):
+        super().__init__(parent)
+
+        t0 = localize_blackrock(file_fixed.path).header['start_time']
+        t1 = localize_blackrock(file_moving.path).header['start_time']
+
+        events0 = read_events_from_ephys(file_fixed, db=parent.db)
+        events1 = read_events_from_ephys(file_moving, db=parent.db)
+
+        self.offset_clock = (t1 - t0).total_seconds()
+
+        layout = QGridLayout(self)
+        layout.addWidget(make_table(events0), 1, 1)
+        layout.addWidget(make_table(events1), 1, 2)
+
+        self.evt_fixed = QDoubleSpinBox()
+        self.evt_fixed.setDecimals(3)
+        self.evt_fixed.setRange(-1e8, 1e8)
+        self.evt_moving = QDoubleSpinBox()
+        self.evt_moving.setDecimals(3)
+        self.evt_moving.setRange(-1e8, 1e8)
+
+        self.evt_fixed.editingFinished.connect(self.compute_offset)
+        self.evt_moving.editingFinished.connect(self.compute_offset)
+        layout.addWidget(self.evt_fixed, 2, 1)
+        layout.addWidget(self.evt_moving, 2, 2)
+
+        self.offset = QLabel('(offset will be computed)')
+        layout.addWidget(self.offset, 3, 1)
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+        layout.addWidget(bbox, 3, 2)
+
+        self.setLayout(layout)
+
+    def compute_offset(self):
+
+        offset = (self.evt_moving.value() - self.evt_fixed.value()) + self.offset_clock
+        self.offset.setText(f'{offset:0.3f}s')
 
 
 class EditElectrodes(QDialog):
@@ -207,7 +254,7 @@ def make_table(ev):
     t0.setColumnCount(len(ev.dtype.names))
     t0.setHorizontalHeaderLabels(ev.dtype.names)
     t0.verticalHeader().setVisible(False)
-    n_rows = min(len(ev), 10)
+    n_rows = len(ev)
     t0.setRowCount(n_rows)
 
     for i0, name in enumerate(ev.dtype.names):
@@ -225,15 +272,12 @@ def make_table(ev):
             t0.setItem(i1, i0, item)
 
     table = t0
-    table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+    table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-    table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     table.resizeColumnsToContents()
-    table.setFixedSize(
-        table.horizontalHeader().length() + table.verticalHeader().width(),
-        table.verticalHeader().length() + table.horizontalHeader().height())
+    table.setFixedWidth(table.horizontalHeader().length() + table.verticalHeader().width())
 
     return t0
 
