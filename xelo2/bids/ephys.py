@@ -3,6 +3,7 @@ from datetime import timedelta
 from json import dump
 from numpy import isin, ones, array
 from numpy.lib.recfunctions import append_fields
+from re import sub
 
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
@@ -40,7 +41,7 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
         elec_name = electrodes.name
         if elec_name is None:
             elec_name = 'unspecified'
-        name['acq'] = 'acq-' + elec_name.replace(' ', '').replace('_', '')
+        name['acq'] = 'acq-' + sub('[\s()]', '', elec_name)
 
         electrodes_tsv = dest_path / make_bids_name(name, 'electrodes')
         save_tsv(electrodes_tsv, electrodes.data, ['name', 'x', 'y', 'z', 'size'])
