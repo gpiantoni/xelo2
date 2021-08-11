@@ -1272,7 +1272,7 @@ class Interface(QMainWindow):
         if ephys_file is None:
             return
 
-        compare_events = CompareEvents(self, run, ephys_file)
+        compare_events = CompareEvents(self, run, ephys_file.path)
         result = compare_events.exec()
 
         if result == QDialog.Accepted:
