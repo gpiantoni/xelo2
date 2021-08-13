@@ -45,13 +45,13 @@ def parse_dataglove_log(dg_file):
     """
     if log_format == 'neurobs':
         df, hdr['StartTime'] = _fix_neurobs_log(df)
+        df['time'] = df['time'].apply(lambda x: x / 1000)
     elif log_format == 'finger_mapping':
         df = _fix_fingermapping(df)
+        df['time'] = df['time'].apply(lambda x: x / 1000)
     elif log_format == 'qttasks':
         df, hdr['StartTime'] = _fix_qttask(df)
         possible_hand['right'] = 1  # assume it's right-hand TODO: how to estimate which hand
-
-    df['time'] = df['time'].apply(lambda x: x / 1000)
 
     if len(df.columns) < 10:
         df = _select_from_one_hand(df, possible_hand)
