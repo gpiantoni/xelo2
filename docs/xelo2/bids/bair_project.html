@@ -175,7 +175,7 @@ def _find_task_type(subj_path, task_type):
     return &#39;no&#39;
 
 
-def list_bair_ids(db, healthy_visual=True, subset=None):
+def list_bair_ids(db, healthy_visual=True, subset=None, public=False):
     &#34;&#34;&#34;Collect all the subjects, sessions and runs for the BAIR project. This is
     all the subjects that did BAIR tasks since 2016 excluding a couple of
     subjects.
@@ -188,24 +188,35 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
         whether to include the healthy participants who did visual tasks
     subset : dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
         runs selected previously
+    public : bool
+        if True, it uses only subjects that can be publicly shared
 
     Returns
     -------
     dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
         ids for subjects, sessions, runs which are part of the BAIR tasks
     &#34;&#34;&#34;
-
     healthy_visual_subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
     healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
-    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;, &#39;bunnik&#39;, &#39;veendam&#39;)
-    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+
+    subjects_to_skip = healthy_visual_subjects.copy()
+    if public:
+        subjects_to_skip.extend([
+            &#39;bunnik&#39;,  # patient / finger_mapping at 7T
+            &#39;veendam&#39;,  # patient / finger_mapping at 7T
+            &#39;boskoop&#39;,  # children
+            &#39;elst&#39;,  # children
+            &#39;linden&#39;,  # children
+            &#39;sittard&#39;,  # children
+            ])
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects_to_skip)
 
     tasks = [x for v in TASK_TYPES.values() for x in v]
-
     task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+
     subset = prepare_subset(
         db,
-        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})&#39;,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
         subset=subset)
 
     if healthy_visual:
@@ -331,7 +342,7 @@ def list_bair_ids(db, healthy_visual=True, subset=None):
 </details>
 </dd>
 <dt id="xelo2.bids.bair_project.list_bair_ids"><code class="name flex">
-<span>def <span class="ident">list_bair_ids</span></span>(<span>db, healthy_visual=True, subset=None)</span>
+<span>def <span class="ident">list_bair_ids</span></span>(<span>db, healthy_visual=True, subset=None, public=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Collect all the subjects, sessions and runs for the BAIR project. This is
@@ -345,6 +356,8 @@ subjects.</p>
 <dd>whether to include the healthy participants who did visual tasks</dd>
 <dt><strong><code>subset</code></strong> :&ensp;<code>dict with {'subjects', 'sessions', 'runs'}</code></dt>
 <dd>runs selected previously</dd>
+<dt><strong><code>public</code></strong> :&ensp;<code>bool</code></dt>
+<dd>if True, it uses only subjects that can be publicly shared</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -355,7 +368,7 @@ subjects.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def list_bair_ids(db, healthy_visual=True, subset=None):
+<pre><code class="python">def list_bair_ids(db, healthy_visual=True, subset=None, public=False):
     &#34;&#34;&#34;Collect all the subjects, sessions and runs for the BAIR project. This is
     all the subjects that did BAIR tasks since 2016 excluding a couple of
     subjects.
@@ -368,24 +381,35 @@ subjects.</p>
         whether to include the healthy participants who did visual tasks
     subset : dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
         runs selected previously
+    public : bool
+        if True, it uses only subjects that can be publicly shared
 
     Returns
     -------
     dict with {&#39;subjects&#39;, &#39;sessions&#39;, &#39;runs&#39;}
         ids for subjects, sessions, runs which are part of the BAIR tasks
     &#34;&#34;&#34;
-
     healthy_visual_subjects = [f&#39;umcu{x + 1:04d}&#39; for x in range(13)]
     healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
-    subjects = (&#39;boskoop&#39;, &#39;elst&#39;, &#39;sittard&#39;, &#39;bunnik&#39;, &#39;veendam&#39;)
-    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects)
+
+    subjects_to_skip = healthy_visual_subjects.copy()
+    if public:
+        subjects_to_skip.extend([
+            &#39;bunnik&#39;,  # patient / finger_mapping at 7T
+            &#39;veendam&#39;,  # patient / finger_mapping at 7T
+            &#39;boskoop&#39;,  # children
+            &#39;elst&#39;,  # children
+            &#39;linden&#39;,  # children
+            &#39;sittard&#39;,  # children
+            ])
+    subj_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in subjects_to_skip)
 
     tasks = [x for v in TASK_TYPES.values() for x in v]
-
     task_list = &#39;, &#39;.join(f&#39;&#34;{t}&#34;&#39; for t in tasks)
+
     subset = prepare_subset(
         db,
-        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids}, {healthy_visual_ids})&#39;,
+        f&#39;`task_name` IN ({task_list}) AND `start_time` &gt; &#34;2016-06-01&#34; AND `subjects`.`id` NOT IN ({subj_ids})&#39;,
         subset=subset)
 
     if healthy_visual:

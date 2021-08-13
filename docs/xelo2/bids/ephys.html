@@ -29,6 +29,7 @@ from datetime import timedelta
 from json import dump
 from numpy import isin, ones, array
 from numpy.lib.recfunctions import append_fields
+from re import sub
 
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
@@ -63,7 +64,10 @@ def convert_ephys(run, rec, dest_path, name, intendedfor):
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        name[&#39;acq&#39;] = &#39;acq-&#39; + electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+        elec_name = electrodes.name
+        if elec_name is None:
+            elec_name = &#39;unspecified&#39;
+        name[&#39;acq&#39;] = &#39;acq-&#39; + sub(&#39;[\s()]&#39;, &#39;&#39;, elec_name)
 
         electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
         save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])
@@ -222,7 +226,10 @@ def convert_events_to_wonambi(events):
 
     electrodes = rec.electrodes
     if electrodes is not None:
-        name[&#39;acq&#39;] = &#39;acq-&#39; + electrodes.name.replace(&#39; &#39;, &#39;&#39;).replace(&#39;_&#39;, &#39;&#39;)
+        elec_name = electrodes.name
+        if elec_name is None:
+            elec_name = &#39;unspecified&#39;
+        name[&#39;acq&#39;] = &#39;acq-&#39; + sub(&#39;[\s()]&#39;, &#39;&#39;, elec_name)
 
         electrodes_tsv = dest_path / make_bids_name(name, &#39;electrodes&#39;)
         save_tsv(electrodes_tsv, electrodes.data, [&#39;name&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;size&#39;])

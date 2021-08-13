@@ -4,7 +4,8 @@
 ## Recordings
 
   - **Modality** (*Text*), one of these values:
-    - **epi**: Modality for top-up scans. This modality does not have events. This modality has "IntendedFor".
+    - **epi**: Modality for top_up scans. This modality does not have events. This modality has "IntendedFor".
+    - **T1w**: Modality for T1w structural scans (also MP2RAGE).
 
 ### EPI recordings
 

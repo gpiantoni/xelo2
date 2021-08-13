@@ -71,13 +71,13 @@ def parse_dataglove_log(dg_file):
     &#34;&#34;&#34;
     if log_format == &#39;neurobs&#39;:
         df, hdr[&#39;StartTime&#39;] = _fix_neurobs_log(df)
+        df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
     elif log_format == &#39;finger_mapping&#39;:
         df = _fix_fingermapping(df)
+        df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
     elif log_format == &#39;qttasks&#39;:
         df, hdr[&#39;StartTime&#39;] = _fix_qttask(df)
         possible_hand[&#39;right&#39;] = 1  # assume it&#39;s right-hand TODO: how to estimate which hand
-
-    df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
 
     if len(df.columns) &lt; 10:
         df = _select_from_one_hand(df, possible_hand)
@@ -257,13 +257,13 @@ def _select_from_two_hands(df):
     &#34;&#34;&#34;
     if log_format == &#39;neurobs&#39;:
         df, hdr[&#39;StartTime&#39;] = _fix_neurobs_log(df)
+        df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
     elif log_format == &#39;finger_mapping&#39;:
         df = _fix_fingermapping(df)
+        df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
     elif log_format == &#39;qttasks&#39;:
         df, hdr[&#39;StartTime&#39;] = _fix_qttask(df)
         possible_hand[&#39;right&#39;] = 1  # assume it&#39;s right-hand TODO: how to estimate which hand
-
-    df[&#39;time&#39;] = df[&#39;time&#39;].apply(lambda x: x / 1000)
 
     if len(df.columns) &lt; 10:
         df = _select_from_one_hand(df, possible_hand)
