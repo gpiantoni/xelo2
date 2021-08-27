@@ -174,10 +174,12 @@ def list_bair_ids(db, healthy_visual=True, subset=None, public=False):
     healthy_visual_ids = ', '.join(f'"{Subject(db, x).id}"' for x in healthy_visual_subjects)
 
     subjects_to_skip = healthy_visual_subjects.copy()
+    subjects_to_skip.extend([
+        'bunnik',  # patient / finger_mapping at 7T
+        'veendam',  # patient / finger_mapping at 7T
+        ])
     if public:
         subjects_to_skip.extend([
-            'bunnik',  # patient / finger_mapping at 7T
-            'veendam',  # patient / finger_mapping at 7T
             'boskoop',  # children
             'elst',  # children
             'linden',  # children
