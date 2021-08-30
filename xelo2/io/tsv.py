@@ -24,7 +24,8 @@ def load_tsv(fname, dtypes):
     for h in header:
         if h == 'group':
             h = 'groups'
-        X[h] = d[h]
+        if h in X.dtype.names:
+            X[h] = d[h]
     return X
 
 
