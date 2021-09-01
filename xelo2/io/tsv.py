@@ -25,6 +25,11 @@ def load_tsv(fname, dtypes):
         if h == 'group':
             h = 'groups'
         if h in X.dtype.names:
+            """
+            if h == 'trial_type':
+                X[h] = d['trial_name']
+            else:
+            """
             X[h] = d[h]
     return X
 

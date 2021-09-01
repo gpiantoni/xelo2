@@ -28,6 +28,17 @@ So, for example, "`Date of Birth: Date of birth of the participant`".
 Subtables should follow the naming format `maintable_name`, so for example the subtable for the motor tasks should be `runs_motor`.
 Note that `runs` should be plural, then underscore, then text without underscore.
 
+For example, you can create a table like this:
+
+```SQL
+CREATE TABLE `runs_motor` (
+  `runs_id` int(11) DEFAULT NULL,
+  `overt_covert` text DEFAULT NULL COMMENT 'Overt / Covert',
+  UNIQUE KEY `run_id` (`run_id`),
+  CONSTRAINT `runs_flip_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `runs` (`id`) ON DELETE CASCADE
+) ;
+```
+
 To make sure that subtables are correctly linked to the main table, you need to create two triggers for each table. 
 Use this syntax:
 
