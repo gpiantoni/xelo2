@@ -194,7 +194,8 @@ def parse_subtables(info_schema, db, table):
     SUBTABLES = []
     for statement in statements:
 
-        sub = parse_trigger_statements(table, statement)
+        sub = parse_trigger_statements(statement)
+        sub['parent'] = table
         if sub is not None:
             SUBTABLES.append(sub)
 
@@ -224,7 +225,7 @@ def lookup_statements(info_schema, db, table):
     return statements
 
 
-def parse_trigger_statements(table, statement):
+def parse_trigger_statements(statement):
 
     cond_str = search(r"IF NEW.([a-z_]+) = '(.+?)'", statement)
     if cond_str is None:
@@ -249,7 +250,6 @@ def parse_trigger_statements(table, statement):
         subtable = subtable_str.group(1)
 
     return {
-        'parent': table,
         'subtable': subtable,
         'parameter': parameter,
         'values': values,

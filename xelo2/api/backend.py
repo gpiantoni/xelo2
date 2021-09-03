@@ -178,6 +178,7 @@ class Table():
         query.bindValue(':id', self.id)
 
         if not query.exec():
+            print(value)
             raise ValueError(query.lastError().text())
 
 

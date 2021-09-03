@@ -82,6 +82,7 @@ from .modal import (
 
 
 EXTRA_LEVELS = ['channels', 'electrodes']
+NULL_TEXT = 'Unknown / Unspecified'
 
 settings = QSettings("xelo2", "xelo2")
 lg = getLogger(__name__)
@@ -664,7 +665,10 @@ class Interface(QMainWindow):
             if isinstance(x, QLineEdit):
                 x = x.text()
 
-            x = f'{x}'
+            if x == NULL_TEXT:
+                x = None
+            else:
+                x = f'{x}'
 
         setattr(obj, column, x)
         self.modified()
@@ -1458,7 +1462,7 @@ def make_float(value):
 
 def make_combobox(value, possible_values):
     w = QComboBox()
-    values = ['Unknown / Unspecified', ] + possible_values
+    values = [NULL_TEXT, ] + possible_values
     w.addItems(values)
     w.setCurrentText(value)
 
