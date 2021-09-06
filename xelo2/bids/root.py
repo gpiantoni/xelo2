@@ -30,7 +30,8 @@ PROTOCOL_HEALTHY = [
 lg = getLogger(__name__)
 
 
-def create_bids(db, data_path, deface=True, subset=None, progress=None):
+def create_bids(db, data_path, deface=True, subset=None, progress=None,
+                keep_phase=False):
 
     if subset is not None:
         subset = add_intended_for(db, subset)
@@ -217,7 +218,8 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _add_intendedfor(db, data_path, intendedfor)
 
     # remove phase because we get lots of warnings from BIDS
-    remove_phase(data_path)
+    if not keep_phase:
+        remove_phase(data_path)
 
     # here the rest
     _make_README(data_path)

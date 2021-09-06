@@ -2,6 +2,7 @@ from pathlib import Path
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
 from textwrap import dedent
+from ..api.utils import collect_columns
 
 lg = getLogger(__name__)
 
@@ -136,3 +137,21 @@ def make_taskdescription(run):
             s.append(value)
 
     return '; '.join(s)
+
+
+def add_extra_fields_to_json(run, fields={}):
+    """Add extra fields to json file which are coming from subtables
+    """
+    db = run.db
+    SUBTABLES = [x['subtable'] for x in db['subtables']]
+
+    for col, tbl in collect_columns(db, obj=run).items():
+        if col.endswith('_id'):
+            continue
+        if tbl not in SUBTABLES:
+            continue
+
+        key = db['tables'][tbl][col]['alias']
+        fields[key] = getattr(run, col)
+
+    return fields
