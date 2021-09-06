@@ -8,7 +8,6 @@ from re import sub
 from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription
 from ..io.tsv import save_tsv
 from ..io.ephys import localize_blackrock
-from .utils import add_extra_fields_to_json
 
 
 CHAN_TYPES = {
@@ -137,7 +136,6 @@ def _convert_sidecar(run, rec, d):
     if rec.modality == 'ieeg':
         D['ElectricalStimulation'] = False
 
-    D = add_extra_fields_to_json(run, fields=D)
     return D
 
 

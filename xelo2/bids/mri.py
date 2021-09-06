@@ -13,7 +13,7 @@ from nibabel import load as niload
 from bidso.utils import replace_extension
 
 from .io.parrec import convert_parrec_nibabel
-from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription, set_notnone, add_extra_fields_to_json
+from .utils import rename_task, make_bids_name, find_one_file, make_taskdescription, set_notnone
 
 lg = getLogger(__name__)
 
@@ -71,7 +71,6 @@ def convert_mri(run, rec, dest_path, name, deface=True):
         run_deface(output_nii)
 
     sidecar = _convert_sidecar(run, rec, PAR, nii_shape)
-    sidecar = add_extra_fields_to_json(run, fields=sidecar)
     sidecar_file = replace_extension(output_nii, '.json')
 
     with sidecar_file.open('w') as f:

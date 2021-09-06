@@ -139,19 +139,29 @@ def make_taskdescription(run):
     return '; '.join(s)
 
 
-def add_extra_fields_to_json(run, fields={}):
+def add_extra_fields_to_json(run, fields, info):
     """Add extra fields to json file which are coming from subtables
     """
     db = run.db
     SUBTABLES = [x['subtable'] for x in db['subtables']]
 
     for col, tbl in collect_columns(db, obj=run).items():
-        if col.endswith('_id'):
-            continue
         if tbl not in SUBTABLES:
+            continue
+        if db['tables'][tbl][col]['index']:
             continue
 
         key = db['tables'][tbl][col]['alias']
         fields[key] = getattr(run, col)
+        if fields[key] is None:
+            fields[key] = 'n/a'
+
+        if key not in info:
+            info[key] = {
+                "Description": db['tables'][tbl][col]['doc'],
+                }
+            values = db['tables'][tbl][col]['values']
+            if len(values) > 0:
+                info[key]['Levels'] = {k: 'n/a' for k in values}
 
     return fields

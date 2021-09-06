@@ -15,7 +15,7 @@ from .mri import convert_mri
 from .ephys import convert_ephys
 from .physio import convert_physio
 from .events import convert_events
-from .utils import rename_task, prepare_subset
+from .utils import rename_task, prepare_subset, add_extra_fields_to_json
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -49,6 +49,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None,
     _make_dataset_description(data_path)
 
     intendedfor = {}
+    scans_json = {}
 
     i = 0
     participants = []
@@ -196,10 +197,11 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None,
 
                     if data_name is not None and rec.modality != 'physio':  # secondary modality
                         intendedfor[run.id] = data_name
-                        run_files.append({
+                        fields = {
                             'filename': data_name,
                             'acq_time': _set_date_to_1900(reference_date, run.start_time).isoformat(timespec='seconds'),
-                            })
+                            }
+                        run_files.append(add_extra_fields_to_json(run, fields, scans_json))
 
             if len(run_files) == 0:
                 continue
@@ -222,6 +224,10 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None,
         remove_phase(data_path)
 
     # here the rest
+    if len(scans_json) > 0:
+        with (data_path / 'scans.json').open('w') as f:
+            dump(scans_json, f, ensure_ascii=False, indent=' ')
+
     _make_README(data_path)
     tsv_file = data_path / 'participants.tsv'
     _list_scans(tsv_file, participants, data_path)
@@ -239,13 +245,15 @@ def _list_scans(tsv_file, scans, root_dir):
         for scan in scans:
             scan['filename'] = str(scan['filename'].relative_to(root_dir))
 
+    cols = _find_columns(scans)
+
     with tsv_file.open('w') as f:
-        f.write('\t'.join(scans[0].keys()) + '\n')
+        f.write('\t'.join(cols) + '\n')
         for scan in scans:
-            for k, v in scan.items():
-                if v is None:
-                    scan[k] = 'n/a'
-            f.write('\t'.join(scan.values()) + '\n')
+            values = []
+            for k in cols:
+                values.append(scan.get(k, 'n/a'))
+            f.write('\t'.join(values) + '\n')
 
 
 def _make_dataset_description(data_path):
@@ -447,3 +455,13 @@ def remove_phase(bids_dir):
     """
     for phase in bids_dir.rglob('*_phase.nii.gz'):
         phase.unlink()
+
+
+def _find_columns(scans):
+    cols = []
+    for fields in scans:
+        for k in fields:
+            if k not in cols:
+                cols.append(k)
+
+    return cols
