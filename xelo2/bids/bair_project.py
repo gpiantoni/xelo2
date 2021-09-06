@@ -135,7 +135,7 @@ def _find_hdgrid(subj_path):
     if match(r'sub-umcu\d+', subj_path.stem):
         return 'n/a'
 
-    if len(list(subj_path.rglob('*/*/*_acq-blackrock_*'))) > 0:
+    if len(list(subj_path.rglob('*/*/*_acq-HD*'))) > 0:
         return 'yes'
 
     return 'no'
