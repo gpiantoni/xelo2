@@ -41,7 +41,7 @@ from .mri import convert_mri
 from .ephys import convert_ephys
 from .physio import convert_physio
 from .events import convert_events
-from .utils import rename_task, prepare_subset
+from .utils import rename_task, prepare_subset, add_extra_fields_to_json
 from .templates import (
     JSON_PARTICIPANTS,
     JSON_SESSIONS,
@@ -56,7 +56,8 @@ PROTOCOL_HEALTHY = [
 lg = getLogger(__name__)
 
 
-def create_bids(db, data_path, deface=True, subset=None, progress=None):
+def create_bids(db, data_path, deface=True, subset=None, progress=None,
+                keep_phase=False):
 
     if subset is not None:
         subset = add_intended_for(db, subset)
@@ -74,6 +75,7 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _make_dataset_description(data_path)
 
     intendedfor = {}
+    scans_json = {}
 
     i = 0
     participants = []
@@ -221,10 +223,11 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
 
                     if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
                         intendedfor[run.id] = data_name
-                        run_files.append({
+                        fields = {
                             &#39;filename&#39;: data_name,
                             &#39;acq_time&#39;: _set_date_to_1900(reference_date, run.start_time).isoformat(timespec=&#39;seconds&#39;),
-                            })
+                            }
+                        run_files.append(add_extra_fields_to_json(run, fields, scans_json))
 
             if len(run_files) == 0:
                 continue
@@ -243,9 +246,14 @@ def create_bids(db, data_path, deface=True, subset=None, progress=None):
     _add_intendedfor(db, data_path, intendedfor)
 
     # remove phase because we get lots of warnings from BIDS
-    remove_phase(data_path)
+    if not keep_phase:
+        remove_phase(data_path)
 
     # here the rest
+    if len(scans_json) &gt; 0:
+        with (data_path / &#39;scans.json&#39;).open(&#39;w&#39;) as f:
+            dump(scans_json, f, ensure_ascii=False, indent=&#39; &#39;)
+
     _make_README(data_path)
     tsv_file = data_path / &#39;participants.tsv&#39;
     _list_scans(tsv_file, participants, data_path)
@@ -263,13 +271,15 @@ def _list_scans(tsv_file, scans, root_dir):
         for scan in scans:
             scan[&#39;filename&#39;] = str(scan[&#39;filename&#39;].relative_to(root_dir))
 
+    cols = _find_columns(scans)
+
     with tsv_file.open(&#39;w&#39;) as f:
-        f.write(&#39;\t&#39;.join(scans[0].keys()) + &#39;\n&#39;)
+        f.write(&#39;\t&#39;.join(cols) + &#39;\n&#39;)
         for scan in scans:
-            for k, v in scan.items():
-                if v is None:
-                    scan[k] = &#39;n/a&#39;
-            f.write(&#39;\t&#39;.join(scan.values()) + &#39;\n&#39;)
+            values = []
+            for k in cols:
+                values.append(scan.get(k, &#39;n/a&#39;))
+            f.write(&#39;\t&#39;.join(values) + &#39;\n&#39;)
 
 
 def _make_dataset_description(data_path):
@@ -470,7 +480,17 @@ def remove_phase(bids_dir):
     https://github.com/bids-standard/bids-validator/issues/1074
     &#34;&#34;&#34;
     for phase in bids_dir.rglob(&#39;*_phase.nii.gz&#39;):
-        phase.unlink()</code></pre>
+        phase.unlink()
+
+
+def _find_columns(scans):
+    cols = []
+    for fields in scans:
+        for k in fields:
+            if k not in cols:
+                cols.append(k)
+
+    return cols</code></pre>
 </details>
 </section>
 <section>
@@ -555,7 +575,7 @@ def remove_phase(bids_dir):
 </details>
 </dd>
 <dt id="xelo2.bids.root.create_bids"><code class="name flex">
-<span>def <span class="ident">create_bids</span></span>(<span>db, data_path, deface=True, subset=None, progress=None)</span>
+<span>def <span class="ident">create_bids</span></span>(<span>db, data_path, deface=True, subset=None, progress=None, keep_phase=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -563,7 +583,8 @@ def remove_phase(bids_dir):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_bids(db, data_path, deface=True, subset=None, progress=None):
+<pre><code class="python">def create_bids(db, data_path, deface=True, subset=None, progress=None,
+                keep_phase=False):
 
     if subset is not None:
         subset = add_intended_for(db, subset)
@@ -581,6 +602,7 @@ def remove_phase(bids_dir):
     _make_dataset_description(data_path)
 
     intendedfor = {}
+    scans_json = {}
 
     i = 0
     participants = []
@@ -728,10 +750,11 @@ def remove_phase(bids_dir):
 
                     if data_name is not None and rec.modality != &#39;physio&#39;:  # secondary modality
                         intendedfor[run.id] = data_name
-                        run_files.append({
+                        fields = {
                             &#39;filename&#39;: data_name,
                             &#39;acq_time&#39;: _set_date_to_1900(reference_date, run.start_time).isoformat(timespec=&#39;seconds&#39;),
-                            })
+                            }
+                        run_files.append(add_extra_fields_to_json(run, fields, scans_json))
 
             if len(run_files) == 0:
                 continue
@@ -750,9 +773,14 @@ def remove_phase(bids_dir):
     _add_intendedfor(db, data_path, intendedfor)
 
     # remove phase because we get lots of warnings from BIDS
-    remove_phase(data_path)
+    if not keep_phase:
+        remove_phase(data_path)
 
     # here the rest
+    if len(scans_json) &gt; 0:
+        with (data_path / &#39;scans.json&#39;).open(&#39;w&#39;) as f:
+            dump(scans_json, f, ensure_ascii=False, indent=&#39; &#39;)
+
     _make_README(data_path)
     tsv_file = data_path / &#39;participants.tsv&#39;
     _list_scans(tsv_file, participants, data_path)

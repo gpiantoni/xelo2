@@ -50,7 +50,13 @@ def load_tsv(fname, dtypes):
     for h in header:
         if h == &#39;group&#39;:
             h = &#39;groups&#39;
-        X[h] = d[h]
+        if h in X.dtype.names:
+            &#34;&#34;&#34;
+            if h == &#39;trial_type&#39;:
+                X[h] = d[&#39;trial_name&#39;]
+            else:
+            &#34;&#34;&#34;
+            X[h] = d[h]
     return X
 
 
@@ -160,7 +166,13 @@ def _remove_empty_columns(tsv, necessary_columns=None):
     for h in header:
         if h == &#39;group&#39;:
             h = &#39;groups&#39;
-        X[h] = d[h]
+        if h in X.dtype.names:
+            &#34;&#34;&#34;
+            if h == &#39;trial_type&#39;:
+                X[h] = d[&#39;trial_name&#39;]
+            else:
+            &#34;&#34;&#34;
+            X[h] = d[h]
     return X</code></pre>
 </details>
 </dd>

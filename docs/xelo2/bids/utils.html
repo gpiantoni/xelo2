@@ -28,6 +28,7 @@
 from logging import getLogger
 from PyQt5.QtSql import QSqlQuery
 from textwrap import dedent
+from ..api.utils import collect_columns
 
 lg = getLogger(__name__)
 
@@ -161,7 +162,35 @@ def make_taskdescription(run):
         if value is not None:
             s.append(value)
 
-    return &#39;; &#39;.join(s)</code></pre>
+    return &#39;; &#39;.join(s)
+
+
+def add_extra_fields_to_json(run, fields, info):
+    &#34;&#34;&#34;Add extra fields to json file which are coming from subtables
+    &#34;&#34;&#34;
+    db = run.db
+    SUBTABLES = [x[&#39;subtable&#39;] for x in db[&#39;subtables&#39;]]
+
+    for col, tbl in collect_columns(db, obj=run).items():
+        if tbl not in SUBTABLES:
+            continue
+        if db[&#39;tables&#39;][tbl][col][&#39;index&#39;]:
+            continue
+
+        key = db[&#39;tables&#39;][tbl][col][&#39;alias&#39;]
+        fields[key] = getattr(run, col)
+        if fields[key] is None:
+            fields[key] = &#39;n/a&#39;
+
+        if key not in info:
+            info[key] = {
+                &#34;Description&#34;: db[&#39;tables&#39;][tbl][col][&#39;doc&#39;],
+                }
+            values = db[&#39;tables&#39;][tbl][col][&#39;values&#39;]
+            if len(values) &gt; 0:
+                info[key][&#39;Levels&#39;] = {k: &#39;n/a&#39; for k in values}
+
+    return fields</code></pre>
 </details>
 </section>
 <section>
@@ -171,6 +200,43 @@ def make_taskdescription(run):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="xelo2.bids.utils.add_extra_fields_to_json"><code class="name flex">
+<span>def <span class="ident">add_extra_fields_to_json</span></span>(<span>run, fields, info)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add extra fields to json file which are coming from subtables</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_extra_fields_to_json(run, fields, info):
+    &#34;&#34;&#34;Add extra fields to json file which are coming from subtables
+    &#34;&#34;&#34;
+    db = run.db
+    SUBTABLES = [x[&#39;subtable&#39;] for x in db[&#39;subtables&#39;]]
+
+    for col, tbl in collect_columns(db, obj=run).items():
+        if tbl not in SUBTABLES:
+            continue
+        if db[&#39;tables&#39;][tbl][col][&#39;index&#39;]:
+            continue
+
+        key = db[&#39;tables&#39;][tbl][col][&#39;alias&#39;]
+        fields[key] = getattr(run, col)
+        if fields[key] is None:
+            fields[key] = &#39;n/a&#39;
+
+        if key not in info:
+            info[key] = {
+                &#34;Description&#34;: db[&#39;tables&#39;][tbl][col][&#39;doc&#39;],
+                }
+            values = db[&#39;tables&#39;][tbl][col][&#39;values&#39;]
+            if len(values) &gt; 0:
+                info[key][&#39;Levels&#39;] = {k: &#39;n/a&#39; for k in values}
+
+    return fields</code></pre>
+</details>
+</dd>
 <dt id="xelo2.bids.utils.find_one_file"><code class="name flex">
 <span>def <span class="ident">find_one_file</span></span>(<span>rec, formats)</span>
 </code></dt>
@@ -370,6 +436,7 @@ performance and acquisition</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="xelo2.bids.utils.add_extra_fields_to_json" href="#xelo2.bids.utils.add_extra_fields_to_json">add_extra_fields_to_json</a></code></li>
 <li><code><a title="xelo2.bids.utils.find_one_file" href="#xelo2.bids.utils.find_one_file">find_one_file</a></code></li>
 <li><code><a title="xelo2.bids.utils.make_bids_name" href="#xelo2.bids.utils.make_bids_name">make_bids_name</a></code></li>
 <li><code><a title="xelo2.bids.utils.make_taskdescription" href="#xelo2.bids.utils.make_taskdescription">make_taskdescription</a></code></li>

@@ -204,6 +204,7 @@ class Table():
         query.bindValue(&#39;:id&#39;, self.id)
 
         if not query.exec():
+            print(value)
             raise ValueError(query.lastError().text())
 
 
@@ -817,6 +818,7 @@ use this class but only its subclasses.</p>
         query.bindValue(&#39;:id&#39;, self.id)
 
         if not query.exec():
+            print(value)
             raise ValueError(query.lastError().text())</code></pre>
 </details>
 <h3>Subclasses</h3>

@@ -108,6 +108,7 @@ from .modal import (
 
 
 EXTRA_LEVELS = [&#39;channels&#39;, &#39;electrodes&#39;]
+NULL_TEXT = &#39;Unknown / Unspecified&#39;
 
 settings = QSettings(&#34;xelo2&#34;, &#34;xelo2&#34;)
 lg = getLogger(__name__)
@@ -690,7 +691,10 @@ class Interface(QMainWindow):
             if isinstance(x, QLineEdit):
                 x = x.text()
 
-            x = f&#39;{x}&#39;
+            if x == NULL_TEXT:
+                x = None
+            else:
+                x = f&#39;{x}&#39;
 
         setattr(obj, column, x)
         self.modified()
@@ -1484,7 +1488,7 @@ def make_float(value):
 
 def make_combobox(value, possible_values):
     w = QComboBox()
-    values = [&#39;Unknown / Unspecified&#39;, ] + possible_values
+    values = [NULL_TEXT, ] + possible_values
     w.addItems(values)
     w.setCurrentText(value)
 
@@ -1686,7 +1690,7 @@ def _fake_names(X):
 </summary>
 <pre><code class="python">def make_combobox(value, possible_values):
     w = QComboBox()
-    values = [&#39;Unknown / Unspecified&#39;, ] + possible_values
+    values = [NULL_TEXT, ] + possible_values
     w.addItems(values)
     w.setCurrentText(value)
 
@@ -2434,7 +2438,10 @@ def _fake_names(X):
             if isinstance(x, QLineEdit):
                 x = x.text()
 
-            x = f&#39;{x}&#39;
+            if x == NULL_TEXT:
+                x = None
+            else:
+                x = f&#39;{x}&#39;
 
         setattr(obj, column, x)
         self.modified()
@@ -3238,7 +3245,10 @@ def _fake_names(X):
         if isinstance(x, QLineEdit):
             x = x.text()
 
-        x = f&#39;{x}&#39;
+        if x == NULL_TEXT:
+            x = None
+        else:
+            x = f&#39;{x}&#39;
 
     setattr(obj, column, x)
     self.modified()</code></pre>

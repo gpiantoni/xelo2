@@ -32,6 +32,7 @@ from bidso.utils import replace_extension
 from .utils import make_bids_name
 from .io.dataglove import parse_dataglove_log
 from .io.pulse_and_resp_scanner import parse_scanner_physio
+from .io.flip import parse_flip_physio
 
 lg = getLogger(__name__)
 
@@ -52,7 +53,7 @@ def convert_physio(rec, dest_path, name):
     -----
     StartTime in the .json file gives the offset from the start of the recording.
     If the tsv contains a &#34;time&#34; column, the &#34;time&#34; info is already aligned
-    with the recording (so you don&#39;t need to add StartTime.
+    with the recording (so you don&#39;t need to add StartTime).
     &#34;&#34;&#34;
     for file in rec.list_files():
         if file.format == &#39;dataglove&#39;:
@@ -63,12 +64,18 @@ def convert_physio(rec, dest_path, name):
             name[&#39;recording&#39;] = &#39;recording-resp&#39;
             tsv, hdr = parse_scanner_physio(file.path)
 
+        elif file.format == &#39;flip&#39;:
+            name[&#39;recording&#39;] = &#39;recording-flip&#39;
+            tsv, hdr = parse_flip_physio(file.path)
+
         else:
+            lg.info(f&#39;There is no function to convert &#34;{file.format}&#34; physio&#39;)
             return
 
         hdr[&#39;StartTime&#39;] = rec.offset
-        if &#39;time&#39; in tsv.columns:
-            tsv[&#39;time&#39;] += rec.offset
+        for time_col in (&#39;time&#39;, &#39;time [s]&#39;):
+            if time_col in tsv.columns:
+                tsv[time_col] += rec.offset
 
     if name[&#39;recording&#39;] is None:
         lg.warning(&#39;No file associated with physio recording&#39;)
@@ -113,7 +120,7 @@ def _write_physio(physio, physio_tsv):
 <h2 id="notes">Notes</h2>
 <p>StartTime in the .json file gives the offset from the start of the recording.
 If the tsv contains a "time" column, the "time" info is already aligned
-with the recording (so you don't need to add StartTime.</p></div>
+with the recording (so you don't need to add StartTime).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -134,7 +141,7 @@ with the recording (so you don't need to add StartTime.</p></div>
     -----
     StartTime in the .json file gives the offset from the start of the recording.
     If the tsv contains a &#34;time&#34; column, the &#34;time&#34; info is already aligned
-    with the recording (so you don&#39;t need to add StartTime.
+    with the recording (so you don&#39;t need to add StartTime).
     &#34;&#34;&#34;
     for file in rec.list_files():
         if file.format == &#39;dataglove&#39;:
@@ -145,12 +152,18 @@ with the recording (so you don't need to add StartTime.</p></div>
             name[&#39;recording&#39;] = &#39;recording-resp&#39;
             tsv, hdr = parse_scanner_physio(file.path)
 
+        elif file.format == &#39;flip&#39;:
+            name[&#39;recording&#39;] = &#39;recording-flip&#39;
+            tsv, hdr = parse_flip_physio(file.path)
+
         else:
+            lg.info(f&#39;There is no function to convert &#34;{file.format}&#34; physio&#39;)
             return
 
         hdr[&#39;StartTime&#39;] = rec.offset
-        if &#39;time&#39; in tsv.columns:
-            tsv[&#39;time&#39;] += rec.offset
+        for time_col in (&#39;time&#39;, &#39;time [s]&#39;):
+            if time_col in tsv.columns:
+                tsv[time_col] += rec.offset
 
     if name[&#39;recording&#39;] is None:
         lg.warning(&#39;No file associated with physio recording&#39;)

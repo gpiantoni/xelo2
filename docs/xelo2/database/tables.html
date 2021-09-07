@@ -220,7 +220,8 @@ def parse_subtables(info_schema, db, table):
     SUBTABLES = []
     for statement in statements:
 
-        sub = parse_trigger_statements(table, statement)
+        sub = parse_trigger_statements(statement)
+        sub[&#39;parent&#39;] = table
         if sub is not None:
             SUBTABLES.append(sub)
 
@@ -250,7 +251,7 @@ def lookup_statements(info_schema, db, table):
     return statements
 
 
-def parse_trigger_statements(table, statement):
+def parse_trigger_statements(statement):
 
     cond_str = search(r&#34;IF NEW.([a-z_]+) = &#39;(.+?)&#39;&#34;, statement)
     if cond_str is None:
@@ -275,7 +276,6 @@ def parse_trigger_statements(table, statement):
         subtable = subtable_str.group(1)
 
     return {
-        &#39;parent&#39;: table,
         &#39;subtable&#39;: subtable,
         &#39;parameter&#39;: parameter,
         &#39;values&#39;: values,
@@ -565,7 +565,8 @@ for foreign keys, it's table_name (column_name)</dd>
     SUBTABLES = []
     for statement in statements:
 
-        sub = parse_trigger_statements(table, statement)
+        sub = parse_trigger_statements(statement)
+        sub[&#39;parent&#39;] = table
         if sub is not None:
             SUBTABLES.append(sub)
 
@@ -573,7 +574,7 @@ for foreign keys, it's table_name (column_name)</dd>
 </details>
 </dd>
 <dt id="xelo2.database.tables.parse_trigger_statements"><code class="name flex">
-<span>def <span class="ident">parse_trigger_statements</span></span>(<span>table, statement)</span>
+<span>def <span class="ident">parse_trigger_statements</span></span>(<span>statement)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -581,7 +582,7 @@ for foreign keys, it's table_name (column_name)</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def parse_trigger_statements(table, statement):
+<pre><code class="python">def parse_trigger_statements(statement):
 
     cond_str = search(r&#34;IF NEW.([a-z_]+) = &#39;(.+?)&#39;&#34;, statement)
     if cond_str is None:
@@ -606,7 +607,6 @@ for foreign keys, it's table_name (column_name)</dd>
         subtable = subtable_str.group(1)
 
     return {
-        &#39;parent&#39;: table,
         &#39;subtable&#39;: subtable,
         &#39;parameter&#39;: parameter,
         &#39;values&#39;: values,

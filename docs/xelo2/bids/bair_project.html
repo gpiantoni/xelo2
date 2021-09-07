@@ -161,7 +161,7 @@ def _find_hdgrid(subj_path):
     if match(r&#39;sub-umcu\d+&#39;, subj_path.stem):
         return &#39;n/a&#39;
 
-    if len(list(subj_path.rglob(&#39;*/*/*_acq-blackrock_*&#39;))) &gt; 0:
+    if len(list(subj_path.rglob(&#39;*/*/*_acq-HD*&#39;))) &gt; 0:
         return &#39;yes&#39;
 
     return &#39;no&#39;
@@ -200,10 +200,12 @@ def list_bair_ids(db, healthy_visual=True, subset=None, public=False):
     healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
 
     subjects_to_skip = healthy_visual_subjects.copy()
+    subjects_to_skip.extend([
+        &#39;bunnik&#39;,  # patient / finger_mapping at 7T
+        &#39;veendam&#39;,  # patient / finger_mapping at 7T
+        ])
     if public:
         subjects_to_skip.extend([
-            &#39;bunnik&#39;,  # patient / finger_mapping at 7T
-            &#39;veendam&#39;,  # patient / finger_mapping at 7T
             &#39;boskoop&#39;,  # children
             &#39;elst&#39;,  # children
             &#39;linden&#39;,  # children
@@ -393,10 +395,12 @@ subjects.</p>
     healthy_visual_ids = &#39;, &#39;.join(f&#39;&#34;{Subject(db, x).id}&#34;&#39; for x in healthy_visual_subjects)
 
     subjects_to_skip = healthy_visual_subjects.copy()
+    subjects_to_skip.extend([
+        &#39;bunnik&#39;,  # patient / finger_mapping at 7T
+        &#39;veendam&#39;,  # patient / finger_mapping at 7T
+        ])
     if public:
         subjects_to_skip.extend([
-            &#39;bunnik&#39;,  # patient / finger_mapping at 7T
-            &#39;veendam&#39;,  # patient / finger_mapping at 7T
             &#39;boskoop&#39;,  # children
             &#39;elst&#39;,  # children
             &#39;linden&#39;,  # children
