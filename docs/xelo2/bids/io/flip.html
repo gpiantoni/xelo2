@@ -51,7 +51,7 @@ def parse_flip_physio(flip_file):
     s_freq = 1 / median(diff(dat[0, :]))
 
     hdr = {
-        &#34;SamplingFrequency&#34;: int(s_freq),
+        &#34;SamplingFrequency&#34;: 2000,
         &#34;StartTime&#34;: 0,
         &#34;Columns&#34;: COLS,
         }
@@ -88,7 +88,7 @@ def parse_flip_physio(flip_file):
     s_freq = 1 / median(diff(dat[0, :]))
 
     hdr = {
-        &#34;SamplingFrequency&#34;: int(s_freq),
+        &#34;SamplingFrequency&#34;: 2000,
         &#34;StartTime&#34;: 0,
         &#34;Columns&#34;: COLS,
         }

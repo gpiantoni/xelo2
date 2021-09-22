@@ -3,7 +3,7 @@ Make sure if you have at least python 3.6 installed.
 Then you can install it, by typing:
 
 ```bash
-git pull https://github.com/gpiantoni/xelo2.git
+git pull https://github.com/umcu-ribs/xelo2.git
 pip install -e xelo2
 ```
 

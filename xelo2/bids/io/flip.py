@@ -25,7 +25,7 @@ def parse_flip_physio(flip_file):
     s_freq = 1 / median(diff(dat[0, :]))
 
     hdr = {
-        "SamplingFrequency": int(s_freq),
+        "SamplingFrequency": 2000,
         "StartTime": 0,
         "Columns": COLS,
         }
