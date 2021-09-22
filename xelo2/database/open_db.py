@@ -12,10 +12,10 @@ from .tables import parse_all_tables, parse_subtables, LEVELS, EXPECTED_TABLES
 lg = getLogger(__name__)
 
 
-def access_database(db_name, username=None, password=None):
+def access_database(db_name, username=None, password=None, hostname='localhost'):
 
-    db = open_database(db_name, username=username, password=password, connectionName='xelo2_database')
-    info_schema = open_database('information_schema', username=username, password=password, connectionName='info')
+    db = open_database(db_name, username=username, password=password, hostname=hostname, connectionName='xelo2_database')
+    info_schema = open_database('information_schema', username=username, password=password, hostname=hostname, connectionName='info')
 
     all_tables = parse_all_tables(info_schema, db)
 
@@ -38,7 +38,7 @@ def access_database(db_name, username=None, password=None):
     return out
 
 
-def open_database(db_name, username=None, password=None, connectionName='xelo2_database'):
+def open_database(db_name, username=None, password=None, hostname=None, connectionName='xelo2_database'):
     """Open the default database using Qt framework
 
     Parameters
@@ -58,7 +58,7 @@ def open_database(db_name, username=None, password=None, connectionName='xelo2_d
     db = QSqlDatabase.addDatabase('QMYSQL', connectionName)
     assert db.isValid()
 
-    db.setHostName('127.0.0.1')
+    db.setHostName(hostname)
     db.setUserName(username)
     if password is not None:
         db.setPassword(password)

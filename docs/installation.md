@@ -3,8 +3,8 @@ Make sure if you have at least python 3.6 installed.
 Then you can install it, by typing:
 
 ```bash
-git pull https://github.com/umcu-ribs/xelo2.git
-pip install -e xelo2
+git clone https://github.com/umcu-ribs/xelo2.git
+pip3 install -e xelo2
 ```
 
 ## Dependencies

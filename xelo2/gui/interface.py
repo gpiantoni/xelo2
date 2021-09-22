@@ -94,7 +94,7 @@ class Interface(QMainWindow):
     test = False
     unsaved_changes = False
 
-    def __init__(self, db_name=None, username=None, password=None):
+    def __init__(self, db_name=None, username=None, password=None, hostname='localhost'):
 
         super().__init__()
         create_menubar(self)
@@ -301,12 +301,12 @@ class Interface(QMainWindow):
                 self.sql_access(**DB_ARGS)
 
         else:
-            self.sql_access(db_name, username, password)
+            self.sql_access(db_name, username, password, hostname=hostname)
 
-    def sql_access(self, db_name=None, username=None, password=None):
+    def sql_access(self, db_name=None, username=None, password=None, hostname=None):
         """This is where you access the database
         """
-        self.db = access_database(db_name, username, password)
+        self.db = access_database(db_name, username, password, hostname)
         self.db['db'].transaction()
 
         self.events_model = EventsModel(self.db)

@@ -35,10 +35,13 @@ def main():
     parser.add_argument(
         '-P', '--password', default=None,
         help='MYSQL password')
+    parser.add_argument(
+        '-H', '--hostname', default='localhost',
+        help='host name (if different from localhost)')
     args = parser.parse_args()
 
     if args.mysql is not None:
-        w = Interface(args.mysql, args.username, args.password)
+        w = Interface(args.mysql, args.username, args.password, args.hostname)
     else:
         w = Interface()
 
