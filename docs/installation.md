@@ -4,7 +4,8 @@ Then you can install it, by typing:
 
 ```bash
 git clone https://github.com/umcu-ribs/xelo2.git
-pip3 install -e xelo2
+cd xelo2
+pip3 install –-user -e .
 ```
 
 ## Dependencies
