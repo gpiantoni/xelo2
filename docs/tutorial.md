@@ -1,21 +1,25 @@
 # TUTORIAL
 
 ## Create MySQL database
-First create a database as root/admin (`mysql -u root -p`):
+First create a user and database as root/admin (`mysql -u root -p`):
 
 ```SQL
-CREATE DATABASE test;
-GRANT ALL PRIVILEGES ON test.* TO 'giovanni'@'localhost';
+CREATE USER 'giovanni'@'localhost' IDENTIFIED BY '';
+CREATE DATABASE testdb;
+GRANT ALL PRIVILEGES ON testdb.* TO 'giovanni'@'localhost';
 FLUSH PRIVILEGES;
 ```
+
+> :warning: It creates a user without password.
 
 then, as a user, use this code (in bash):
 
 ```bash
-cd tests/data/example/sql/
-cat allowed_values.sql subjects.sql protocols.sql sessions.sql runs.sql channels.sql electrodes.sql recordings.sql files.sql extra_sessions.sql extra_runs.sql extra_recordings.sql > full.sql
-mysql -u giovanni -p test' < full.sql
+cd sql
+./sql_create.sh
 ```
+
+This will create an empty database ready for running xelo2 as python program.
 
 ## Open the connection to the MySQL server
 
