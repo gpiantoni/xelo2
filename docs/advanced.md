@@ -1,5 +1,13 @@
 ## Database
 
+## Open the connection to the MySQL server
+
+If the MySQL database is not stored in the local machine, you need to forward the local port of the remote database:
+
+```bash
+ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remote
+```
+
 ### Privileges
 Add permission to read the `xelo2` database but not to modify it.
 

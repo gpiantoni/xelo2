@@ -12,6 +12,6 @@ xelo2 consists of 3 parts:
 
 [Instructions](instructions.md)
 
-[House Keeping](housekeeping.md)
+[Advanced](advanced.md)
 
 [API](xelo2/index.html)
