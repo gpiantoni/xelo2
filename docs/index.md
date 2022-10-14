@@ -1,4 +1,4 @@
-## XELO2
+# XELO2
 
 xelo2 allows you to organize electrophysiological and fMRI data in a well-structured database and to export the data in the BIDS format.
 xelo2 consists of 3 parts:

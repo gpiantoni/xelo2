@@ -12,7 +12,7 @@ GRANT ALL PRIVILEGES ON testdb.* TO 'giovanni'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-> :warning: It creates a user without password `password` and the database is called `testdb`.
+> Careful: It creates a user without password `password` and the database is called `testdb`.
 
 Then, as a user, use this code (in bash):
 
@@ -49,15 +49,3 @@ Required dependecies are:
 
 ## Get Started
 To start using the database, see the [tutorials](tutorial.md).
-
-## Connect to database
-To connect to a SQL database, you can do:
-
-```bash
-xelo2
-```
-and then log in with the prompt screen. Or you can pass the credentials directly (in plain text...):
-
-```bash
-xelo2 --mysql DATABASE_NAME -U USERNAME -P PASSWORD
-```
