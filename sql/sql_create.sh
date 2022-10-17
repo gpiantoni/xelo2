@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 cat << EOF
-Use as ./sql_create.sh SQLUSER DBNAME
-Where SQLUSER is the sql username and DBNAME is the name of the database.
+Use as ./sql_create.sh DBNAME SQLUSER 
+Where DBNAME is the name of the database and SQLUSER is the sql username.
 
-You'll need to type the SQL password for twice
+You'll be prompted to type the SQL password TWICE
 EOF
 
-SQLUSER=$1
-DBNAME=$2
+DBNAME=$1
+SQLUSER=$2
 
 mysql -u $SQLUSER -p -e "CREATE DATABASE IF NOT EXISTS ${DBNAME};"
 cat \

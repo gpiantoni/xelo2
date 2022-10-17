@@ -18,9 +18,43 @@ It will be assigned an index (which is not important in Python, but it's used in
 >>> subj
 Subject(db, id=1)
 ```
+`id` refers to the index in the `subjects` table.
 
-Before we can add tasks, we need to add a session
+Before we can add tasks, we need to add a session:
+```python
+>>> sess = subj.add_session('IEMU')
+Session(db, id=1)
+```
+Note that `id` refers to the index in the `sessions` table.
 
+The name of the session can only be one of the allowed values. 
+To look up the list of allowed names for session do:
+
+```python
+>>> from xelo2.database.tables import lookup_allowed_values
+>>> lookup_allowed_values(db['db'], 'sessions', 'name')
+['IEMU', 'OR', 'MRI', 'CT']
+```
+
+See the [instructions](../instructions.md#Sessions) for the description of these values.
+
+Now, we can add one task.
+It's sufficient to add the task name.
+We'll add extra information (start and duration) later:
+```python
+>>> run = sess.add_run('chill')
+>>> run
+Run(db, id=1)
+```
+Note that `id` refers to the index in the `runs` table.
+The `run` object contains the `session` and `subject` parents for convenience:
+```python
+>>> run.session.subject
+Subject(db, id=1)
+
+>>> run.session.subject == subj
+True
+``` 
 
 
 ## Look up MRI files for one subject

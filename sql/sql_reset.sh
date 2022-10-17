@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 cat << EOF
-Use as ./sql_reset.sh SQLUSER DBNAME
-Where SQLUSER is the sql username and DBNAME is the name of the database.
+Use as ./sql_reset.sh DBNAME SQLUSER
+Where DBNAME is the name of the database and SQLUSER is the sql username.
 EOF
 
-SQLUSER=$1
-DBNAME=$2
+DBNAME=$1
+SQLUSER=$2
 
 mysql -u $SQLUSER -p $DBNAME <<'EOF'
 SET FOREIGN_KEY_CHECKS = 0; -- disable a foreign keys check
