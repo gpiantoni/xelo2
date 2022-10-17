@@ -37,6 +37,7 @@ from PyQt5.QtGui import (
     QColor,
     QDesktopServices,
     QGuiApplication,
+    QIcon,
     QPalette,
     )
 from PyQt5.QtCore import (
@@ -80,6 +81,7 @@ from .modal import (
     parse_accessdatabase,
     )
 
+ribs_logo = Path(__file__).parent / 'data' / 'umcu_ribs.png'
 
 EXTRA_LEVELS = ['channels', 'electrodes']
 NULL_TEXT = 'Unknown / Unspecified'
@@ -97,6 +99,7 @@ class Interface(QMainWindow):
     def __init__(self, db_name=None, username=None, password=None, hostname='localhost'):
 
         super().__init__()
+        self.setWindowIcon(QIcon(str(ribs_logo)))
         create_menubar(self)
         create_shortcuts(self)
 
@@ -222,41 +225,55 @@ class Interface(QMainWindow):
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
 
         # parameters
-        dockwidget = QDockWidget('Parameters', self)
-        dockwidget.setWidget(t_params)
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_parameters')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+        dockwidget0 = QDockWidget('Parameters', self)
+        dockwidget0.setWidget(t_params)
+        dockwidget0.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget0.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget0.setObjectName('dock_parameters')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget0)
 
         # events
-        dockwidget = QDockWidget('Events', self)
-        dockwidget.setWidget(self.events_view)
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_events')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+        dockwidget1 = QDockWidget('Events', self)
+        dockwidget1.setWidget(self.events_view)
+        dockwidget1.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget1.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget1.setObjectName('dock_events')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget1)
 
         # channels
-        dockwidget = QDockWidget('Channels', self)
-        dockwidget.setWidget(self.channels_view)
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_channels')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+        dockwidget2 = QDockWidget('Channels', self)
+        dockwidget2.setWidget(self.channels_view)
+        dockwidget2.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget2.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget2.setObjectName('dock_channels')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget2)
 
         # electrodes
-        dockwidget = QDockWidget('Electrodes', self)
-        temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget
+        dockwidget3 = QDockWidget('Electrodes', self)
+        temp_widget = QWidget()  # you need extra widget to set layout in qdockwidget3
         elec_layout = QVBoxLayout(temp_widget)
         elec_layout.addWidget(self.elec_form)
         elec_layout.addWidget(self.electrodes_view, stretch=1)
-        dockwidget.setWidget(temp_widget)
+        dockwidget3.setWidget(temp_widget)
 
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_electrodes')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
+        dockwidget3.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget3.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget3.setObjectName('dock_electrodes')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget3)
+
+        # export
+        dockwidget4 = QDockWidget('Export', self)
+        dockwidget4.setWidget(w_export)
+        dockwidget4.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
+        dockwidget4.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        dockwidget4.setObjectName('dock_export')  # savestate
+        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget4)
+
+        # widgets on right-hand side should be tabbed
+        self.tabifyDockWidget(dockwidget4, dockwidget3)
+        self.tabifyDockWidget(dockwidget3, dockwidget2)
+        self.tabifyDockWidget(dockwidget2, dockwidget1)
+        self.tabifyDockWidget(dockwidget1, dockwidget0)
 
         # files
         dockwidget = QDockWidget('Files', self)
@@ -265,14 +282,6 @@ class Interface(QMainWindow):
         dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         dockwidget.setObjectName('dock_files')  # savestate
         self.addDockWidget(Qt.BottomDockWidgetArea, dockwidget)
-
-        # export
-        dockwidget = QDockWidget('Export', self)
-        dockwidget.setWidget(w_export)
-        dockwidget.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
-        dockwidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        dockwidget.setObjectName('dock_export')  # savestate
-        self.addDockWidget(Qt.RightDockWidgetArea, dockwidget)
 
         # restore geometry
         window_geometry = settings.value('window/geometry')
