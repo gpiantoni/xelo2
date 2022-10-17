@@ -49,3 +49,6 @@ Required dependecies are:
 
 ## Get Started
 To start using the database, see the [tutorials](tutorial.md).
+
+## Navigation
+  - Back to [index](index.md)

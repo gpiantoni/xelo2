@@ -50,3 +50,8 @@ for run_id in subset['runs']:
     file = files[0]
     print(file.path)
 ```
+
+## Navigation
+  - Go to [`xelo2gui` tutorial](xelo2gui.md)
+  - Go to [`xelo2db` tutorial](xelo2db.md)
+  - Back to [index](../index.md)

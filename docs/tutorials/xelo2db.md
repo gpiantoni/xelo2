@@ -118,3 +118,7 @@ If task is `flair`, use this syntax
 UPDATE `recordings_mri` SET `Sequence` = '3T FLAIR' WHERE `recording_id` IN (SELECT `id` FROM `recordings` WHERE `run_id` IN (SELECT `id` FROM `runs` WHERE `task_name` = 'flair_anatomy_scan'));
 ```
 
+## Navigation
+  - Go to [`xelo2gui` tutorial](xelo2gui.md)
+  - Go to [`xelo2api` tutorial](xelo2api.md)
+  - Back to [index](../index.md)
