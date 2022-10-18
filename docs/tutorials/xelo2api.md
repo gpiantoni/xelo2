@@ -195,7 +195,7 @@ We have quite some additional fields for MRI recordings:
 >>> rec.PhaseEncodingDirection = 'LR'
 >>> rec.SliceOrder = 'Interleaved'
 ```
-The fields available for the MRI recordings are described in the [instructions](../instructions.md#MRI recordings). 
+The fields available for the MRI recordings are described in the [instructions](../instructions.md#MRI_Recordings). 
 
 ### METC protocol
 You can also create a signed informed consent for each participant (because participants signed the informed consent) in this way:

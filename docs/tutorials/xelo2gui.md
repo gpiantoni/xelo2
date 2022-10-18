@@ -22,6 +22,11 @@ In addition, the panel `Protocols` is used to stored information about the infor
 The panels `Channels` and `Electrodes` will be discussed below.
 On the right-hand side, the `Parameters` panel shows all the fields for each level (from subject to recording).
 
+The name used in `Parameter` column is not identical to the name of the fields in the python API, see [advanced](../advanced.md#parameters)
+
+
+
+
 
 
 ## Navigation

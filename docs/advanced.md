@@ -96,6 +96,27 @@ for run_id in subset['runs']:
     print(file.path)
 ```
 
+## GUI
+
+### Parameters
+You can look up the name of the column and additional information in the `db` variable.
+```python
+>>> from xelo2.database import access_database
+>>> db = access_database(DATABASE_NAME, USERNAME, PASSWORD)
+>>> db['tables']['subjects']['date_of_birth']
+{'type': 'QDate',
+ 'values': [],
+ 'index': False,
+ 'alias': 'Date of Birth',
+ 'doc': 'Date of birth of the participant'}
+```
+where:
+  - `type` is the Qt name of the type
+  - `values` is the list of allowed values
+  - `index` whether it's an index in the database or not (if it's an index, it's not shown in the GUI)
+  - `alias` is the name shown in the GUI
+  - `doc` is the tip shown when you hover the values of parameter
+
 
 ## Navigation
   - Back to [index](index.md)
