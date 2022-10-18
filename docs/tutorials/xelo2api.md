@@ -8,7 +8,9 @@ To connect to the database (in localhost), you need to specify the `DATABASE_NAM
 >>> db = access_database(DATABASE_NAME, USERNAME, PASSWORD)
 ```
 
-### Create one task for one participant
+### Create one task with recordings for one participant
+
+#### Subject
 First we create a subject, called `participant01`. 
 It will be assigned an index (which is not important in Python, but it's used in the database)
 
@@ -20,6 +22,7 @@ Subject(db, id=1)
 ```
 `id` refers to the index in the `subjects` table.
 
+#### Session
 Before we can add tasks, we need to add a session:
 ```python
 >>> sess = subj.add_session('IEMU')
@@ -47,6 +50,7 @@ For example, when the session is `IEMU`, we can also store `date_of_implantation
 datetime.date(2022, 4, 1)
 ```
 
+#### Run
 Now, we can add one task.
 It's sufficient to add the task name.
 We'll add extra information (start and duration) later:
@@ -64,7 +68,6 @@ Subject(db, id=1)
 >>> run.session.subject == subj
 True
 ``` 
-
 We can then add some information about the run, e.g. about the performance or some aspects of the acquisition.
 ```python
 >>> run.start_time = datetime(2022, 4, 10, 10, 0, 0)
@@ -80,11 +83,36 @@ The fields available for all the runs are described in the [instructions](../ins
 Some runs (depending on `task_name`) might have additional fields. 
 For example, when a run has the task name called `motor`, then you can also specify `body_part` or `left_right`:
 ```python
+>>> run1 = sess.add_run('motor')
+>>> run1.start_time = datetime(2022, 4, 10, 11, 0, 0)
+>>> run1.duration = 210
+>>> run1.body_part = 'hand'
+>>> run1.left_right = 'right'
+```
 
-
-
-
+You can also add the experimenters (the people who performed the experiment) using this syntax:
+```python
 >>> run.experimenters = ['Gio', ]
+```
+You need to make sure that the experimenter is on the list. 
+To look up the list of experimenters, use:
+```python
+>>> from xelo2.api import list_experimenters
+>>> list_experimenters(db)
+['Gio', 'Ryder']
+```
+See the [instructions](../instructions.md#Experimenters) on how to add experimenters.
+
+
+#### Recordings
+
+
+
+
+
+
+
+
 ## Look up MRI files for one subject
 Here you can look up one of the files associated with the T1 of one subject. 
 Specify the subject code in the `SUBJECT_CODE` as a string.

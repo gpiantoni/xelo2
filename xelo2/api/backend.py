@@ -91,7 +91,7 @@ class Table():
             id_name = f'{self.t}_id'
 
         query = QSqlQuery(self.db['db'])
-        query.prepare(f"SELECT {key} FROM {table_name} WHERE {id_name} = :id")
+        query.prepare(f'SELECT `{key}` FROM `{table_name}` WHERE `{id_name}` = :id')
         query.bindValue(':id', self.id)
 
         if not query.exec():
@@ -174,7 +174,7 @@ class Table():
             value = _null(value)
 
         query = QSqlQuery(self.db['db'])
-        query.prepare(f"UPDATE {table_name} SET `{key}` = {value} WHERE {id_name} = :id")
+        query.prepare(f"UPDATE `{table_name}` SET `{key}` = {value} WHERE `{id_name}` = :id")
         query.bindValue(':id', self.id)
 
         if not query.exec():

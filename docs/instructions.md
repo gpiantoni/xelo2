@@ -4,6 +4,9 @@
 
 ## Runs
 
+### Experimenters
+how to add experimenters
+
 
 
 ## Recordings
