@@ -36,7 +36,16 @@ To look up the list of allowed names for session do:
 ['IEMU', 'OR', 'MRI', 'CT']
 ```
 
-See the [instructions](../instructions.md#Sessions) for the description of these values.
+See the [instructions](../instructions.md#Sessions) for the description of these values and for their fields.
+For example, when the session is `IEMU`, we can also store `date_of_implantation`:
+```python
+>>> sess.date_of_implantation
+# None, it's empty
+>>> from datetime import datetime
+>>> sess.date_of_implantation = datetime(2022, 4, 1)
+>>> sess.date_of_implantation
+datetime.date(2022, 4, 1)
+```
 
 Now, we can add one task.
 It's sufficient to add the task name.
@@ -56,7 +65,26 @@ Subject(db, id=1)
 True
 ``` 
 
+We can then add some information about the run, e.g. about the performance or some aspects of the acquisition.
+```python
+>>> run.start_time = datetime(2022, 4, 10, 10, 0, 0)
+>>> run.duration = 180
 
+>>> run.task_description = 'the screen was 90cm away'
+>>> run.performance = 'information about the performance'
+>>> run.acquisition = 'information about the acquisition'
+```
+All of these fields are optional, but `start_time` and `duration` are very useful.
+The fields available for all the runs are described in the [instructions](../instructions.md#Runs). 
+
+Some runs (depending on `task_name`) might have additional fields. 
+For example, when a run has the task name called `motor`, then you can also specify `body_part` or `left_right`:
+```python
+
+
+
+
+>>> run.experimenters = ['Gio', ]
 ## Look up MRI files for one subject
 Here you can look up one of the files associated with the T1 of one subject. 
 Specify the subject code in the `SUBJECT_CODE` as a string.

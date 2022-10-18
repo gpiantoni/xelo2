@@ -12,13 +12,13 @@ GRANT ALL PRIVILEGES ON testdb.* TO 'giovanni'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-> Careful: It creates a user without password `password` and the database is called `testdb`.
+> Careful: It creates a user with password `password` and the database is called `testdb`.
 
 Then, as a user, use this code (in bash):
 
 ```bash
 cd sql
-./sql_create.sh giovanni testdb
+./sql_create.sh testdb giovanni
 ```
 where `giovanni` is the user you created above in `CREATE USER` and `testdb` is the name of the database.
 
