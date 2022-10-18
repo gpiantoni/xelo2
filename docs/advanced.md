@@ -8,6 +8,15 @@ If the MySQL database is not stored in the local machine, you need to forward th
 ssh -L 3306:localhost:3306 -o ServerAliveInterval=240 user@remote
 ```
 
+### Reset database
+If you want to delete all the tables and information from the database and restart from zero, you can use this command:
+```bash
+cd sql
+./sql_reset.sh testdb giovanni
+./sql_create.sh testdb giovanni
+```
+There is no extra check (apart from typing your password): if you run `sql_reset.sh`, you delete all the data.
+
 ## API
 
 ### Fields in subtables

@@ -197,6 +197,20 @@ We have quite some additional fields for MRI recordings:
 ```
 The fields available for the MRI recordings are described in the [instructions](../instructions.md#MRI recordings). 
 
+### METC protocol
+You can also create a signed informed consent for each participant (because participants signed the informed consent) in this way:
+```python
+>>> subj = Subject(db, id=1)
+>>> metc = subj.add_protocol('14-420')
+>>> metc.date_of_signature = datetime(2022, 4, 1)  # optional
+>>> metc.version = 'free text'  # optional, but try to be consistent
+```
+Because participants might sign multiple informed consents and even within the same IEMU period, they might do tasks under different METC protocols, the right level where you need to link the protocol is at the run level.
+So, for each run, you can specify which protocol was used:
+```python
+>>> run.attach_protocol(metc)
+```
+
 ## Navigation
   - Go to [`xelo2gui` tutorial](xelo2gui.md)
   - Go to [`xelo2db` tutorial](xelo2db.md)

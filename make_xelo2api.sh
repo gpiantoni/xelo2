@@ -1,3 +1,4 @@
+rm tmp -fr
 mkdir tmp
 cat > tmp/xelo2api.py <<EOF
 DATABASE_NAME = 'testdb'
