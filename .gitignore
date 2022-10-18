@@ -1,4 +1,5 @@
 tests/data/
+tmp/
 
 .ipynb_checkpoints/
 *.ipynb

@@ -15,7 +15,10 @@ how to add experimenters
     - **epi**: Modality for top_up scans. This modality does not have events. This modality has "IntendedFor".
     - **T1w**: Modality for T1w structural scans (also MP2RAGE).
 
+### MRI recordings
+
 ### EPI recordings
+
 
   - Pulse Sequence Type (Text): any value but common values are "PRESTO", "MP2RAGE", "Gradient-Echo Head Coil", "Gradient-Echo Surface Coil", "Spin-Echo Surface Coil", "Wouter standard 1.6s", "Gradient-Echo Multiband", "Spin-Echo Multiband", "Standard 2.1s"
   - **Multiband Acceleration Factor** (*Integer*): this is not stored in PAR/REC, so you need to specify the multiband factor.

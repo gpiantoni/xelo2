@@ -1434,7 +1434,7 @@ def make_edit(value):
 
 def make_integer(value):
     w = QSpinBox()
-    w.setRange(-2e7, 2e7)
+    w.setRange(int(-2e7), int(2e7))
 
     if value is None:
         w.setValue(0)

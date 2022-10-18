@@ -14,4 +14,4 @@ xelo2 consists of 3 parts:
 
 [Advanced](advanced.md)
 
-[API](xelo2/index.html)
+[API](pdoc/index.html)
